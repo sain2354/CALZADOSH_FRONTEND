@@ -1,0 +1,141 @@
+<div class="componente-categorias container-fluid" style="padding: 20px;">
+  <div class="row">
+    <!-- Columna Izquierda: Tabla de Categorías -->
+    <div class="col-md-8">
+      <div class="card mb-3 shadow-sm">
+        <!-- Encabezado turquesa -->
+        <div class="card-header d-flex justify-content-between align-items-center bg-turquesa text-white">
+          <h4 class="mb-0">Listado de Categorías</h4>
+          <div class="d-flex align-items-center" style="gap: 10px;">
+            <button class="btn btn-success btn-sm" (click)="exportarExcel()">
+              <i class="fas fa-file-excel"></i> Excel
+            </button>
+            <button class="btn btn-secondary btn-sm" (click)="imprimir()">
+              <i class="fas fa-print"></i> Print
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Fila con selector de filas y buscador -->
+          <div class="row mb-3">
+            <div class="col-auto d-flex align-items-center" style="gap: 10px;">
+              <label for="filasSelect" class="mb-0">Show</label>
+              <select
+                id="filasSelect"
+                class="form-select form-select-sm"
+                [(ngModel)]="itemsPorPagina"
+                (change)="cambiarItemsPorPagina()"
+                style="width: auto;"
+              >
+                <option [value]="5">5 rows</option>
+                <option [value]="10">10 rows</option>
+                <option [value]="15">15 rows</option>
+              </select>
+              <label class="mb-0">rows</label>
+            </div>
+
+            <div class="col d-flex justify-content-end align-items-center" style="gap: 5px;">
+              <label class="mb-0" for="buscar">Buscar:</label>
+              <input
+                id="buscar"
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Ingrese texto"
+                [(ngModel)]="filtro"
+                (input)="filtrarCategorias()"
+                style="max-width: 200px;"
+              />
+            </div>
+          </div>
+
+          <!-- Tabla -->
+          <div class="table-responsive">
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th>id</th>
+                  <th>Categoría</th>
+                  <th>Opciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let cat of categoriasFiltradas
+                    | paginate: {
+                        itemsPerPage: itemsPorPagina,
+                        currentPage: p
+                      }"
+                >
+                  <td>{{ cat.idCategoria }}</td>
+                  <td>{{ cat.descripcion }}</td>
+                  <td>
+                    <button
+                      class="btn btn-primary btn-sm me-1"
+                      (click)="editarCategoria(cat)"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      class="btn btn-danger btn-sm"
+                      (click)="eliminarCategoria(cat.idCategoria)"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="categoriasFiltradas.length === 0">
+                  <td colspan="3" class="text-center">No se encontraron registros</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Texto 'Mostrando X a Y de Z registros' + paginación -->
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <small class="text-muted">
+              Mostrando {{ mostrandoDesde }} a {{ mostrandoHasta }}
+              de {{ categoriasFiltradas.length }} registros
+            </small>
+            <pagination-controls
+              (pageChange)="onPageChange($event)"
+              previousLabel="Anterior"
+              nextLabel="Siguiente"
+            >
+            </pagination-controls>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: Formulario de Registro -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h4 class="mb-0">Registro de Categorías</h4>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="registrarCategoria()">
+            <div class="mb-3">
+              <label for="descripcionCategoria" class="form-label">
+                Categoría <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                id="descripcionCategoria"
+                class="form-control"
+                placeholder="Ingresa la Categoría"
+                [(ngModel)]="nuevaCategoria.descripcion"
+                name="descripcionCategoria"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              Registrar Categoría
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

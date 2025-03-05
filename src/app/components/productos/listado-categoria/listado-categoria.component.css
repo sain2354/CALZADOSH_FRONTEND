@@ -1,0 +1,50 @@
+.componente-categorias {
+  background-color: #f9f9f9 !important; /* Fondo claro general */
+  min-height: 100vh !important; /* Ocupa toda la pantalla si quieres */
+  padding: 20px !important;
+}
+
+/* Ajuste de la tarjeta */
+.componente-categorias .card {
+  border-radius: 10px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Cabecera turquesa */
+.bg-turquesa {
+  background-color: #17a2b8 !important; /* Turquesa */
+  color: #fff !important;              /* Texto blanco */
+}
+
+.componente-categorias .card-header {
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+/* Tabla */
+.componente-categorias .table thead tr th {
+  background-color: #17a2b8 !important; /* Turquesa */
+  color: #fff !important;
+  font-weight: bold !important;
+  text-align: center !important;
+}
+
+.componente-categorias .table th,
+.componente-categorias .table td {
+  vertical-align: middle !important;
+  text-align: center !important;
+}
+
+.componente-categorias .table {
+  margin-bottom: 0 !important;
+}
+
+/* Paginación */
+.componente-categorias .pagination-controls {
+  display: flex !important;
+  justify-content: flex-end !important;
+  margin-top: 10px !important;
+}
+
+.componente-categorias small.text-muted {
+  font-size: 0.85rem !important;
+}

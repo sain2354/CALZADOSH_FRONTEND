@@ -1,0 +1,33 @@
+<h4>Registrar Cliente</h4>
+<hr>
+<div class="form-group mb-2">
+  <label>Tipo Doc <span class="text-danger">*</span></label>
+  <select class="form-control" [(ngModel)]="nuevo.tipoDocumento">
+    <option>NDI</option>
+    <option>RUC</option>
+  </select>
+</div>
+<div class="form-group mb-2">
+  <label>Documento <span class="text-danger">*</span></label>
+  <input type="text" class="form-control" [(ngModel)]="nuevo.numeroDocumento" placeholder="Documento" />
+</div>
+<div class="form-group mb-2">
+  <label>Nombres</label>
+  <input type="text" class="form-control" [(ngModel)]="nuevo.nombre" placeholder="Nombres" />
+</div>
+<div class="form-group mb-2">
+  <label>Dirección</label>
+  <input type="text" class="form-control" [(ngModel)]="nuevo.direccion" placeholder="Dirección" />
+</div>
+<div class="form-group mb-2">
+  <label>Celular / Teléfono</label>
+  <input type="text" class="form-control" [(ngModel)]="nuevo.telefono" placeholder="Celular / Teléfono" />
+</div>
+<div class="form-group mb-2">
+  <label>Correo</label>
+  <input type="email" class="form-control" [(ngModel)]="nuevo.correo" placeholder="Correo" />
+</div>
+<div style="text-align: right;">
+  <button class="btn btn-secondary me-2" (click)="cancelar()">Cerrar</button>
+  <button class="btn btn-primary" (click)="guardarPersona()">Registrar</button>
+</div>

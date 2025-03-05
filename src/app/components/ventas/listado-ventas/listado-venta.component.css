@@ -1,0 +1,32 @@
+/* src/app/components/ventas/listado-ventas/listado-venta.component.css */
+
+.listado-ventas-container {
+    background: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+  }
+  
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .filters > div {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .actions .btn i {
+    margin-right: 5px;
+  }
+  

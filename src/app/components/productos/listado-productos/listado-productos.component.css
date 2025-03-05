@@ -1,0 +1,153 @@
+.card {
+  margin: 10px auto;
+  padding: 10px;
+  background: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  max-width: 1200px;
+}
+
+/* Header claro, con texto oscuro */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f8f9fa; /* color claro */
+  color: #333;        /* texto oscuro */
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.search-box {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+}
+
+.search-box input {
+  padding: 6px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.btn-primary {
+  background: #28a745;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #218838;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.table th,
+.table td {
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
+/* Cabecera de la tabla */
+.table th {
+  background: #17a2b8;
+  color: white;
+  font-weight: bold;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa;
+}
+
+.activo {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.inactivo {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 600px;       /* Ajusta para un ancho más razonable */
+  max-width: 90%;
+  margin: auto;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  font-size: 0.70rem; /* tamaño de fuente reducido */
+}
+
+/* Título del modal */
+.modal h3 {
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+/* Grid de 2 columnas en el formulario */
+.form-grid.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+}
+
+.form-group {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 7px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Tabla más compacta */
+.table-sm th,
+.table-sm td {
+  padding: 0.20rem !important;
+  font-size: 0.85rem;
+}

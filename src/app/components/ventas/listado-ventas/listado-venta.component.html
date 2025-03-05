@@ -1,0 +1,61 @@
+<!-- src/app/components/ventas/listado-ventas/listado-venta.component.html -->
+<div class="listado-ventas-container">
+    <h4>Listado de Ventas</h4>
+  
+    <!-- Filtros por fecha y botón Buscar -->
+    <div class="filters">
+      <div>
+        <label for="fechaInicio">Fecha Inicio:</label>
+        <input type="date" id="fechaInicio" class="form-control" />
+      </div>
+      <div>
+        <label for="fechaFin">Fecha Fin:</label>
+        <input type="date" id="fechaFin" class="form-control" />
+      </div>
+      <button class="btn btn-primary">Buscar</button>
+    </div>
+  
+    <!-- Acciones (Exportar, ver X registros, buscar) -->
+    <div class="actions">
+      <button class="btn btn-success" title="Exportar a Excel">
+        <i class="fa fa-file-excel"></i>
+      </button>
+      <button class="btn btn-danger" title="Exportar a PDF">
+        <i class="fa fa-file-pdf"></i>
+      </button>
+  
+      <label for="verSelect">Ver:</label>
+      <select id="verSelect" class="form-select form-select-sm" style="width: 70px;">
+        <option>10</option>
+        <option>25</option>
+        <option>50</option>
+      </select>
+  
+      <label for="buscarInput">Buscar:</label>
+      <input id="buscarInput" type="text" class="form-control form-control-sm" style="width: 150px;" />
+    </div>
+  
+    <!-- Tabla principal -->
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Comprobante</th>
+          <th>Correlativo</th>
+          <th>Monto</th>
+          <th>Fecha</th>
+          <th>Usuario</th>
+          <th>Estado</th>
+          <th>Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="8">No hay información en esta tabla</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <p>Registros del 0 al 0 total 0 registros</p>
+  </div>
+  

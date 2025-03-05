@@ -1,0 +1,91 @@
+<!-- Renombramos .container a .layout-container para evitar conflictos con Bootstrap -->
+<div class="layout-container">
+  <!-- Barra lateral -->
+  <nav class="sidebar" [class.hidden]="sidebarHidden">
+    <h2>CALZADOS</h2>
+    <ul>
+      <li><a routerLink="/dashboard">Dashboard</a></li>
+      <li><a routerLink="/caja">Pedidos</a></li>
+
+      <!-- Menú desplegable de Ventas -->
+      <li (click)="toggleVentasMenu($event)" class="menu-item">
+        <a class="menu-title">Ventas ▼</a>
+        <ul
+          *ngIf="ventasMenuAbierto"
+          class="submenu"
+          (click)="$event.stopPropagation()"
+        >
+          <li>
+            <a
+              routerLink="/ventas/punto"
+              (click)="navegar('/ventas/punto')"
+              style="cursor: pointer;"
+            >
+              Punto de Venta
+            </a>
+          </li>
+          <li>
+            <a
+              routerLink="/ventas/listado"
+              (click)="navegar('/ventas/listado')"
+              style="cursor: pointer;"
+            >
+              Listado de Ventas
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Menú desplegable de Productos -->
+      <li (click)="toggleProductosMenu($event)" class="menu-item">
+        <a class="menu-title">Productos ▼</a>
+        <ul
+          *ngIf="productosMenuAbierto"
+          class="submenu"
+          (click)="$event.stopPropagation()"
+        >
+          <li>
+            <a
+              routerLink="/productos"
+              (click)="navegar('/productos')"
+              style="cursor: pointer;"
+            >
+              Lista de Productos
+            </a>
+          </li>
+          <li>
+            <a
+              routerLink="/categorias"
+              (click)="navegar('/categorias')"
+              style="cursor: pointer;"
+            >
+              Categorías
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li><a routerLink="/clientes">Clientes / Proveedores</a></li>
+      <li><a routerLink="/compras">Compras</a></li>
+      <li><a routerLink="/inventario">Inventario</a></li>
+      <li><a routerLink="/mantenimiento">Mantenimiento</a></li>
+    </ul>
+  </nav>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <!-- Encabezado superior -->
+    <header class="top-bar">
+      <button class="menu-btn" (click)="toggleSidebar()">☰</button>
+      <div class="user-info">
+        <span class="username">prueba</span>
+      </div>
+    </header>
+
+    <!-- Contenido dinámico -->
+    <div class="content-area">
+      <router-outlet></router-outlet>
+      <!-- Las vistas (ej. Categorías, Punto de Venta, etc.) se renderizan aquí -->
+    </div>
+  </div>
+</div>

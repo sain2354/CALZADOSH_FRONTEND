@@ -1,0 +1,346 @@
+<div class="card">
+  <!-- Encabezado con estilo claro y elementos a derecha/izquierda -->
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Listado de Productos</h3>
+    <div class="d-flex align-items-center" style="gap: 10px;">
+      <label class="mb-0" for="buscar">Buscar:</label>
+
+      <!-- AUTOCOMPLETE -->
+      <ng-autocomplete
+        [data]="productosAutoComplete"
+        [searchKeyword]="keyword"
+        placeholder="Buscar productos..."
+        (selected)="selectEvent($event)"
+        (inputChanged)="onChangeSearch($event)"
+        (inputFocused)="onFocused($event)"
+        [itemTemplate]="itemTemplate"
+        [notFoundTemplate]="notFoundTemplate"
+        historyIdentifier="productos"
+        style="width: 200px;"
+      >
+      </ng-autocomplete>
+
+      <!-- Template opcional para los ítems -->
+      <ng-template #itemTemplate let-item>
+        <a [innerHTML]="item.nombre"></a>
+      </ng-template>
+
+      <!-- Template opcional para cuando no hay resultados -->
+      <ng-template #notFoundTemplate let-notFound>
+        <div [innerHTML]="notFound"></div>
+      </ng-template>
+
+      <!-- Botón Nuevo -->
+      <button class="btn btn-primary" (click)="abrirModal()">
+        <i class="fas fa-plus"></i> Nuevo
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Tabla de productos -->
+    <table class="table table-striped table-sm">
+      <thead>
+        <tr>
+          <th>CódigoBarra</th>
+          <th>Categoría</th>
+          <th>Subcategoría</th>
+          <th>Producto</th>
+          <th>P. Compra</th>
+          <th>P. Venta</th>
+          <th>Stock</th>
+          <th>Min. Stock</th>
+          <th>Unidad de Medida</th>
+          <th>Estado</th>
+          <th>Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let producto of productosFiltrados | paginate: { itemsPerPage: 10, currentPage: p }"
+        >
+          <td>{{ producto.codigoBarra }}</td>
+          <td>{{ producto.categoria }}</td>
+          <td>{{ producto.idSubCategoria }}</td>
+          <td>{{ producto.nombre }}</td>
+          <td>{{ producto.precioCompra | currency }}</td>
+          <td>{{ producto.precioVenta | currency }}</td>
+          <td>{{ producto.stock }}</td>
+          <td>{{ producto.stockMinimo }}</td>
+          <td>{{ producto.idUnidadMedida }}</td>
+          <td>
+            <span [class.activo]="producto.estado" [class.inactivo]="!producto.estado">
+              {{ producto.estado ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            <!-- BOTONES DE OPCIONES -->
+            <!-- Editar -->
+            <button
+              class="btn btn-warning btn-sm me-1"
+              (click)="editarProducto(producto)"
+              title="Editar"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+
+            <!-- Aumentar Stock -->
+            <button
+              class="btn btn-success btn-sm me-1"
+              (click)="aumentarStock(producto)"
+              title="Aumentar Stock"
+            >
+              <i class="fas fa-plus"></i>
+            </button>
+
+            <!-- Disminuir Stock -->
+            <button
+              class="btn btn-info btn-sm me-1"
+              (click)="disminuirStock(producto)"
+              title="Disminuir Stock"
+            >
+              <i class="fas fa-minus"></i>
+            </button>
+
+            <!-- Generar Código de Barras -->
+            <button
+              class="btn btn-secondary btn-sm me-1"
+              (click)="generarCodigoBarras(producto)"
+              title="Generar Código de Barras"
+            >
+              <i class="fas fa-barcode"></i>
+            </button>
+
+            <!-- Eliminar -->
+            <button
+              class="btn btn-danger btn-sm"
+              (click)="eliminarProducto(producto)"
+              title="Eliminar"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="productosFiltrados.length === 0">
+          <td colspan="11" class="text-center">No se encontraron datos</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <pagination-controls (pageChange)="onPageChange($event)"></pagination-controls>
+  </div>
+</div>
+
+<!-- Modal de Registrar Nuevo Producto -->
+<div *ngIf="modalAbierto" class="modal">
+  <div class="modal-content">
+    <h3>Registrar Nuevo Producto</h3>
+    <form (ngSubmit)="guardarProducto()">
+      <div class="form-grid grid-2">
+        <div class="form-group">
+          <label>Código de Barra:</label>
+          <input
+            type="text"
+            [(ngModel)]="producto.codigoBarra"
+            name="codigo"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Nombre del Producto:</label>
+          <input
+            type="text"
+            [(ngModel)]="producto.nombre"
+            name="nombre"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Categoría (Marca):</label>
+          <select
+            [(ngModel)]="producto.idCategoria"
+            name="idCategoria"
+            (change)="actualizarSubcategorias()"
+            required
+          >
+            <option
+              *ngFor="let categoria of categorias"
+              [value]="categoria.id"
+            >
+              {{ categoria.nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Subcategoría:</label>
+          <select
+            [(ngModel)]="producto.idSubCategoria"
+            name="idSubCategoria"
+            required
+          >
+            <option
+              *ngFor="let subCategoria of subcategoriasFiltradas"
+              [value]="subCategoria.id"
+            >
+              {{ subCategoria.nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Precio de Compra:</label>
+          <input
+            type="number"
+            [(ngModel)]="producto.precioCompra"
+            name="precioCompra"
+            step="0.01"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Precio de Venta:</label>
+          <input
+            type="number"
+            [(ngModel)]="producto.precioVenta"
+            name="precioVenta"
+            step="0.01"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Stock Disponible:</label>
+          <input
+            type="number"
+            [(ngModel)]="producto.stock"
+            name="stock"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Stock Mínimo:</label>
+          <input
+            type="number"
+            [(ngModel)]="producto.stockMinimo"
+            name="stockMinimo"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Unidad de Medida:</label>
+          <select
+            [(ngModel)]="producto.idUnidadMedida"
+            name="idUnidadMedida"
+            required
+          >
+            <option
+              *ngFor="let unidad of unidadesMedida"
+              [value]="unidad.id"
+            >
+              {{ unidad.nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Foto del Producto:</label>
+          <input
+            type="file"
+            (change)="manejarFoto($event)"
+            name="foto"
+          />
+        </div>
+        <div class="form-group">
+          <label>Estado:</label>
+          <select
+            [(ngModel)]="producto.estado"
+            name="estado"
+            required
+          >
+            <option [value]="true">Activo</option>
+            <option [value]="false">Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Sección de Tallas -->
+      <div class="form-group">
+        <label>Seleccione Talla:</label>
+        <select
+          [(ngModel)]="tallaSeleccionadaId"
+          name="tallaSeleccionadaId"
+        >
+          <option [ngValue]="0">-- Seleccionar --</option>
+          <option
+            *ngFor="let talla of tallasDisponibles"
+            [ngValue]="talla.idTalla"
+          >
+            {{ talla.descripcion }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Stock para esta Talla:</label>
+        <input
+          type="number"
+          [(ngModel)]="stockTallaSeleccionada"
+          name="stockTallaSeleccionada"
+          min="1"
+        />
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-info"
+        (click)="agregarTalla()"
+      >
+        Agregar Talla
+      </button>
+
+      <table class="table table-bordered table-sm" style="margin-top: 10px;">
+        <thead>
+          <tr>
+            <th>Talla</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tallasSeleccionadas; let i = index">
+            <td>{{ t.descripcionTalla }}</td>
+            <td>{{ t.stock }}</td>
+            <td>
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                (click)="eliminarTalla(i)"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="tallasSeleccionadas.length === 0">
+            <td colspan="3" class="text-center">No hay tallas agregadas</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div
+        class="modal-actions"
+        style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;"
+      >
+        <button type="submit" class="btn btn-success">
+          Guardar Producto
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="cerrarModal()"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
