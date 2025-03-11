@@ -8,7 +8,7 @@ import { Persona } from '../models/persona.model';
   providedIn: 'root'
 })
 export class PersonaService {
-  private apiUrl = 'https://localhost:5001/api/Persona'; // Ajusta a tu backend
+  private apiUrl = 'http://www.chbackend.somee.com/api/Persona'; // Ajusta a tu backend
 
   constructor(private http: HttpClient) {}
 

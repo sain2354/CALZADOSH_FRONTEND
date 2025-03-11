@@ -3,7 +3,31 @@
   <div class="card-header d-flex justify-content-between align-items-center">
     <h3 class="mb-0">Listado de Productos</h3>
     <div class="d-flex align-items-center" style="gap: 10px;">
-      <label class="mb-0" for="buscar">Buscar:</label>
+
+      <!-- Combo Categoría -->
+      <label class="mb-0">Categoría:</label>
+      <select class="form-select form-select-sm"
+              style="width: auto;"
+              [(ngModel)]="selectedCategory"
+              (ngModelChange)="onCategoryChange($event)">
+        <option *ngFor="let c of categorias" [value]="c.id">
+          {{ c.nombre }}
+        </option>
+      </select>
+
+      <!-- Combo PageSize -->
+      <label class="mb-0">Mostrar:</label>
+      <select class="form-select form-select-sm"
+              style="width: auto;"
+              [(ngModel)]="pageSize"
+              (ngModelChange)="onPageSizeChange($event)">
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="15">15</option>
+      </select>
+      <label class="mb-0">rows</label>
+
+      <label class="mb-0 ms-3" for="buscar">Buscar:</label>
 
       <!-- AUTOCOMPLETE -->
       <ng-autocomplete
@@ -56,8 +80,14 @@
         </tr>
       </thead>
       <tbody>
+        <!-- Paginación local con ngx-pagination -->
         <tr
-          *ngFor="let producto of productosFiltrados | paginate: { itemsPerPage: 10, currentPage: p }"
+          *ngFor="let producto of productosFiltrados 
+                    | paginate: { 
+                        itemsPerPage: pageSize,
+                        currentPage: page,
+                        id: 'prodList'
+                      }"
         >
           <td>{{ producto.codigoBarra }}</td>
           <td>{{ producto.categoria }}</td>
@@ -127,8 +157,15 @@
       </tbody>
     </table>
 
-    <!-- Paginación -->
-    <pagination-controls (pageChange)="onPageChange($event)"></pagination-controls>
+    <!-- Controles de paginación local -->
+    <pagination-controls
+      id="prodList"
+      (pageChange)="onPageChange($event)"
+      [maxSize]="5"
+      [directionLinks]="true"
+      [autoHide]="false"
+    >
+    </pagination-controls>
   </div>
 </div>
 

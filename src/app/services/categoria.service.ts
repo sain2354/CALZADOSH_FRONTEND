@@ -8,7 +8,7 @@ import { Categoria } from '../models/categoria.model';
 })
 export class CategoriaService {
   // Ajusta la URL a tu backend real
-  private apiUrl = 'https://localhost:5001/api/Categoria';
+  private apiUrl = 'http://www.chbackend.somee.com/api/Categoria';
 
   constructor(private http: HttpClient) {}
 

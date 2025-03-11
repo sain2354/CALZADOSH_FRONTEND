@@ -23,27 +23,34 @@ import { Talla } from '../../../models/talla.model';
   styleUrls: ['./listado-productos.component.css']
 })
 export class ListadoProductosComponent implements OnInit {
-  // Paginación
-  p: number = 1;
+  // ============ PAGINACIÓN Y FILTROS ============
+  page: number = 1;          // Página actual
+  pageSize: number = 10;     // Tamaño de página (rows por página)
+  // totalRegistros ya no es necesario si NO traes paginación del servidor,
+  // pero puedes usarlo si deseas. En local, "totalRegistros = productosFiltrados.length"
+  totalRegistros: number = 0;
+  selectedCategory: number = 0; // 0 => Todos, 1 => Hombres, 2 => Mujeres, 3 => Infantil
 
-  // AUTOCOMPLETE
+  // ============ AUTOCOMPLETE ============
   keyword = 'nombre';
   productosAutoComplete: any[] = [];
 
-  // Filtro interno
+  // Filtro interno (por nombre/categoría, etc.)
   filtro: string = '';
 
-  // Lista de productos y la lista filtrada
+  // Lista de productos
   productos: Producto[] = [];
   productosFiltrados: Producto[] = [];
 
   // Listas para combos
   categorias: { id: number, nombre: string }[] = [
+    { id: 0, nombre: 'Todos' },
     { id: 1, nombre: 'Hombres' },
     { id: 2, nombre: 'Mujeres' },
     { id: 3, nombre: 'Infantil' }
   ];
-  
+
+  // Subcategorías (ejemplo)
   subcategorias: { id: number, idCategoria: number, nombre: string }[] = [
     { id: 1, idCategoria: 1, nombre: 'Nike' },
     { id: 2, idCategoria: 1, nombre: 'Adidas' },
@@ -64,7 +71,7 @@ export class ListadoProductosComponent implements OnInit {
     { id: 17, idCategoria: 3, nombre: 'I-Run' },
     { id: 18, idCategoria: 3, nombre: 'Reebok' }
   ];
-  
+
   unidadesMedida: { id: number, nombre: string }[] = [
     { id: 1, nombre: 'Pieza' },
     { id: 2, nombre: 'Caja' },
@@ -92,17 +99,18 @@ export class ListadoProductosComponent implements OnInit {
     private tallaProductoService: TallaProductoService
   ) {}
 
-  ngOnInit() {
-    this.obtenerProductos();
+  ngOnInit(): void {
     this.cargarTallas();
+    this.cargarProductos(); // Carga inicial
   }
 
-  // Cargar productos del backend
-  obtenerProductos() {
-    this.productoService.getAll().subscribe({
-      next: (data) => {
-        this.productos = data;
-        this.productosFiltrados = [...this.productos];
+  // ============ CARGAR PRODUCTOS (FILTRADO POR cat) SIN PAGINACIÓN DEL SERVIDOR ============
+  cargarProductos() {
+    // Llamamos al backend con 'cat' => getAll(cat)
+    this.productoService.getAll(this.selectedCategory).subscribe({
+      next: (lista) => {
+        // Recibimos todos los productos de esa categoría
+        this.productos = lista;
 
         // Autocomplete
         this.productosAutoComplete = this.productos.map((p) => ({
@@ -110,12 +118,55 @@ export class ListadoProductosComponent implements OnInit {
           nombre: p.nombre,
           categoria: p.categoria
         }));
+
+        // Filtro interno
+        this.productosFiltrados = [...this.productos];
+        this.totalRegistros = this.productosFiltrados.length; // Si quieres llevar la cuenta
+
+        this.aplicarFiltro();
       },
-      error: (error: any) => console.error('Error al obtener productos:', error)
+      error: (error: any) => {
+        console.error('Error al obtener productos:', error);
+        // Si da error, puedes limpiar arrays
+        this.productos = [];
+        this.productosFiltrados = [];
+      }
     });
   }
 
-  // Cargar tallas del backend
+  // Cambia categoría => refresca
+  onCategoryChange(cat: number) {
+    this.selectedCategory = cat;
+    this.page = 1; // Reiniciamos la página local
+    this.cargarProductos();
+  }
+
+  // Cambia pageSize => reiniciamos page y se mantiene la paginación local
+  onPageSizeChange(size: number) {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  // Navegación manual (opcional)
+  siguientePagina() {
+    const totalPages = Math.ceil(this.productosFiltrados.length / this.pageSize);
+    if (this.page < totalPages) {
+      this.page++;
+    }
+  }
+  anteriorPagina() {
+    if (this.page > 1) {
+      this.page--;
+    }
+  }
+
+  // Llamado por <pagination-controls> => NxPagination
+  onPageChange(newPage: number) {
+    // Ajustamos la page local
+    this.page = newPage;
+  }
+
+  // ============ TALLAS Y SUBCATEGORÍAS ============
   cargarTallas() {
     this.tallaService.getAllTallas().subscribe({
       next: (data) => {
@@ -127,12 +178,16 @@ export class ListadoProductosComponent implements OnInit {
     });
   }
 
-  // Paginación
-  onPageChange(page: number) {
-    this.p = page;
+  // Filtro local (texto)
+  aplicarFiltro() {
+    const texto = this.filtro.toLowerCase();
+    this.productosFiltrados = this.productos.filter(
+      (p) =>
+        p.nombre?.toLowerCase().includes(texto) ||
+        p.categoria?.toLowerCase().includes(texto)
+    );
+    this.totalRegistros = this.productosFiltrados.length; // si quieres
   }
-
-  // Autocomplete
   selectEvent(item: any) {
     this.filtro = item.nombre;
     this.aplicarFiltro();
@@ -141,21 +196,9 @@ export class ListadoProductosComponent implements OnInit {
     this.filtro = search;
     this.aplicarFiltro();
   }
-  onFocused(e: any) {
-    // ...
-  }
+  onFocused(e: any) {}
 
-  aplicarFiltro() {
-    const texto = this.filtro.toLowerCase();
-    this.productosFiltrados = this.productos.filter(
-      (p) =>
-        p.nombre?.toLowerCase().includes(texto) ||
-        p.categoria?.toLowerCase().includes(texto)
-    );
-    this.p = 1;
-  }
-
-  // Abrir/Cerrar modal
+  // ============ MODAL ============
   abrirModal() {
     this.modalAbierto = true;
     this.subcategoriasFiltradas = [];
@@ -168,7 +211,7 @@ export class ListadoProductosComponent implements OnInit {
     this.stockTallaSeleccionada = 0;
   }
 
-  // Guardar nuevo producto
+  // ============ GUARDAR PRODUCTO ============
   guardarProducto() {
     const productoParaEnviar = {
       idCategoria: Number(this.producto.idCategoria) || 0,
@@ -184,30 +227,24 @@ export class ListadoProductosComponent implements OnInit {
       foto: this.producto.foto ?? ''
     };
 
-    console.log('Producto que se envía:', productoParaEnviar);
-
     this.productoService.crearProducto(productoParaEnviar).subscribe({
       next: (productoCreado) => {
         console.log('Producto creado con éxito:', productoCreado);
 
-        // Si el backend retorna el objeto con "idProducto", lo tendremos aquí
         if (this.tallasSeleccionadas.length > 0 && productoCreado.idProducto) {
           this.guardarTallasProducto(productoCreado.idProducto);
         } else {
-          this.obtenerProductos();
+          this.cargarProductos();
           this.cerrarModal();
         }
       },
       error: (error: any) => {
         console.error('Error al guardar el producto:', error);
-        if (error.error) {
-          console.error('Detalles del error del backend:', error.error);
-        }
       }
     });
   }
 
-  // Guardar tallas asociadas
+  // ============ GUARDAR TALLAS ============
   guardarTallasProducto(idProducto: number) {
     let pendientes = this.tallasSeleccionadas.length;
 
@@ -218,12 +255,11 @@ export class ListadoProductosComponent implements OnInit {
         stock: tallaItem.stock
       };
 
-      // Usar createTallaProducto (no 'crearTallaProducto')
       this.tallaProductoService.createTallaProducto(request).subscribe({
         next: () => {
           pendientes--;
           if (pendientes === 0) {
-            this.obtenerProductos();
+            this.cargarProductos();
             this.cerrarModal();
           }
         },
@@ -231,7 +267,7 @@ export class ListadoProductosComponent implements OnInit {
           console.error('Error al asociar TallaProducto:', err);
           pendientes--;
           if (pendientes === 0) {
-            this.obtenerProductos();
+            this.cargarProductos();
             this.cerrarModal();
           }
         }
@@ -239,7 +275,7 @@ export class ListadoProductosComponent implements OnInit {
     });
   }
 
-  // Agregar talla
+  // ============ AGREGAR TALLA ============
   agregarTalla() {
     if (!this.tallaSeleccionadaId || this.tallaSeleccionadaId === 0) {
       alert('Selecciona una talla');
@@ -262,7 +298,7 @@ export class ListadoProductosComponent implements OnInit {
       (t) => t.idTalla === this.tallaSeleccionadaId
     );
     if (yaExiste) {
-      alert('Esta talla ya fue agregada. Elimínala o edítala si quieres cambiar el stock.');
+      alert('Esta talla ya fue agregada.');
       return;
     }
 
@@ -275,13 +311,11 @@ export class ListadoProductosComponent implements OnInit {
     this.tallaSeleccionadaId = 0;
     this.stockTallaSeleccionada = 0;
   }
-
-  // Eliminar talla temporal
   eliminarTalla(index: number) {
     this.tallasSeleccionadas.splice(index, 1);
   }
 
-  // Actualizar subcategorías
+  // ============ SUBCATEGORÍAS ============
   actualizarSubcategorias() {
     this.subcategoriasFiltradas = this.subcategorias.filter(
       (s) => s.idCategoria === Number(this.producto.idCategoria)
@@ -289,7 +323,6 @@ export class ListadoProductosComponent implements OnInit {
     this.producto.idSubCategoria = 0;
   }
 
-  // Manejar foto
   manejarFoto(event: any) {
     const archivo = event.target.files[0];
     if (archivo) {
@@ -299,7 +332,6 @@ export class ListadoProductosComponent implements OnInit {
     }
   }
 
-  // Crear un producto vacío
   private nuevoProducto(): Producto {
     return {
       idProducto: 0,
@@ -317,11 +349,9 @@ export class ListadoProductosComponent implements OnInit {
     };
   }
 
-  // ===================== MÉTODOS DE OPCIONES =====================
-
+  // ============ OPCIONES (Editar, Stock, etc.) ============
   editarProducto(prod: Producto) {
     console.log('Editar producto:', prod);
-    // TODO: abrir modal de edición o navegar a /producto/editar/:idProducto
   }
 
   aumentarStock(prod: Producto) {
@@ -340,12 +370,11 @@ export class ListadoProductosComponent implements OnInit {
     }
 
     const nuevaCantidad = (prod.stock || 0) + cantNum;
-
     const productoActualizado = { ...prod, stock: nuevaCantidad };
     this.productoService.updateProducto(prod.idProducto, productoActualizado)
       .subscribe({
         next: () => {
-          prod.stock = nuevaCantidad; // Actualiza local
+          prod.stock = nuevaCantidad;
           alert('Stock aumentado correctamente');
         },
         error: (err) => {
@@ -390,7 +419,6 @@ export class ListadoProductosComponent implements OnInit {
 
   generarCodigoBarras(prod: Producto) {
     console.log('Generar código de barras para:', prod);
-    // TODO: Llamar a un servicio o librería para generar PDF/imágenes
   }
 
   eliminarProducto(prod: Producto) {
@@ -405,9 +433,8 @@ export class ListadoProductosComponent implements OnInit {
     this.productoService.deleteProducto(prod.idProducto)
       .subscribe({
         next: () => {
-          // Quitamos localmente
           this.productos = this.productos.filter(p => p.idProducto !== prod.idProducto);
-          this.aplicarFiltro(); // refresca la tabla
+          this.aplicarFiltro();
           alert('Producto eliminado con éxito');
         },
         error: (err) => {

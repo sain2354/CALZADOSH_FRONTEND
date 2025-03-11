@@ -8,7 +8,7 @@ import { Venta } from '../models/venta.model';
   providedIn: 'root'
 })
 export class VentaService {
-  private apiUrl = 'https://localhost:5001/api/Venta'; // Ajusta a tu URL real
+  private apiUrl = 'http://www.chbackend.somee.com/api/Venta'; // Ajusta a tu URL real
 
   constructor(private http: HttpClient) {}
 
