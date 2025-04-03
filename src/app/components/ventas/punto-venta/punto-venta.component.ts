@@ -1,4 +1,4 @@
-// src/app/components/ventas/punto-venta/punto-venta.component.ts
+// src/app/components/ventas/punto-venta/punto-venta.component.ts 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,8 +12,9 @@ import { Venta, DetalleVenta } from '../../../models/venta.model';
 import { TallaService } from '../../../services/talla.service';
 import { TallaProductoService } from '../../../services/talla-producto.service';
 
-// Importamos el componente persona
-import { PersonaComponent } from '../../persona/persona.component';
+// Importamos el componente Persona
+// Nota: el selector definido en PersonaComponent es 'app-persona-form'
+import { PersonaComponent } from './../../persona/persona.component';
 import { Persona } from '../../../models/persona.model';
 
 @Component({
@@ -24,7 +25,7 @@ import { Persona } from '../../../models/persona.model';
     FormsModule,
     NgxPaginationModule,
     AutocompleteLibModule,
-    PersonaComponent, // <--- para usar <app-persona> en el HTML
+    PersonaComponent  // Se importa para poder usar <app-persona-form> en el HTML
   ],
   templateUrl: './punto-venta.component.html',
   styleUrls: ['./punto-venta.component.css']
@@ -196,15 +197,16 @@ export class PuntoVentaComponent implements OnInit {
     this.mostrarModalCliente = false;
   }
 
-  // Manejar persona creada
+  // Manejar persona creada (recibe objeto de tipo Persona)
   manejarPersonaCreada(persona: Persona) {
-    // Insertar en la lista de clientes
     const nuevoNombre = `${persona.numeroDocumento} - ${persona.nombre}`;
     this.clientes.push({
       nombre: nuevoNombre,
       idPersona: persona.idPersona || 999
     });
     this.clienteSeleccionado = nuevoNombre;
+    // Cierra el modal después de crear
+    this.cerrarModalCliente();
   }
 
   // Registrar la venta
@@ -244,7 +246,6 @@ export class PuntoVentaComponent implements OnInit {
       next: (ventaCreada) => {
         console.log('Venta registrada con éxito:', ventaCreada);
         alert('¡Venta realizada exitosamente!');
-
         // Reset
         this.vaciarListado();
         this.serie = '';

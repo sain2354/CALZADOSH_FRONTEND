@@ -24,10 +24,8 @@ import { Talla } from '../../../models/talla.model';
 })
 export class ListadoProductosComponent implements OnInit {
   // ============ PAGINACIÓN Y FILTROS ============
-  page: number = 1;          // Página actual
-  pageSize: number = 10;     // Tamaño de página (rows por página)
-  // totalRegistros ya no es necesario si NO traes paginación del servidor,
-  // pero puedes usarlo si deseas. En local, "totalRegistros = productosFiltrados.length"
+  page: number = 1;
+  pageSize: number = 10;
   totalRegistros: number = 0;
   selectedCategory: number = 0; // 0 => Todos, 1 => Hombres, 2 => Mujeres, 3 => Infantil
 
@@ -93,6 +91,9 @@ export class ListadoProductosComponent implements OnInit {
     stock: number;
   }[] = [];
 
+  // Aquí guardaremos el archivo seleccionado (en vez de usar base64)
+  archivoSeleccionado: File | null = null;
+
   constructor(
     private productoService: ProductoService,
     private tallaService: TallaService,
@@ -106,13 +107,11 @@ export class ListadoProductosComponent implements OnInit {
 
   // ============ CARGAR PRODUCTOS (FILTRADO POR cat) SIN PAGINACIÓN DEL SERVIDOR ============
   cargarProductos() {
-    // Llamamos al backend con 'cat' => getAll(cat)
     this.productoService.getAll(this.selectedCategory).subscribe({
       next: (lista) => {
-        // Recibimos todos los productos de esa categoría
         this.productos = lista;
 
-        // Autocomplete
+        // Para Autocomplete
         this.productosAutoComplete = this.productos.map((p) => ({
           idProducto: p.idProducto,
           nombre: p.nombre,
@@ -121,48 +120,43 @@ export class ListadoProductosComponent implements OnInit {
 
         // Filtro interno
         this.productosFiltrados = [...this.productos];
-        this.totalRegistros = this.productosFiltrados.length; // Si quieres llevar la cuenta
+        this.totalRegistros = this.productosFiltrados.length;
 
         this.aplicarFiltro();
       },
       error: (error: any) => {
         console.error('Error al obtener productos:', error);
-        // Si da error, puedes limpiar arrays
         this.productos = [];
         this.productosFiltrados = [];
       }
     });
   }
 
-  // Cambia categoría => refresca
   onCategoryChange(cat: number) {
     this.selectedCategory = cat;
-    this.page = 1; // Reiniciamos la página local
+    this.page = 1;
     this.cargarProductos();
   }
 
-  // Cambia pageSize => reiniciamos page y se mantiene la paginación local
   onPageSizeChange(size: number) {
     this.pageSize = size;
     this.page = 1;
   }
 
-  // Navegación manual (opcional)
   siguientePagina() {
     const totalPages = Math.ceil(this.productosFiltrados.length / this.pageSize);
     if (this.page < totalPages) {
       this.page++;
     }
   }
+
   anteriorPagina() {
     if (this.page > 1) {
       this.page--;
     }
   }
 
-  // Llamado por <pagination-controls> => NxPagination
   onPageChange(newPage: number) {
-    // Ajustamos la page local
     this.page = newPage;
   }
 
@@ -186,16 +180,19 @@ export class ListadoProductosComponent implements OnInit {
         p.nombre?.toLowerCase().includes(texto) ||
         p.categoria?.toLowerCase().includes(texto)
     );
-    this.totalRegistros = this.productosFiltrados.length; // si quieres
+    this.totalRegistros = this.productosFiltrados.length;
   }
+
   selectEvent(item: any) {
     this.filtro = item.nombre;
     this.aplicarFiltro();
   }
+
   onChangeSearch(search: string) {
     this.filtro = search;
     this.aplicarFiltro();
   }
+
   onFocused(e: any) {}
 
   // ============ MODAL ============
@@ -203,34 +200,50 @@ export class ListadoProductosComponent implements OnInit {
     this.modalAbierto = true;
     this.subcategoriasFiltradas = [];
   }
+
   cerrarModal() {
     this.modalAbierto = false;
     this.producto = this.nuevoProducto();
     this.tallasSeleccionadas = [];
     this.tallaSeleccionadaId = 0;
     this.stockTallaSeleccionada = 0;
+    this.archivoSeleccionado = null;
   }
 
-  // ============ GUARDAR PRODUCTO ============
+  // ============ GUARDAR PRODUCTO (USANDO createWithFile) ============
   guardarProducto() {
-    const productoParaEnviar = {
-      idCategoria: Number(this.producto.idCategoria) || 0,
-      idSubCategoria: Number(this.producto.idSubCategoria) || 0,
-      codigoBarra: this.producto.codigoBarra,
-      nombre: this.producto.nombre,
-      stock: Number(this.producto.stock) || 0,
-      stockMinimo: Number(this.producto.stockMinimo) || 0,
-      precioVenta: Number(this.producto.precioVenta) || 0,
-      precioCompra: this.producto.precioCompra != null ? Number(this.producto.precioCompra) : undefined,
-      idUnidadMedida: Number(this.producto.idUnidadMedida) || 0,
-      estado: !!this.producto.estado,
-      foto: this.producto.foto ?? ''
-    };
+    // Creamos un FormData para enviar multipart/form-data
+    const formData = new FormData();
 
-    this.productoService.crearProducto(productoParaEnviar).subscribe({
+    // Añadimos las propiedades del producto como campos
+    formData.append('IdCategoria', String(this.producto.idCategoria ?? 0));
+    if (this.producto.idSubCategoria) {
+      formData.append('IdSubCategoria', String(this.producto.idSubCategoria));
+    }
+    formData.append('CodigoBarra', this.producto.codigoBarra ?? '');
+    formData.append('Nombre', this.producto.nombre ?? '');
+    formData.append('Stock', String(this.producto.stock ?? 0));
+    formData.append('StockMinimo', String(this.producto.stockMinimo ?? 0));
+    formData.append('PrecioVenta', String(this.producto.precioVenta ?? 0));
+
+    // Si precioCompra es opcional
+    if (this.producto.precioCompra != null) {
+      formData.append('PrecioCompra', String(this.producto.precioCompra));
+    }
+    formData.append('IdUnidadMedida', String(this.producto.idUnidadMedida ?? 0));
+    formData.append('Estado', this.producto.estado ? 'true' : 'false');
+
+    // Si se seleccionó un archivo, lo agregamos al FormData
+    if (this.archivoSeleccionado) {
+      formData.append('file', this.archivoSeleccionado);
+    }
+
+    // Llamamos al nuevo método del servicio que envía FormData
+    this.productoService.crearProductoConArchivo(formData).subscribe({
       next: (productoCreado) => {
         console.log('Producto creado con éxito:', productoCreado);
 
+        // Asociar tallas (si hay) una vez creado el producto
         if (this.tallasSeleccionadas.length > 0 && productoCreado.idProducto) {
           this.guardarTallasProducto(productoCreado.idProducto);
         } else {
@@ -311,6 +324,7 @@ export class ListadoProductosComponent implements OnInit {
     this.tallaSeleccionadaId = 0;
     this.stockTallaSeleccionada = 0;
   }
+
   eliminarTalla(index: number) {
     this.tallasSeleccionadas.splice(index, 1);
   }
@@ -323,12 +337,11 @@ export class ListadoProductosComponent implements OnInit {
     this.producto.idSubCategoria = 0;
   }
 
+  // Aquí simplemente guardamos el archivo en una variable (sin usar Base64)
   manejarFoto(event: any) {
     const archivo = event.target.files[0];
     if (archivo) {
-      const lector = new FileReader();
-      lector.onload = (e: any) => (this.producto.foto = e.target.result);
-      lector.readAsDataURL(archivo);
+      this.archivoSeleccionado = archivo;
     }
   }
 

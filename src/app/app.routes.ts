@@ -1,10 +1,11 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './components/layout/layout.component';
 import { ListadoProductosComponent } from './components/productos/listado-productos/listado-productos.component';
 import { ListadoCategoriaComponent } from './components/productos/listado-categoria/listado-categoria.component';
 import { PuntoVentaComponent } from './components/ventas/punto-venta/punto-venta.component';
 import { ListadoVentasComponent } from './components/ventas/listado-ventas/listado-venta.component';
-import { PersonaComponent } from './components/persona/persona.component';
+import { ListadoPersonaComponent } from './components/persona/listado-persona/listado-persona.component';
 
 export const routes: Routes = [
   {
@@ -24,7 +25,7 @@ export const routes: Routes = [
       },
       { path: 'categorias', component: ListadoCategoriaComponent },
 
-      // Rutas de Ventas
+      // Rutas de ventas
       {
         path: 'ventas',
         children: [
@@ -34,8 +35,9 @@ export const routes: Routes = [
         ],
       },
 
-      // NUEVO: Ruta para Persona
-      { path: 'persona', component: PersonaComponent },
+      // Rutas para listado de Clientes/Proveedores
+      { path: 'clientes', component: ListadoPersonaComponent },
+      { path: 'proveedores', component: ListadoPersonaComponent },
     ],
   },
 ];

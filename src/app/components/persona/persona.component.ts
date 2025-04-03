@@ -1,23 +1,20 @@
 // src/app/components/persona/persona.component.ts
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PersonaService } from '../../services/persona.service';
 import { Persona } from '../../models/persona.model';
+import { PersonaService } from '../../services/persona.service';
 
 @Component({
-  selector: 'app-persona',
+  selector: 'app-persona-form',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './persona.component.html',
   styleUrls: ['./persona.component.css']
 })
 export class PersonaComponent {
-
-  @Output() close = new EventEmitter<void>();
-  @Output() personaCreada = new EventEmitter<Persona>();
-
-  nuevo: Persona = {
+  // Recibimos la persona a editar o una nueva
+  @Input() persona: Persona = {
     nombre: '',
     telefono: '',
     correo: '',
@@ -27,27 +24,46 @@ export class PersonaComponent {
     numeroDocumento: ''
   };
 
+  // Para saber si es edición o nuevo
+  @Input() esEdicion: boolean = false;
+
+  // Emitimos un evento al guardar (o actualizar)
+  @Output() onGuardar = new EventEmitter<Persona>();
+  // Para cerrar el modal
+  @Output() onCancelar = new EventEmitter<void>();
+
   constructor(private personaService: PersonaService) {}
 
-  guardarPersona() {
-    this.personaService.createPersona(this.nuevo).subscribe({
-      next: (resp) => {
-        console.log('Persona creada:', resp);
-        alert('¡Persona registrada con éxito!');
-        // Emitimos personaCreada para que el padre actualice la lista de clientes
-        this.personaCreada.emit(resp);
-        // Cerramos el modal
-        this.close.emit();
-      },
-      error: (err) => {
-        console.error('Error al crear persona:', err);
-        alert('Ocurrió un error al crear la persona.');
-      }
-    });
+  guardar() {
+    // Si tiene idPersona, actualizamos; si no, creamos
+    if (this.persona.idPersona) {
+      // Update
+      this.personaService.updatePersona(this.persona.idPersona, this.persona).subscribe({
+        next: (resp) => {
+          alert('¡Persona actualizada con éxito!');
+          this.onGuardar.emit(resp);
+        },
+        error: (err) => {
+          console.error('Error al actualizar persona:', err);
+          alert('Ocurrió un error al actualizar la persona.');
+        }
+      });
+    } else {
+      // Create
+      this.personaService.createPersona(this.persona).subscribe({
+        next: (resp) => {
+          alert('¡Persona registrada con éxito!');
+          this.onGuardar.emit(resp);
+        },
+        error: (err) => {
+          console.error('Error al crear persona:', err);
+          alert('Ocurrió un error al crear la persona.');
+        }
+      });
+    }
   }
 
   cancelar() {
-    // Simplemente cerramos el modal
-    this.close.emit();
+    this.onCancelar.emit();
   }
 }

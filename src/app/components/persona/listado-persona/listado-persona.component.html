@@ -1,0 +1,116 @@
+<!-- src/app/components/persona/listado-persona/listado-persona.component.html -->
+
+<div class="container mt-4">
+  <div class="card shadow-sm border-0 rounded">
+    <!-- Encabezado de la tarjeta -->
+    <div class="card-header d-flex justify-content-between align-items-center text-white">
+      <h3 class="mb-0">Listado de Clientes</h3>
+      <button class="btn btn-light btn-sm" (click)="nuevo()">+ Nuevo</button>
+    </div>
+
+    <!-- Cuerpo de la tarjeta -->
+    <div class="card-body">
+      <!-- Fila para selector de número de filas y buscador -->
+      <div class="row mb-3">
+        <div class="col-auto">
+          <label class="me-2 fw-bold" for="pageSizeSelect">Mostrar</label>
+          <select id="pageSizeSelect" class="form-select d-inline-block w-auto" [(ngModel)]="pageSize">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="15">15</option>
+            <option [value]="20">20</option>
+          </select>
+          <span class="ms-2">filas</span>
+        </div>
+        <div class="col text-end">
+          <label class="fw-bold me-2" for="searchInput">Buscar:</label>
+          <input
+            id="searchInput"
+            type="text"
+            class="form-control d-inline-block w-auto"
+            [(ngModel)]="searchTerm"
+            placeholder="Ingrese texto..." />
+        </div>
+      </div>
+
+      <!-- Tabla de personas -->
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Documento</th>
+              <th>Cliente</th>
+              <th>Dirección</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Opciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let persona of personasFiltradas | paginate: { itemsPerPage: pageSize, currentPage: p }">
+              <td>{{ persona.tipoPersona }}</td>
+              <td>{{ persona.numeroDocumento }}</td>
+              <td>{{ persona.nombre }}</td>
+              <td>{{ persona.direccion }}</td>
+              <td>{{ persona.telefono }}</td>
+              <td>{{ persona.correo }}</td>
+              <td>
+                <button class="btn btn-sm btn-info me-2" (click)="editar(persona)">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="eliminar(persona)">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="personasFiltradas.length === 0">
+              <td colspan="7" class="text-center text-muted">No se encontraron registros.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Fila para mostrar rango de registros y control de paginación -->
+      <div class="row mt-2 align-items-center">
+        <div class="col-auto">
+          Mostrando {{ startIndex }} a {{ endIndex }} de {{ personasFiltradas.length }} registros
+        </div>
+        <div class="col text-end">
+          <pagination-controls
+            (pageChange)="p = $event"
+            [autoHide]="true">
+          </pagination-controls>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal (Bootstrap 5) -->
+<div class="modal fade"
+     [ngClass]="{ 'show': mostrarModal }"
+     [ngStyle]="{ 'display': mostrarModal ? 'block' : 'none' }"
+     tabindex="-1"
+     role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <!-- Reutilizamos PersonaComponent -->
+        <app-persona-form
+          *ngIf="mostrarModal && personaSeleccionada"
+          [persona]="personaSeleccionada"
+          [esEdicion]="esEdicion"
+          (onGuardar)="onGuardarPersona($event)"
+          (onCancelar)="onCancelarPersona()">
+        </app-persona-form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fondo gris del modal (Bootstrap) -->
+<div class="modal-backdrop fade"
+     [ngClass]="{ 'show': mostrarModal }"
+     *ngIf="mostrarModal">
+</div>

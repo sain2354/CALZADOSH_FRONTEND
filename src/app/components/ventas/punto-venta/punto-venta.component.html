@@ -154,15 +154,19 @@
   <!-- ... tabla tallas ... -->
 </div>
 
+<!-- ... resto del template ... -->
+
 <!-- MODAL Persona (Cliente/Proveedor) -->
 <div class="modal-backdrop" *ngIf="mostrarModalCliente" (click)="cerrarModalCliente()"></div>
 <div class="modal-content" *ngIf="mostrarModalCliente" (click)="$event.stopPropagation()" style="width: 500px;">
-  <!-- Aquí usamos <app-persona> en lugar de un formulario manual -->
-  <app-persona
-    (close)="cerrarModalCliente()"
-    (personaCreada)="manejarPersonaCreada($event)"
-  ></app-persona>
+  <app-persona-form
+    (onCancelar)="cerrarModalCliente()"
+    (onGuardar)="manejarPersonaCreada($event)"
+  ></app-persona-form>
 </div>
+
+<!-- ... resto del template ... -->
+
 
 
       <!-- Tipo Pago -->

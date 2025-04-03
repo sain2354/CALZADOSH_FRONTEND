@@ -1,32 +1,73 @@
-/* src/app/components/ventas/listado-ventas/listado-venta.component.css */
-
+/* Estilos para el listado de ventas */
 .listado-ventas-container {
-    background: #fff;
-    padding: 15px;
-    border-radius: 5px;
-    margin-top: 20px;
-  }
-  
-  .filters {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-  
-  .filters > div {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-  
-  .actions .btn i {
-    margin-right: 5px;
-  }
-  
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Filtros */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.filters label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.filters input {
+  width: 150px;
+}
+
+/* Acciones */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: space-between;
+}
+
+.actions .btn {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+}
+
+.actions select,
+.actions input {
+  height: 30px;
+}
+
+/* Tabla */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #0095A8;
+  color: white;
+  text-align: left;
+}
+
+thead th {
+  padding: 10px;
+}
+
+tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Paginación */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}

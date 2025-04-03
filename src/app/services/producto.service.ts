@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Producto } from '../models/producto.model';
 
@@ -7,37 +7,52 @@ import { Producto } from '../models/producto.model';
   providedIn: 'root'
 })
 export class ProductoService {
-  private apiUrl = 'http://www.chbackend.somee.com/api/Producto';
-
-
-  private httpOptions = {
-    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-  };
+  /**
+   * Ajusta esto a la URL real de tu API.
+   * Ya incluye /api/Producto al final, así que no lo repitas.
+   */
+  private baseUrl = 'http://www.chbackend.somee.com/api/Producto'; 
 
   constructor(private http: HttpClient) {}
 
   /**
-   * Obtiene productos filtrados por categoría (cat) SIN paginación en el servidor.
-   * cat=0 => Todos, cat=1 => Hombres, cat=2 => Mujeres, cat=3 => Infantil
+   * Obtener productos, filtrados por categoría (cat).
+   * Hacemos 'cat' opcional y si no llega nada, usamos '0' por defecto.
+   * Con baseUrl ya apuntando a /api/Producto, solo añadimos ?cat=
    */
-  getAll(cat: number = 0): Observable<Producto[]> {
-    const params = new HttpParams().set('cat', cat);
-    return this.http.get<Producto[]>(this.apiUrl, { params });
+  getAll(cat?: number): Observable<Producto[]> {
+    const catParam = cat ?? 0; // Si cat es undefined/null, usa 0
+    return this.http.get<Producto[]>(`${this.baseUrl}?cat=${catParam}`);
   }
 
-  getById(idProducto: number): Observable<Producto> {
-    return this.http.get<Producto>(`${this.apiUrl}/${idProducto}`);
+  /**
+   * Crear producto con archivo (multipart/form-data).
+   * Llamamos a POST /api/Producto/createWithFile
+   */
+  crearProductoConArchivo(formData: FormData): Observable<Producto> {
+    return this.http.post<Producto>(`${this.baseUrl}/createWithFile`, formData);
   }
 
-  crearProducto(producto: Producto): Observable<Producto> {
-    return this.http.post<Producto>(this.apiUrl, producto, this.httpOptions);
+  /**
+   * Crear producto enviando JSON (sin archivo).
+   * Llamamos a POST /api/Producto
+   * (No lo uses si quieres subir imagen como archivo).
+   */
+  crearProducto(producto: any): Observable<Producto> {
+    return this.http.post<Producto>(`${this.baseUrl}`, producto);
   }
 
-  updateProducto(idProducto: number, producto: Producto): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${idProducto}`, producto, this.httpOptions);
+  /**
+   * Actualizar producto (PUT /api/Producto/{id}).
+   */
+  updateProducto(id: number, producto: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}`, producto);
   }
 
-  deleteProducto(idProducto: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${idProducto}`);
+  /**
+   * Eliminar producto (DELETE /api/Producto/{id}).
+   */
+  deleteProducto(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/${id}`);
   }
 }
