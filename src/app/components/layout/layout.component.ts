@@ -12,37 +12,28 @@ import { Router, RouterModule } from '@angular/router';
 export class LayoutComponent {
   sidebarHidden = false;
   productosMenuAbierto = false;
-
-  // NUEVO: Manejo del submenú de Ventas
   ventasMenuAbierto = false;
+  comprasMenuAbierto = false;
+  inventarioMenuAbierto = false;
+  mantenimientoMenuAbierto = false;
 
   constructor(private router: Router) {}
 
   toggleSidebar() {
     this.sidebarHidden = !this.sidebarHidden;
   }
-
-  toggleProductosMenu(event: Event) {
-    event.stopPropagation();
-    this.productosMenuAbierto = !this.productosMenuAbierto;
-  }
-
-  // NUEVO: Manejo de clic en "Ventas"
-  toggleVentasMenu(event: Event) {
-    event.stopPropagation();
-    this.ventasMenuAbierto = !this.ventasMenuAbierto;
-  }
+  toggleProductosMenu(e: Event) { e.stopPropagation(); this.productosMenuAbierto = !this.productosMenuAbierto; }
+  toggleVentasMenu(e: Event)    { e.stopPropagation(); this.ventasMenuAbierto = !this.ventasMenuAbierto; }
+  toggleComprasMenu(e: Event)   { e.stopPropagation(); this.comprasMenuAbierto = !this.comprasMenuAbierto; }
+  toggleInventarioMenu(e: Event)   { e.stopPropagation(); this.inventarioMenuAbierto = !this.inventarioMenuAbierto; }
+  toggleMantenimientoMenu(e: Event){ e.stopPropagation(); this.mantenimientoMenuAbierto = !this.mantenimientoMenuAbierto; }
 
   navegar(ruta: string) {
     this.router.navigateByUrl(ruta);
-
-    // ✅ Mantiene el menú de productos abierto si se navega dentro de /productos
-    if (ruta.includes('/productos')) {
-      this.productosMenuAbierto = true;
-    }
-    // NUEVO: Si quieres que el menú de Ventas se mantenga abierto al navegar, haz algo similar:
-    if (ruta.includes('/ventas')) {
-      this.ventasMenuAbierto = true;
-    }
+    this.productosMenuAbierto    = ruta.startsWith('/productos');
+    this.ventasMenuAbierto       = ruta.startsWith('/ventas');
+    this.comprasMenuAbierto      = ruta.startsWith('/compras');
+    this.inventarioMenuAbierto   = ruta.startsWith('/inventario');
+    this.mantenimientoMenuAbierto= ruta.startsWith('/usuarios');
   }
 }

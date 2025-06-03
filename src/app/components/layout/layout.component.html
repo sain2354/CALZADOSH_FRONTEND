@@ -1,91 +1,126 @@
-<!-- Renombramos .container a .layout-container para evitar conflictos con Bootstrap -->
 <div class="layout-container">
   <!-- Barra lateral -->
   <nav class="sidebar" [class.hidden]="sidebarHidden">
     <h2>CALZADOS</h2>
     <ul>
-      <li><a routerLink="/dashboard">Dashboard</a></li>
-      <li><a routerLink="/caja">Pedidos</a></li>
+      <!-- Dashboard -->
+      <li>
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          Dashboard
+        </a>
+      </li>
+      <!-- Pedidos -->
+      <li>
+        <a
+          routerLink="/caja"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          Pedidos
+        </a>
+      </li>
 
-      <!-- Menú desplegable de Ventas -->
+      <!-- Ventas -->
       <li (click)="toggleVentasMenu($event)" class="menu-item">
-        <a class="menu-title">Ventas ▼</a>
-        <ul
-          *ngIf="ventasMenuAbierto"
-          class="submenu"
-          (click)="$event.stopPropagation()"
-        >
+        <a class="menu-title" [class.active]="ventasMenuAbierto">
+          Ventas
+          <span *ngIf="!ventasMenuAbierto">▼</span>
+          <span *ngIf="ventasMenuAbierto">▲</span>
+        </a>
+        <ul *ngIf="ventasMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
           <li>
-            <a
-              routerLink="/ventas/punto"
-              (click)="navegar('/ventas/punto')"
-              style="cursor: pointer;"
-            >
-              Punto de Venta
-            </a>
+            <a routerLink="/ventas/punto" routerLinkActive="active">Punto de Venta</a>
           </li>
           <li>
-            <a
-              routerLink="/ventas/listado"
-              (click)="navegar('/ventas/listado')"
-              style="cursor: pointer;"
-            >
-              Listado de Ventas
-            </a>
+            <a routerLink="/ventas/listado" routerLinkActive="active">Listado de Ventas</a>
           </li>
         </ul>
       </li>
 
-      <!-- Menú desplegable de Productos -->
+      <!-- Productos -->
       <li (click)="toggleProductosMenu($event)" class="menu-item">
-        <a class="menu-title">Productos ▼</a>
-        <ul
-          *ngIf="productosMenuAbierto"
-          class="submenu"
-          (click)="$event.stopPropagation()"
-        >
+        <a class="menu-title" [class.active]="productosMenuAbierto">
+          Productos
+          <span *ngIf="!productosMenuAbierto">▼</span>
+          <span *ngIf="productosMenuAbierto">▲</span>
+        </a>
+        <ul *ngIf="productosMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
           <li>
-            <a
-              routerLink="/productos"
-              (click)="navegar('/productos')"
-              style="cursor: pointer;"
-            >
-              Lista de Productos
-            </a>
+            <a routerLink="/productos/listado" routerLinkActive="active">Lista de Productos</a>
           </li>
           <li>
-            <a
-              routerLink="/categorias"
-              (click)="navegar('/categorias')"
-              style="cursor: pointer;"
-            >
-              Categorías
-            </a>
+            <a routerLink="/categorias" routerLinkActive="active">Categorías</a>
           </li>
         </ul>
       </li>
 
-      <li><a routerLink="/clientes">Clientes / Proveedores</a></li>
-      <li><a routerLink="/compras">Compras</a></li>
-      <li><a routerLink="/inventario">Inventario</a></li>
-      <li><a routerLink="/mantenimiento">Mantenimiento</a></li>
+      <!-- Compras -->
+      <li (click)="toggleComprasMenu($event)" class="menu-item">
+        <a class="menu-title" [class.active]="comprasMenuAbierto">
+          Compras
+          <span *ngIf="!comprasMenuAbierto">▼</span>
+          <span *ngIf="comprasMenuAbierto">▲</span>
+        </a>
+        <ul *ngIf="comprasMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
+          <li>
+            <a routerLink="/compras/ingresar" routerLinkActive="active">Ingresar</a>
+          </li>
+          <li>
+            <a routerLink="/compras/listado" routerLinkActive="active">Listado Compras</a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Clientes / Proveedores -->
+      <li>
+        <a routerLink="/clientes" routerLinkActive="active">Clientes / Proveedores</a>
+      </li>
+
+      <!-- Inventario -->
+      <li (click)="toggleInventarioMenu($event)" class="menu-item">
+        <a class="menu-title" [class.active]="inventarioMenuAbierto">
+          Inventario
+          <span *ngIf="!inventarioMenuAbierto">▼</span>
+          <span *ngIf="inventarioMenuAbierto">▲</span>
+        </a>
+        <ul *ngIf="inventarioMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
+          <li>
+            <a routerLink="/inventario/entrada-salida" routerLinkActive="active">Entrada/Salidas</a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Mantenimiento -->
+      <li (click)="toggleMantenimientoMenu($event)" class="menu-item">
+        <a class="menu-title" [class.active]="mantenimientoMenuAbierto">
+          Mantenimiento
+          <span *ngIf="!mantenimientoMenuAbierto">▼</span>
+          <span *ngIf="mantenimientoMenuAbierto">▲</span>
+        </a>
+        <ul *ngIf="mantenimientoMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
+          <li>
+            <a routerLink="/usuarios/lista" routerLinkActive="active">Usuarios</a>
+          </li>
+          <li>
+            <a routerLink="/usuarios/rol-perfil" routerLinkActive="active">Roles y Perfiles</a>
+          </li>
+        </ul>
+      </li>
     </ul>
   </nav>
 
   <!-- Contenido principal -->
   <div class="main-content">
-    <!-- Encabezado superior -->
     <header class="top-bar">
       <button class="menu-btn" (click)="toggleSidebar()">☰</button>
-      <div class="user-info">
-        <span class="username">prueba</span>
-      </div>
+      <div class="user-info"><span class="username">prueba</span></div>
     </header>
-
-    <!-- Contenido dinámico -->
     <div class="content-area">
       <router-outlet></router-outlet>
-      <!-- Las vistas (ej. Categorías, Punto de Venta, etc.) se renderizan aquí -->
     </div>
   </div>
 </div>

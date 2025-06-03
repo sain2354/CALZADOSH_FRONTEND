@@ -1,0 +1,78 @@
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5>Productos <i class="fas fa-plus ml-2"></i></h5>
+      <input type="text" class="form-control w-50" placeholder="Ingrese el código de barras o el nombre del producto">
+    </div>
+  
+    <div class="card-body">
+      <div class="mb-3 text-center">
+        <h3>Gs/ {{ compra.total | number:'1.0-0' }}</h3>
+      </div>
+      <div class="mb-3">
+        <button class="btn btn-primary mr-2"><i class="fas fa-cart-plus"></i> Realizar Compra</button>
+        <button class="btn btn-danger"><i class="fas fa-trash"></i> Vaciar Listado</button>
+      </div>
+  
+      <table class="table table-striped">
+        <thead class="thead-turquoise text-white">
+          <tr>
+            <th>Item</th><th>Código</th><th>Producto</th><th>Cantidad</th>
+            <th>Precio</th><th>Total</th><th>Opciones</th><th>Talla</th><th>Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="9" class="text-center">No hay información en esta tabla</td></tr>
+        </tbody>
+      </table>
+  
+      <div class="d-flex justify-content-between">
+        <small>Registros del (0 al 0) total de 0 registros</small>
+        <nav><ul class="pagination pagination-sm mb-0">
+          <li class="page-item disabled"><a class="page-link">Anterior</a></li>
+          <li class="page-item disabled"><a class="page-link">Siguiente</a></li>
+        </ul></nav>
+      </div>
+    </div>
+  
+    <div class="card-footer">
+      <div class="row">
+        <div class="col"><label>Fecha*</label>
+          <input type="date" class="form-control" [(ngModel)]="compra.fecha">
+        </div>
+        <div class="col"><label>Documento*</label>
+          <select class="form-control" [(ngModel)]="compra.tipoDoc">
+            <option>Boleta</option><option>Factura</option>
+          </select>
+        </div>
+        <div class="col"><label>Proveedor* <i class="fas fa-plus-circle text-success"></i></label>
+          <select class="form-control" [(ngModel)]="compra.proveedor">
+            <option value="">Seleccione..</option>
+          </select>
+        </div>
+        <div class="col"><label>Forma de pago*</label>
+          <select class="form-control" [(ngModel)]="compra.formaPago">
+            <option>Efectivo</option><option>Tarjeta</option>
+          </select>
+        </div>
+        <div class="col-auto"><label>Serie</label>
+          <input type="text" class="form-control" [(ngModel)]="compra.serie" readonly>
+        </div>
+        <div class="col-auto"><label>Nro. Doc.</label>
+          <input type="text" class="form-control" [(ngModel)]="compra.nroDoc" readonly>
+        </div>
+      </div>
+      <hr>
+      <div class="d-flex justify-content-end">
+        <div class="text-right mr-4">
+          <p>SUBTOTAL</p>
+          <p>IGV (18%)</p>
+          <p><strong>TOTAL</strong></p>
+        </div>
+        <div class="text-right">
+          <p>Gs/ {{ compra.subtotal | number:'1.0-0' }}</p>
+          <p>Gs/ {{ compra.igv | number:'1.0-0' }}</p>
+          <p><strong>Gs/ {{ compra.total | number:'1.0-0' }}</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
