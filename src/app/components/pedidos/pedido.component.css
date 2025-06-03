@@ -1,3 +1,80 @@
 .pedido-container {
-    padding: 1rem;
-  }
+  padding: 1rem;
+  font-family: Arial, sans-serif;
+}
+
+.actions {
+  margin-bottom: 1rem;
+}
+
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.pedido-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.pedido-table th {
+  background-color: #00bcd4;
+  color: white;
+  padding: 0.5rem;
+}
+
+.pedido-table td {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+}
+
+.btn {
+  padding: 0.4rem 0.8rem;
+  margin: 2px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-success { background-color: #28a745; color: white; }
+.btn-info { background-color: #17a2b8; color: white; }
+.btn-secondary { background-color: #6c757d; color: white; }
+
+.pagination-info {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+/* Modales */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 350px;
+}
+
+.modal-content label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.modal-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+}

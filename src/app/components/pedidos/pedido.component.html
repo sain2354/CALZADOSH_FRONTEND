@@ -1,4 +1,93 @@
 <div class="pedido-container">
-    <h2>Pedidos</h2>
-    <p>Aquí podrás gestionar y visualizar pedidos.</p>
+  <h2>Listado de Pedidos</h2>
+  <p>Gestiona aquí los pedidos realizados por los clientes.</p>
+
+  <div class="actions">
+    <button class="btn btn-success" (click)="abrirModalNuevo()">+ Nuevo</button>
   </div>
+
+  <div class="table-controls">
+    <div class="left-controls">
+      <button class="btn btn-secondary">📥</button>
+      <select [(ngModel)]="itemsPorPagina">
+        <option [value]="10">Mostrar 10</option>
+        <option [value]="25">Mostrar 25</option>
+      </select>
+    </div>
+    <div class="right-controls">
+      Buscar:
+      <input type="text" [(ngModel)]="filtro" (input)="filtrarPedidos()" />
+    </div>
+  </div>
+
+  <table class="pedido-table">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Cliente</th>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Opciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngIf="pedidosFiltrados.length === 0">
+        <td colspan="7">No hay información en esta tabla</td>
+      </tr>
+      <tr *ngFor="let pedido of pedidosFiltrados">
+        <td>{{ pedido.codigo }}</td>
+        <td>{{ pedido.cliente }}</td>
+        <td>{{ pedido.producto }}</td>
+        <td>{{ pedido.cantidad }}</td>
+        <td>{{ pedido.fecha | date:'dd/MM/yyyy' }}</td>
+        <td>{{ pedido.estado }}</td>
+        <td>
+          <button class="btn btn-info" (click)="verPedido(pedido)">Ver</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination-info">
+    Registros del 1 al {{ pedidosFiltrados.length }} de {{ pedidos.length }} registros
+  </div>
+
+  <!-- Modal Nuevo Pedido -->
+  <div class="modal" *ngIf="mostrarModalNuevo">
+    <div class="modal-content">
+      <h3>Nuevo Pedido</h3>
+      <label>Cliente: <input [(ngModel)]="nuevoPedido.cliente" /></label><br />
+      <label>Producto: <input [(ngModel)]="nuevoPedido.producto" /></label><br />
+      <label>Cantidad: <input type="number" [(ngModel)]="nuevoPedido.cantidad" /></label><br />
+      <label>Estado:
+        <select [(ngModel)]="nuevoPedido.estado">
+          <option>Pendiente</option>
+          <option>Enviado</option>
+          <option>Entregado</option>
+        </select>
+      </label><br />
+      <div class="modal-actions">
+        <button class="btn btn-success" (click)="guardarNuevoPedido()">Guardar</button>
+        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Ver Pedido -->
+  <div class="modal" *ngIf="mostrarModalVer && pedidoSeleccionado">
+    <div class="modal-content">
+      <h3>Detalle del Pedido</h3>
+      <p><strong>Código:</strong> {{ pedidoSeleccionado.codigo }}</p>
+      <p><strong>Cliente:</strong> {{ pedidoSeleccionado.cliente }}</p>
+      <p><strong>Producto:</strong> {{ pedidoSeleccionado.producto }}</p>
+      <p><strong>Cantidad:</strong> {{ pedidoSeleccionado.cantidad }}</p>
+      <p><strong>Fecha:</strong> {{ pedidoSeleccionado.fecha | date:'dd/MM/yyyy' }}</p>
+      <p><strong>Estado:</strong> {{ pedidoSeleccionado.estado }}</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
