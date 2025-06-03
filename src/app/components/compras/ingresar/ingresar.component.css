@@ -1,2 +1,57 @@
-.card { margin: 1rem; }
-.thead-turquoise { background-color: #1abc9c; }
+
+
+/* Encabezado color celeste fuerte */
+.bg-celeste {
+  background-color: #0097a7 !important;
+  color: white !important;
+}
+
+/* Precio columna más angosta */
+.col-precio {
+  width: 75px;
+}
+
+/* Campo total */
+.total-display {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  background-color: white;
+  border: 1px solid #ccc;
+  width: 40%;
+}
+
+/* General styles */
+.table th, .table td {
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.card {
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.btn {
+  font-size: 0.85rem;
+}
+
+input[type="text"], select, input[type="date"] {
+  font-size: 0.85rem;
+}
+
+input::placeholder {
+  font-style: italic;
+}
+
+/* Estilo para el botón + al lado de Productos */
+.btn-link {
+  font-size: 1.0rem;
+  color: #0097a7;
+  cursor: pointer;
+}
+
+.btn-link:hover {
+  color: #006f7b;
+  text-decoration: none;
+}

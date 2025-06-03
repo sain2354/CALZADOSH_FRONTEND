@@ -1,67 +1,71 @@
-<div class="card shadow-sm listado-compras-card">
-  <!-- Header -->
-  <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center">
-    <h4 class="mb-0">Listado de Compras</h4>
-    <div class="position-relative">
-      <input
-        type="text"
-        class="form-control ps-5"
-        placeholder="Buscar por fecha, proveedor o total…"
-        [(ngModel)]="filtro">
-      <i class="fas fa-search text-muted search-icon"></i>
+<div class="card shadow-sm mt-4 small-view">
+  <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+    <h6 class="mb-0">Listado de Compras</h6>
+    <button class="btn btn-sm btn-primary buscar-btn">Buscar</button>
+  </div>
+
+  <div class="card-body">
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label for="fechaInicio" class="form-label">Fecha Inicio:</label>
+        <input type="date" id="fechaInicio" class="form-control form-control-sm" />
+      </div>
+      <div class="col-md-3">
+        <label for="fechaFin" class="form-label">Fecha Fin:</label>
+        <input type="date" id="fechaFin" class="form-control form-control-sm" />
+      </div>
+      <div class="col-md-2 offset-md-4 d-flex align-items-end justify-content-end">
+        <div class="d-flex align-items-center">
+          <label for="buscarTabla" class="me-2 mb-0">Buscar:</label>
+          <input type="text" id="buscarTabla" class="form-control form-control-sm w-auto" />
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Tabla responsive -->
-  <div class="table-responsive">
-    <table class="table table-hover mb-0">
-      <thead class="thead-light">
-        <tr>
-          <th>#</th>
-          <th>Fecha</th>
-          <th>Proveedor</th>
-          <th class="text-end">Total</th>
-          <th class="text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let c of comprasFiltradas; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td>
-          <td>{{ c.proveedor }}</td>
-          <td class="text-end">Gs {{ c.total | number:'1.0-0' }}</td>
-          <td class="text-center">
-            <button class="btn btn-outline-primary btn-sm me-1" title="Ver detalle">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="btn btn-outline-danger btn-sm" title="Eliminar">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          </td>
-        </tr>
-        <tr *ngIf="comprasFiltradas.length === 0">
-          <td colspan="5" class="text-center py-4 text-muted">
-            No se encontraron compras.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="d-flex justify-content-between mb-2 align-items-center flex-wrap">
+      <div class="btn-group mb-2 mb-md-0">
+        <button class="btn btn-sm btn-success me-1">
+          <i class="fas fa-file-excel fa-sm"></i>
+        </button>
+        <button class="btn btn-sm btn-dark me-1">
+          <i class="fas fa-print fa-sm"></i>
+        </button>
+        <select class="form-select form-select-sm w-auto">
+          <option>10</option>
+          <option>25</option>
+          <option>50</option>
+        </select>
+      </div>
+    </div>
 
-  <!-- Footer -->
-  <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center">
-    <small class="text-muted">
-      Mostrando {{ comprasFiltradas.length }} de {{ compras.length }} registros
-    </small>
-    <nav>
-      <ul class="pagination pagination-sm mb-0">
-        <li class="page-item disabled">
-          <a class="page-link">« Anterior</a>
-        </li>
-        <li class="page-item disabled">
-          <a class="page-link">Siguiente »</a>
-        </li>
-      </ul>
-    </nav>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped text-center small-table">
+        <thead class="table-info">
+          <tr>
+            <th>Proveedor</th>
+            <th>Comprobante</th>
+            <th>Correlativo</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Estado</th>
+            <th>Opciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="8">No hay información en esta tabla</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between mt-2 small-text">
+      <div>Registros del (0 al 0) total de 0 registros</div>
+      <div>
+        <span class="me-2 text-muted">Anterior</span>
+        <span class="text-muted">Siguiente</span>
+      </div>
+    </div>
   </div>
 </div>

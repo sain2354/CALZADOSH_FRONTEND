@@ -1,78 +1,139 @@
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5>Productos <i class="fas fa-plus ml-2"></i></h5>
-      <input type="text" class="form-control w-50" placeholder="Ingrese el código de barras o el nombre del producto">
+<div class="container-fluid mt-2"> 
+  <div class="row">
+
+    <!-- PANEL IZQUIERDO -->
+    <div class="col-md-9">
+      <div class="card p-3 shadow-sm">
+
+        <!-- Productos + y buscador -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <strong>Productos</strong>
+            <button class="btn btn-link p-0 ml-2" title="Agregar producto">
+              <i class="fas fa-plus text-primary"></i>
+            </button>
+          </div>
+          <input type="text" class="form-control w-50" placeholder="Ingrese el código o nombre del producto">
+        </div>
+
+        <!-- Total y botones -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <input type="text" class="form-control total-display" readonly [value]="'Gs/ ' + (compra.total | number:'1.2-2')">
+          <div class="ml-3">
+            <button class="btn btn-primary mr-2"><i class="fas fa-shopping-cart"></i> Realizar Compra</button>
+            <button class="btn btn-danger"><i class="fas fa-trash"></i> Vaciar Listado</button>
+          </div>
+        </div>
+
+        <!-- Controles tabla -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <label for="rows">Ver</label>
+            <select class="form-control d-inline-block w-auto ml-2" id="rows">
+              <option>10</option>
+              <option>25</option>
+              <option>50</option>
+            </select>
+          </div>
+          <div class="input-group w-25">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Buscar:</span>
+            </div>
+            <input type="text" class="form-control" placeholder="Buscar en la tabla">
+          </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm text-center">
+            <thead class="thead-custom text-white">
+              <tr>
+                <th class="bg-celeste">Item</th>
+                <th class="bg-celeste">Código</th>
+                <th class="bg-celeste">Producto</th>
+                <th class="bg-celeste">Cantidad</th>
+                <th class="col-precio bg-celeste">Precio</th>
+                <th class="bg-celeste">Total</th>
+                <th class="bg-celeste">Opciones</th>
+                <th class="bg-celeste">Talla</th>
+                <th class="bg-celeste">Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="9">No hay información en esta tabla</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
     </div>
-  
-    <div class="card-body">
-      <div class="mb-3 text-center">
-        <h3>Gs/ {{ compra.total | number:'1.0-0' }}</h3>
-      </div>
-      <div class="mb-3">
-        <button class="btn btn-primary mr-2"><i class="fas fa-cart-plus"></i> Realizar Compra</button>
-        <button class="btn btn-danger"><i class="fas fa-trash"></i> Vaciar Listado</button>
-      </div>
-  
-      <table class="table table-striped">
-        <thead class="thead-turquoise text-white">
-          <tr>
-            <th>Item</th><th>Código</th><th>Producto</th><th>Cantidad</th>
-            <th>Precio</th><th>Total</th><th>Opciones</th><th>Talla</th><th>Stock</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="9" class="text-center">No hay información en esta tabla</td></tr>
-        </tbody>
-      </table>
-  
-      <div class="d-flex justify-content-between">
-        <small>Registros del (0 al 0) total de 0 registros</small>
-        <nav><ul class="pagination pagination-sm mb-0">
-          <li class="page-item disabled"><a class="page-link">Anterior</a></li>
-          <li class="page-item disabled"><a class="page-link">Siguiente</a></li>
-        </ul></nav>
-      </div>
-    </div>
-  
-    <div class="card-footer">
-      <div class="row">
-        <div class="col"><label>Fecha*</label>
+
+    <!-- PANEL DERECHO -->
+    <div class="col-md-3">
+      <div class="card shadow-sm p-3 h-100">
+
+        <div class="form-group mb-2">
+          <label>Fecha <span class="text-danger">*</span></label>
           <input type="date" class="form-control" [(ngModel)]="compra.fecha">
         </div>
-        <div class="col"><label>Documento*</label>
+
+        <div class="form-group mb-2">
+          <label>Documento <span class="text-danger">*</span></label>
           <select class="form-control" [(ngModel)]="compra.tipoDoc">
-            <option>Boleta</option><option>Factura</option>
+            <option>Boleta</option>
+            <option>Factura</option>
           </select>
         </div>
-        <div class="col"><label>Proveedor* <i class="fas fa-plus-circle text-success"></i></label>
+
+        <div class="form-group mb-2">
+          <label>Proveedor <span class="text-danger">*</span>
+            <button class="btn btn-sm btn-success ml-1 py-0 px-2"><i class="fas fa-plus"></i></button>
+          </label>
           <select class="form-control" [(ngModel)]="compra.proveedor">
             <option value="">Seleccione..</option>
           </select>
         </div>
-        <div class="col"><label>Forma de pago*</label>
+
+        <div class="form-group mb-2">
+          <label>Forma de pago <span class="text-danger">*</span></label>
           <select class="form-control" [(ngModel)]="compra.formaPago">
-            <option>Efectivo</option><option>Tarjeta</option>
+            <option>Efectivo</option>
+            <option>Tarjeta</option>
           </select>
         </div>
-        <div class="col-auto"><label>Serie</label>
-          <input type="text" class="form-control" [(ngModel)]="compra.serie" readonly>
+
+        <div class="form-row mb-2">
+          <div class="col">
+            <label>Serie</label>
+            <input type="text" class="form-control" [(ngModel)]="compra.serie" readonly>
+          </div>
+          <div class="col">
+            <label>Nro. Doc.</label>
+            <input type="text" class="form-control" [(ngModel)]="compra.nroDoc" readonly>
+          </div>
         </div>
-        <div class="col-auto"><label>Nro. Doc.</label>
-          <input type="text" class="form-control" [(ngModel)]="compra.nroDoc" readonly>
+
+        <hr>
+
+        <div>
+          <div class="d-flex justify-content-between mb-1">
+            <strong>SUBTOTAL</strong>
+            <span>Gs/ {{ compra.subtotal | number:'1.0-0' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <strong>IGV (18%)</strong>
+            <span>Gs/ {{ compra.igv | number:'1.0-0' }}</span>
+          </div>
+          <div class="d-flex justify-content-between h5">
+            <strong>TOTAL</strong>
+            <strong>Gs/ {{ compra.total | number:'1.0-0' }}</strong>
+          </div>
         </div>
-      </div>
-      <hr>
-      <div class="d-flex justify-content-end">
-        <div class="text-right mr-4">
-          <p>SUBTOTAL</p>
-          <p>IGV (18%)</p>
-          <p><strong>TOTAL</strong></p>
-        </div>
-        <div class="text-right">
-          <p>Gs/ {{ compra.subtotal | number:'1.0-0' }}</p>
-          <p>Gs/ {{ compra.igv | number:'1.0-0' }}</p>
-          <p><strong>Gs/ {{ compra.total | number:'1.0-0' }}</strong></p>
-        </div>
+
       </div>
     </div>
+
   </div>
+</div>
