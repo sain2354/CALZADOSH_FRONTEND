@@ -14,7 +14,7 @@ import { TallaProductoService } from '../../../services/talla-producto.service';
 
 // Importamos el componente Persona
 // Nota: el selector definido en PersonaComponent es 'app-persona-form'
-import { PersonaComponent } from './../../persona/persona.component';
+import { PersonaComponent } from '../../persona/nuevo-persona/persona.component';
 import { Persona } from '../../../models/persona.model';
 
 @Component({

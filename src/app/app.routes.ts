@@ -1,33 +1,33 @@
+// src/app/app.routes.ts
+
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './components/layout/layout.component';
 
 // Nuevos componentes
 import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { PedidoComponent }   from './components/pedidos/pedido.component';
+import { PedidoComponent } from './components/pedidos/pedido.component';
 
 // Components existentes
-import { ListadoProductosComponent }   from './components/productos/listado-productos/listado-productos.component';
-import { ListadoCategoriaComponent }   from './components/productos/listado-categoria/listado-categoria.component';
-import { PuntoVentaComponent }         from './components/ventas/punto-venta/punto-venta.component';
-import { ListadoVentasComponent }      from './components/ventas/listado-ventas/listado-venta.component';
-import { ListadoPersonaComponent }     from './components/persona/listado-persona/listado-persona.component';
-import { IngresarComprasComponent }    from './components/compras/ingresar/ingresar.component';
-import { ListadoComprasComponent }     from './components/compras/listado-compras/listado-compras.component';
-import { EntradaSalidaComponent }      from './components/inventario/entrada-salida/entrada-salida.component';
-import { ListaUsuarioComponent }       from './components/usuarios/lista-usuario/lista-usuario.component';
-import { RolPerfilComponent }          from './components/usuarios/rol-perfil/rol-perfil.component';
+import { ListadoProductosComponent } from './components/productos/listado-productos/listado-productos.component';
+import { ListadoCategoriaComponent } from './components/productos/listado-categoria/listado-categoria.component';
+import { PuntoVentaComponent } from './components/ventas/punto-venta/punto-venta.component';
+import { ListadoVentasComponent } from './components/ventas/listado-ventas/listado-venta.component';
+import { ListadoPersonaComponent } from './components/persona/listado-persona/listado-persona.component';
+import { IngresarComprasComponent } from './components/compras/ingresar/ingresar.component';
+import { ListadoComprasComponent } from './components/compras/listado-compras/listado-compras.component';
+import { EntradaSalidaComponent } from './components/inventario/entrada-salida/entrada-salida.component';
+import { ListaUsuarioComponent } from './components/usuarios/lista-usuario/lista-usuario.component';
+import { RolPerfilComponent } from './components/usuarios/rol-perfil/rol-perfil.component';
 
 export const routes: Routes = [
   {
     path: '',
     component: LayoutComponent,
     children: [
-      // Dashboard y Pedidos
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
       { path: 'caja', component: PedidoComponent },
 
-      // Productos
       {
         path: 'productos',
         children: [
@@ -37,7 +37,6 @@ export const routes: Routes = [
       },
       { path: 'categorias', component: ListadoCategoriaComponent },
 
-      // Ventas
       {
         path: 'ventas',
         children: [
@@ -47,7 +46,6 @@ export const routes: Routes = [
         ]
       },
 
-      // Compras
       {
         path: 'compras',
         children: [
@@ -61,7 +59,6 @@ export const routes: Routes = [
       { path: 'clientes', component: ListadoPersonaComponent },
       { path: 'proveedores', component: ListadoPersonaComponent },
 
-      // Inventario
       {
         path: 'inventario',
         children: [
@@ -70,7 +67,6 @@ export const routes: Routes = [
         ]
       },
 
-      // Usuarios (Mantenimiento)
       {
         path: 'usuarios',
         children: [

@@ -1,0 +1,99 @@
+<h4 *ngIf="!esEdicion">Registrar Persona</h4>
+<h4 *ngIf="esEdicion">Editar Persona</h4>
+<hr />
+
+<!-- Tipo Persona (Cliente / Proveedor) -->
+<div class="form-group mb-2">
+  <label>Tipo Persona <span class="text-danger">*</span></label>
+  <select class="form-control" [(ngModel)]="persona.tipoPersona">
+    <option>Cliente</option>
+    <option>Proveedor</option>
+  </select>
+</div>
+
+<!-- Tipo Documento (DNI si Cliente; RUC si Proveedor) -->
+<div class="form-group mb-2">
+  <label>Tipo Doc <span class="text-danger">*</span></label>
+  <select class="form-control" [(ngModel)]="persona.tipoDocumento">
+    <option *ngIf="persona.tipoPersona === 'Cliente'">DNI</option>
+    <option *ngIf="persona.tipoPersona === 'Proveedor'">RUC</option>
+  </select>
+</div>
+
+<!-- Campo Dinámico: Etiqueta y Placeholder cambian según tipoPersona -->
+<div class="form-group mb-2">
+  <label *ngIf="persona.tipoPersona === 'Cliente'">
+    Documento (DNI) <span class="text-danger">*</span>
+  </label>
+  <label *ngIf="persona.tipoPersona === 'Proveedor'">
+    Número de RUC <span class="text-danger">*</span>
+  </label>
+  <input
+    type="text"
+    class="form-control"
+    [(ngModel)]="persona.numeroDocumento"
+    placeholder="{{ persona.tipoPersona === 'Proveedor' ? 'RUC' : 'DNI' }}"
+  />
+</div>
+
+<div class="form-group mb-2">
+  <label>Nombres <span class="text-danger">*</span></label>
+  <input
+    type="text"
+    class="form-control"
+    [(ngModel)]="persona.nombre"
+    placeholder="Nombres"
+  />
+</div>
+
+<div class="form-group mb-2">
+  <label>Dirección</label>
+  <input
+    type="text"
+    class="form-control"
+    [(ngModel)]="persona.direccion"
+    placeholder="Dirección"
+  />
+</div>
+
+<div class="form-group mb-2">
+  <label>Celular / Teléfono</label>
+  <input
+    type="text"
+    class="form-control"
+    [(ngModel)]="persona.telefono"
+    placeholder="Celular / Teléfono"
+  />
+</div>
+
+<div class="form-group mb-2">
+  <label>Correo</label>
+  <input
+    type="email"
+    class="form-control"
+    [(ngModel)]="persona.correo"
+    placeholder="Correo"
+  />
+</div>
+
+<div class="text-end mt-3">
+  <button class="btn btn-secondary me-2" (click)="cancelar()">Cerrar</button>
+  <button class="btn btn-primary" (click)="guardar()">
+    {{ esEdicion ? 'Actualizar' : 'Registrar' }}
+  </button>
+</div>
+
+<!-- Overlay de mensaje (éxito o error) -->
+<div
+  class="overlay-mensaje"
+  *ngIf="muestraOverlay"
+>
+  <div class="mensaje-contenedor border rounded p-4 bg-white shadow">
+    <p class="mb-3" [ngClass]="{ 'text-danger': esError, 'text-success': !esError }">
+      {{ mensajeOverlay }}
+    </p>
+    <button class="btn btn-primary" (click)="confirmarOverlay()">
+      Aceptar
+    </button>
+  </div>
+</div>

@@ -1,9 +1,10 @@
 // src/app/components/persona/listado-persona/listado-persona.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Persona } from '../../../models/persona.model';
 import { PersonaService } from '../../../services/persona.service';
-import { PersonaComponent } from '../persona.component'; // Form modal
+import { PersonaComponent } from '../nuevo-persona/persona.component'; // Form modal
 import { FormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 
@@ -15,15 +16,14 @@ import { NgxPaginationModule } from 'ngx-pagination';
   styleUrls: ['./listado-persona.component.css']
 })
 export class ListadoPersonaComponent implements OnInit {
-
   personas: Persona[] = [];
-  personaSeleccionada: Persona | null = null;  // Para editar
-  mostrarModal: boolean = false;               // Control del modal
-  esEdicion: boolean = false;                  // Control para nuevo/editar
+  personaSeleccionada: Persona | null = null;
+  mostrarModal: boolean = false;
+  esEdicion: boolean = false;
 
   // Paginación
-  p: number = 1;          // Página actual
-  pageSize: number = 10;  // Tamaño de página por defecto
+  p: number = 1;
+  pageSize: number = 10;
 
   // Búsqueda local
   searchTerm: string = '';
@@ -34,34 +34,33 @@ export class ListadoPersonaComponent implements OnInit {
     this.cargarPersonas();
   }
 
-  cargarPersonas() {
+  private cargarPersonas() {
     this.personaService.getAllPersonas().subscribe({
-      next: (data) => {
+      next: data => {
         this.personas = data;
       },
-      error: (err) => {
+      error: err => {
         console.error('Error al cargar personas', err);
       }
     });
   }
 
-  // Getter para filtrar la lista de personas según searchTerm
+  // Filtrado local
   get personasFiltradas(): Persona[] {
     if (!this.searchTerm) {
       return this.personas;
     }
     const term = this.searchTerm.toLowerCase();
     return this.personas.filter(persona =>
-      persona.tipoPersona?.toLowerCase().includes(term) ||
-      persona.numeroDocumento?.toLowerCase().includes(term) ||
-      persona.nombre?.toLowerCase().includes(term) ||
-      persona.direccion?.toLowerCase().includes(term) ||
-      persona.telefono?.toLowerCase().includes(term) ||
-      persona.correo?.toLowerCase().includes(term)
+      (persona.tipoPersona ?? '').toLowerCase().includes(term) ||
+      (persona.numeroDocumento ?? '').toLowerCase().includes(term) ||
+      (persona.nombre ?? '').toLowerCase().includes(term) ||
+      (persona.direccion ?? '').toLowerCase().includes(term) ||
+      (persona.telefono ?? '').toLowerCase().includes(term) ||
+      (persona.correo ?? '').toLowerCase().includes(term)
     );
   }
 
-  // Cálculo para mostrar "Mostrando X a Y de Z registros"
   get startIndex(): number {
     return (this.p - 1) * this.pageSize + 1;
   }
@@ -73,7 +72,7 @@ export class ListadoPersonaComponent implements OnInit {
       : calc;
   }
 
-  // Abre el modal para crear nueva persona
+  // Abrir modal para crear
   nuevo() {
     this.personaSeleccionada = {
       nombre: '',
@@ -81,39 +80,35 @@ export class ListadoPersonaComponent implements OnInit {
       correo: '',
       direccion: '',
       tipoPersona: 'Cliente',
-      tipoDocumento: 'NDI',
+      tipoDocumento: 'DNI',
       numeroDocumento: ''
     };
     this.esEdicion = false;
     this.mostrarModal = true;
   }
 
-  // Abre el modal para editar
+  // Abrir modal para editar
   editar(persona: Persona) {
-    // Clonamos el objeto para no alterar la tabla mientras editamos
     this.personaSeleccionada = { ...persona };
     this.esEdicion = true;
     this.mostrarModal = true;
   }
 
-  // Se llama cuando el componente hijo (PersonaComponent) emite onGuardar
+  // Se dispara cuando PersonaComponent emite onGuardar con un Persona
   onGuardarPersona(personaGuardada: Persona) {
-    // Cerrar el modal
     this.mostrarModal = false;
-
-    // Si es edición, reemplazamos en la lista
     if (this.esEdicion) {
+      // Reemplazamos la persona en el arreglo
       const index = this.personas.findIndex(p => p.idPersona === personaGuardada.idPersona);
       if (index !== -1) {
         this.personas[index] = personaGuardada;
       }
     } else {
-      // Es nuevo, lo agregamos a la lista
+      // Nueva persona, la agregamos a la lista
       this.personas.push(personaGuardada);
     }
   }
 
-  // Se llama cuando el componente hijo emite onCancelar
   onCancelarPersona() {
     this.mostrarModal = false;
   }
@@ -122,11 +117,15 @@ export class ListadoPersonaComponent implements OnInit {
     if (!persona.idPersona) return;
     if (confirm('¿Estás seguro de eliminar esta persona?')) {
       this.personaService.deletePersona(persona.idPersona).subscribe({
-        next: () => {
-          alert('Persona eliminada con éxito.');
-          this.personas = this.personas.filter(p => p.idPersona !== persona.idPersona);
+        next: resp => {
+          if (resp.success) {
+            alert('Persona eliminada con éxito.');
+            this.personas = this.personas.filter(p => p.idPersona !== persona.idPersona);
+          } else {
+            alert('No se pudo eliminar: ' + resp.message);
+          }
         },
-        error: (err) => {
+        error: err => {
           console.error('Error al eliminar persona:', err);
           alert('Ocurrió un error al eliminar la persona.');
         }
