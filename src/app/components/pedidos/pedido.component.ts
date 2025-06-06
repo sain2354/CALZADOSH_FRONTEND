@@ -43,7 +43,6 @@ export class PedidoComponent {
   paginasMostrar: number[] = [];
   resumenEstados: any[] = [];
   
-  // Modal flags y modelos
   mostrarModalNuevo = false;
   mostrarModalVer = false;
   mostrarModalEditar = false;

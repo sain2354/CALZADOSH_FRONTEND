@@ -1,28 +1,35 @@
 <div class="pedido-container">
-  <div class="status-summary">
-    <div class="status-card" *ngFor="let status of resumenEstados" [ngClass]="'status-' + status.estado.toLowerCase()">
-      <span class="status-icon">{{status.icono}}</span>
-      <span class="status-count">{{status.cantidad}}</span>
-      <span class="status-label">{{status.estado}}</span>
+  <!-- Sección de resumen de estados mejorada -->
+  <div class="status-summary-container">
+    <h2>Resumen de Pedidos</h2>
+    <div class="status-summary">
+      <div *ngFor="let status of resumenEstados" class="status-card" [ngClass]="'status-' + status.estado.toLowerCase()">
+        <div class="status-content">
+          <div class="status-text">
+            <span class="status-count">{{status.cantidad}}</span>
+            <span class="status-label">{{status.estado}}</span>
+          </div>
+          <span class="status-icon">{{status.icono}}</span>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="actions">
-    <button class="btn btn-success" (click)="abrirModalNuevo()">+ Nuevo</button>
+    <button class="btn btn-success" (click)="abrirModalNuevo()">+ Nuevo Pedido</button>
   </div>
 
   <div class="table-controls">
     <div class="left-controls">
-      <button class="btn btn-secondary" (click)="abrirMenuExportar()">📥</button>
+      <button class="btn btn-secondary" (click)="abrirMenuExportar()">📥 Exportar</button>
       <div class="export-menu" *ngIf="mostrarMenuExportar">
         <button (click)="exportarTabla('PDF')">PDF</button>
         <button (click)="exportarTabla('Excel')">Excel</button>
-        <button (click)="exportarTabla('SVG')">SVG</button>
+        <button (click)="exportarTabla('SVG')">Imagen</button>
       </div>
     </div>
     <div class="right-controls">
-      Buscar:
-      <input type="text" [(ngModel)]="filtro" (input)="filtrarPedidos()" />
+      <input type="text" [(ngModel)]="filtro" (input)="filtrarPedidos()" placeholder="Buscar..." />
     </div>
   </div>
 
@@ -41,7 +48,7 @@
     </thead>
     <tbody>
       <tr *ngIf="pedidosPaginados.length === 0">
-        <td colspan="8">No hay información en esta tabla</td>
+        <td colspan="8">No hay pedidos registrados</td>
       </tr>
       <tr *ngFor="let pedido of pedidosPaginados">
         <td>{{ pedido.codigo }}</td>
@@ -88,17 +95,17 @@
   <div class="modal" *ngIf="mostrarModalNuevo">
     <div class="modal-content">
       <h3>Nuevo Pedido</h3>
-      <label>Cliente: <input [(ngModel)]="nuevoPedido.cliente" /></label><br />
-      <label>Producto: <input [(ngModel)]="nuevoPedido.producto" /></label><br />
-      <label>Talla: <input [(ngModel)]="nuevoPedido.talla" /></label><br />
-      <label>Cantidad: <input type="number" [(ngModel)]="nuevoPedido.cantidad" /></label><br />
+      <label>Cliente: <input [(ngModel)]="nuevoPedido.cliente" /></label>
+      <label>Producto: <input [(ngModel)]="nuevoPedido.producto" /></label>
+      <label>Talla: <input [(ngModel)]="nuevoPedido.talla" /></label>
+      <label>Cantidad: <input type="number" [(ngModel)]="nuevoPedido.cantidad" /></label>
       <label>Estado:
         <select [(ngModel)]="nuevoPedido.estado">
           <option>Pendiente</option>
           <option>Enviado</option>
           <option>Entregado</option>
         </select>
-      </label><br />
+      </label>
       <div class="modal-actions">
         <button class="btn btn-success" (click)="guardarNuevoPedido()">Guardar</button>
         <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
@@ -140,7 +147,7 @@
           <option>Enviado</option>
           <option>Entregado</option>
         </select>
-      </label><br />
+      </label>
       <div class="modal-actions">
         <button class="btn btn-success" (click)="guardarEdicion()">Guardar</button>
         <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
