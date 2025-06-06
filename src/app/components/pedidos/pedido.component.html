@@ -1,6 +1,11 @@
 <div class="pedido-container">
-  <h2>Listado de Pedidos</h2>
-  <p>Gestiona aquí los pedidos realizados por los clientes.</p>
+  <div class="status-summary">
+    <div class="status-card" *ngFor="let status of resumenEstados" [ngClass]="'status-' + status.estado.toLowerCase()">
+      <span class="status-icon">{{status.icono}}</span>
+      <span class="status-count">{{status.cantidad}}</span>
+      <span class="status-label">{{status.estado}}</span>
+    </div>
+  </div>
 
   <div class="actions">
     <button class="btn btn-success" (click)="abrirModalNuevo()">+ Nuevo</button>
@@ -8,11 +13,12 @@
 
   <div class="table-controls">
     <div class="left-controls">
-      <button class="btn btn-secondary">📥</button>
-      <select [(ngModel)]="itemsPorPagina">
-        <option [value]="10">Mostrar 10</option>
-        <option [value]="25">Mostrar 25</option>
-      </select>
+      <button class="btn btn-secondary" (click)="abrirMenuExportar()">📥</button>
+      <div class="export-menu" *ngIf="mostrarMenuExportar">
+        <button (click)="exportarTabla('PDF')">PDF</button>
+        <button (click)="exportarTabla('Excel')">Excel</button>
+        <button (click)="exportarTabla('SVG')">SVG</button>
+      </div>
     </div>
     <div class="right-controls">
       Buscar:
@@ -20,12 +26,13 @@
     </div>
   </div>
 
-  <table class="pedido-table">
+  <table class="pedido-table" id="tablaPedidos">
     <thead>
       <tr>
         <th>Código</th>
         <th>Cliente</th>
         <th>Producto</th>
+        <th>Talla</th>
         <th>Cantidad</th>
         <th>Fecha</th>
         <th>Estado</th>
@@ -33,25 +40,48 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngIf="pedidosFiltrados.length === 0">
-        <td colspan="7">No hay información en esta tabla</td>
+      <tr *ngIf="pedidosPaginados.length === 0">
+        <td colspan="8">No hay información en esta tabla</td>
       </tr>
-      <tr *ngFor="let pedido of pedidosFiltrados">
+      <tr *ngFor="let pedido of pedidosPaginados">
         <td>{{ pedido.codigo }}</td>
         <td>{{ pedido.cliente }}</td>
         <td>{{ pedido.producto }}</td>
+        <td>{{ pedido.talla }}</td>
         <td>{{ pedido.cantidad }}</td>
         <td>{{ pedido.fecha | date:'dd/MM/yyyy' }}</td>
-        <td>{{ pedido.estado }}</td>
         <td>
-          <button class="btn btn-info" (click)="verPedido(pedido)">Ver</button>
+          <span class="estado-badge estado-{{pedido.estado.toLowerCase()}}">
+            {{ pedido.estado }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-info" (click)="verPedido(pedido)" title="Ver">👁️</button>
+          <button class="btn btn-warning" (click)="abrirModalEditar(pedido)" title="Editar">✏️</button>
+          <button class="btn btn-danger" (click)="eliminarPedido(pedido)" title="Eliminar">🗑️</button>
         </td>
       </tr>
     </tbody>
   </table>
 
-  <div class="pagination-info">
-    Registros del 1 al {{ pedidosFiltrados.length }} de {{ pedidos.length }} registros
+  <div class="pagination-controls">
+    <div class="pagination-info">
+      Mostrando {{inicioItem}} al {{finItem}} de {{pedidosFiltrados.length}} registros
+    </div>
+    <div class="pagination-buttons">
+      <button class="btn btn-secondary" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+        Anterior
+      </button>
+      <button *ngFor="let pagina of paginasMostrar" class="btn" 
+              [class.btn-primary]="pagina === paginaActual" 
+              [class.btn-secondary]="pagina !== paginaActual"
+              (click)="cambiarPagina(pagina)">
+        {{pagina}}
+      </button>
+      <button class="btn btn-secondary" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+        Siguiente
+      </button>
+    </div>
   </div>
 
   <!-- Modal Nuevo Pedido -->
@@ -60,6 +90,7 @@
       <h3>Nuevo Pedido</h3>
       <label>Cliente: <input [(ngModel)]="nuevoPedido.cliente" /></label><br />
       <label>Producto: <input [(ngModel)]="nuevoPedido.producto" /></label><br />
+      <label>Talla: <input [(ngModel)]="nuevoPedido.talla" /></label><br />
       <label>Cantidad: <input type="number" [(ngModel)]="nuevoPedido.cantidad" /></label><br />
       <label>Estado:
         <select [(ngModel)]="nuevoPedido.estado">
@@ -82,11 +113,37 @@
       <p><strong>Código:</strong> {{ pedidoSeleccionado.codigo }}</p>
       <p><strong>Cliente:</strong> {{ pedidoSeleccionado.cliente }}</p>
       <p><strong>Producto:</strong> {{ pedidoSeleccionado.producto }}</p>
+      <p><strong>Talla:</strong> {{ pedidoSeleccionado.talla }}</p>
       <p><strong>Cantidad:</strong> {{ pedidoSeleccionado.cantidad }}</p>
       <p><strong>Fecha:</strong> {{ pedidoSeleccionado.fecha | date:'dd/MM/yyyy' }}</p>
-      <p><strong>Estado:</strong> {{ pedidoSeleccionado.estado }}</p>
+      <p><strong>Estado:</strong> 
+        <span class="estado-badge estado-{{pedidoSeleccionado.estado.toLowerCase()}}">
+          {{ pedidoSeleccionado.estado }}
+        </span>
+      </p>
       <div class="modal-actions">
         <button class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Pedido -->
+  <div class="modal" *ngIf="mostrarModalEditar && pedidoSeleccionado">
+    <div class="modal-content">
+      <h3>Editar Estado del Pedido</h3>
+      <p><strong>Código:</strong> {{ pedidoSeleccionado.codigo }}</p>
+      <p><strong>Cliente:</strong> {{ pedidoSeleccionado.cliente }}</p>
+      <p><strong>Producto:</strong> {{ pedidoSeleccionado.producto }}</p>
+      <label>Estado:
+        <select [(ngModel)]="pedidoSeleccionado.estado">
+          <option>Pendiente</option>
+          <option>Enviado</option>
+          <option>Entregado</option>
+        </select>
+      </label><br />
+      <div class="modal-actions">
+        <button class="btn btn-success" (click)="guardarEdicion()">Guardar</button>
+        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
       </div>
     </div>
   </div>

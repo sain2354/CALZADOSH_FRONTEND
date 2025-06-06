@@ -1,5 +1,154 @@
-<div class="lista-usuario-container">
-    <h3>Listado de Usuarios</h3>
-    <!-- Tabla o lista de usuarios -->
-    <p>Próximamente tabla de usuarios.</p>
+<div class="usuario-container">
+  <h2><i class="fas fa-users"></i> Gestión de Usuarios</h2>
+  <p>Administra los usuarios del sistema y sus permisos.</p>
+
+  <div class="card-container">
+    <div class="summary-card">
+      <div class="card-icon bg-primary">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="card-info">
+        <h3>{{contarUsuariosPorRol('Administrador')}}</h3>
+        <p>Administrador(es)</p>
+      </div>
+    </div>
+    
+    <div class="summary-card">
+      <div class="card-icon bg-info">
+        <i class="fas fa-boxes"></i>
+      </div>
+      <div class="card-info">
+        <h3>{{contarUsuariosPorRol('Almacenero')}}</h3>
+        <p>Almacenero(s)</p>
+      </div>
+    </div>
+    
+    <div class="summary-card">
+      <div class="card-icon bg-success">
+        <i class="fas fa-cash-register"></i>
+      </div>
+      <div class="card-info">
+        <h3>{{contarUsuariosPorRol('Vendedor')}}</h3>
+        <p>Vendedor(es)</p>
+      </div>
+    </div>
   </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" (click)="abrirModalNuevo()">
+      <i class="fas fa-plus"></i> Nuevo Usuario
+    </button>
+    <div class="input-group search-box">
+      <input type="text" class="form-control" placeholder="Buscar usuario..." [(ngModel)]="filtro" (input)="filtrarUsuarios()">
+      <div class="input-group-append">
+        <span class="input-group-text"><i class="fas fa-search"></i></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let usuario of usuariosFiltrados">
+          <td>{{ usuario.id }}</td>
+          <td>{{ usuario.nombre }}</td>
+          <td>{{ usuario.email }}</td>
+          <td>{{ usuario.rol }}</td>
+          <td>
+            <span class="badge" [ngClass]="usuario.activo ? 'badge-success' : 'badge-danger'">
+              {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-info" (click)="verUsuario(usuario)" title="Ver">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-warning" (click)="editarUsuario(usuario)" title="Editar">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="cambiarEstadoUsuario(usuario)" 
+                    [title]="usuario.activo ? 'Desactivar' : 'Activar'">
+              <i class="fas" [ngClass]="usuario.activo ? 'fa-user-slash' : 'fa-user-check'"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Usuario -->
+  <div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas" [class.fa-user-plus]="!usuarioSeleccionado.id" [class.fa-user-edit]="usuarioSeleccionado.id"></i>
+            {{ usuarioSeleccionado.id ? 'Editar Usuario' : 'Nuevo Usuario' }}
+          </h5>
+          <button type="button" class="close" (click)="cerrarModal()">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label>Nombre Completo</label>
+              <input type="text" class="form-control" [(ngModel)]="usuarioSeleccionado.nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" class="form-control" [(ngModel)]="usuarioSeleccionado.email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label>Rol</label>
+              <select class="form-control" [(ngModel)]="usuarioSeleccionado.rol" name="rol">
+                <option value="Administrador">Administrador</option>
+                <option value="Almacenero">Almacenero</option>
+                <option value="Vendedor">Vendedor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Contraseña</label>
+              <div class="input-group">
+                <input [type]="mostrarPassword ? 'text' : 'password'" class="form-control" 
+                       [(ngModel)]="usuarioSeleccionado.password" name="password" [required]="!usuarioSeleccionado.id">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary" type="button" (click)="mostrarPassword = !mostrarPassword">
+                    <i class="fas" [class.fa-eye]="!mostrarPassword" [class.fa-eye-slash]="mostrarPassword"></i>
+                  </button>
+                </div>
+              </div>
+              <small class="text-muted" *ngIf="usuarioSeleccionado.id">Dejar en blanco para no cambiar</small>
+            </div>
+            <div class="form-group" *ngIf="usuarioSeleccionado.id">
+              <label>Estado</label>
+              <select class="form-control" [(ngModel)]="usuarioSeleccionado.activo" name="activo">
+                <option [value]="true">Activo</option>
+                <option [value]="false">Inactivo</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="button" class="btn btn-primary" (click)="guardarUsuario()">
+            <i class="fas fa-save"></i> Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'"></div>
+</div>

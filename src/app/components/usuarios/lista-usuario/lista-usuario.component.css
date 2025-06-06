@@ -1,3 +1,151 @@
-.lista-usuario-container {
-    padding: 1rem;
+.usuario-container {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.card-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.summary-card {
+  flex: 1;
+  min-width: 200px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  transition: transform 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  color: white;
+  font-size: 20px;
+}
+
+.bg-primary { background-color: #9b59b6; }
+.bg-info { background-color: #3498db; }
+.bg-success { background-color: #2ecc71; }
+
+.card-info h3 {
+  margin: 0;
+  font-size: 24px;
+  color: #2c3e50;
+}
+
+.card-info p {
+  margin: 5px 0 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.search-box {
+  width: 300px;
+}
+
+.table-responsive {
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.table th {
+  background-color: #34495e;
+  color: white;
+  text-align: center;
+}
+
+.table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.badge {
+  padding: 5px 10px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-primary { background-color: #9b59b6; }
+.badge-info { background-color: #3498db; }
+.badge-success { background-color: #2ecc71; }
+.badge-danger { background-color: #e74c3c; }
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+  margin: 0 2px;
+}
+
+.modal-content {
+  border: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+}
+
+.modal-title i {
+  margin-right: 10px;
+}
+
+.form-control {
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.input-group-append .btn {
+  border-color: #ddd;
+}
+
+.fa-eye, .fa-eye-slash {
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .card-container {
+    flex-direction: column;
   }
+  
+  .summary-card {
+    width: 100%;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .search-box {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
