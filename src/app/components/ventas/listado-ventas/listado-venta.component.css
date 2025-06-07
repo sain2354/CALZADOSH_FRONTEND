@@ -1,73 +1,179 @@
-/* Estilos para el listado de ventas */
+/* src/app/components/ventas/listado-ventas/listado-venta.component.css */
+
+/* Contenedor principal (card) */
 .listado-ventas-container {
   background: #fff;
-  padding: 20px;
+  padding: 0;
   border-radius: 8px;
-  margin-top: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
+  /* Ahora se aprovecha todo el ancho disponible */
+  width: calc(100% - 40px);
 }
 
-/* Filtros */
-.filters {
-  display: flex;
+/* Header: color turquesa más suave y padding compacto */
+.header-titulo {
+  background-color: #00aca8; /* Tono turquesa */
+  color: #fff;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 8px 16px;
+}
+
+.header-titulo h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Body */
+.card-body {
+  padding: 16px 20px 12px 20px;
+}
+
+/* Filtros de Fecha */
+.input-group-text {
+  background-color: #eee;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.input-group .form-control-sm {
+  border-left: 0;
+  font-size: 0.9rem;
+  height: 32px;
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+/* Botones de acción rápida */
+.acciones-rapidas {
+  padding-bottom: 8px;
+}
+
+/* Botones Exportar/Imprimir */
+.botones-export .btn-sm {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 15px;
+  justify-content: center;
+  font-size: 0.9rem;
+  padding: 0;
 }
 
-.filters label {
-  font-weight: bold;
-  margin-right: 5px;
+.botones-export .btn-sm i {
+  font-size: 1rem;
 }
 
-.filters input {
-  width: 150px;
-}
-
-/* Acciones */
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-  justify-content: space-between;
-}
-
-.actions .btn {
-  display: flex;
-  align-items: center;
-  padding: 5px 10px;
-}
-
-.actions select,
-.actions input {
+/* Selector y buscador */
+.acciones-rapidas .form-select-sm {
+  font-size: 0.85rem;
   height: 30px;
 }
 
-/* Tabla */
-table {
-  width: 100%;
-  border-collapse: collapse;
+.acciones-rapidas .form-control-sm {
+  font-size: 0.85rem;
+  height: 30px;
 }
 
-thead {
-  background: #0095A8;
-  color: white;
-  text-align: left;
+/* Botón Buscar ubicado arriba del buscador */
+.acciones-rapidas .btn-primary.btn-sm {
+  font-size: 0.85rem;
+  height: 32px;
+  width: 80px;
+  padding: 0;
 }
 
-thead th {
-  padding: 10px;
+/* ====== Tabla ====== */
+.table-encabezado {
+  background-color: #00aca8;
+  color: #fff;
+}
+
+.table-encabezado th {
+  padding: 8px 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.table-sm tbody tr:nth-of-type(odd) {
+  background-color: #f7f7f7;
 }
 
 tbody td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+  padding: 6px 8px;
+  vertical-align: middle;
+  font-size: 0.88rem;
 }
 
-/* Paginación */
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
+/* Mensaje “No hay información” */
+tbody td.text-muted {
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Badges de estado (aunque no se vean sin datos) */
+.badge {
+  font-size: 0.8rem;
+  padding: 4px 6px;
+}
+
+/* Opciones (botoncitos) */
+.opciones-columna .btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: transparent;
+}
+
+.opciones-columna .btn i {
+  font-size: 0.9rem;
+}
+
+/* ====== Paginación ====== */
+.paginacion-contenedor {
+  padding-top: 8px;
+}
+
+.texto-registros {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Pagination-small */
+.pagination-sm .page-item .page-link {
+  color: #00aca8;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+}
+
+.pagination-sm .page-item.active .page-link {
+  background-color: #00aca8;
+  border-color: #00aca8;
+  color: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 3px;
+}
+
+.pagination-sm .page-item.disabled .page-link {
+  color: #ccc;
+  pointer-events: none;
+}
+
+.pagination-sm .page-item .page-link:hover {
+  background-color: rgba(0, 172, 168, 0.1);
+  border-radius: 50%;
 }
