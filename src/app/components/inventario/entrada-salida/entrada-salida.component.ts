@@ -1,144 +1,67 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+
+interface ProductoInventario {
+  codigo: string;
+  descripcion: string;
+  ingresos: number;
+  salidas: number;
+  stock: number;
+}
 
 @Component({
   selector: 'app-entrada-salida',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f2f2f2;
-        margin: 0;
-        padding: 0;
-      }
-
-      .container {
-        max-width: 500px;
-        margin: 40px auto;
-        background-color: #fff;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      h2, h3 {
-        text-align: center;
-        color: #333;
-      }
-
-      label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-      }
-
-      input, select {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 16px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-      }
-
-      button {
-        width: 100%;
-        padding: 12px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
-      }
-
-      button:disabled {
-        background-color: #999;
-        cursor: not-allowed;
-      }
-
-      ul {
-        list-style-type: none;
-        padding-left: 0;
-      }
-
-      li {
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        padding: 10px;
-        margin-bottom: 8px;
-        border-radius: 4px;
-      }
-
-      hr {
-        margin: 30px 0;
-      }
-    </style>
-
-    <div class="container">
-      <h2>Entradas y Salidas</h2>
-
-      <form (ngSubmit)="registrarMovimiento()" #form="ngForm">
-        <label for="producto">Producto:</label>
-        <input
-          id="producto"
-          name="producto"
-          [(ngModel)]="producto"
-          required
-        />
-
-        <label for="cantidad">Cantidad:</label>
-        <input
-          id="cantidad"
-          name="cantidad"
-          type="number"
-          [(ngModel)]="cantidad"
-          required
-          min="1"
-        />
-
-        <label for="tipo">Tipo:</label>
-        <select id="tipo" name="tipo" [(ngModel)]="tipo" required>
-          <option value="entrada">Entrada</option>
-          <option value="salida">Salida</option>
-        </select>
-
-        <button type="submit" [disabled]="form.invalid">Registrar</button>
-      </form>
-
-      <hr />
-
-      <h3>Movimientos Registrados</h3>
-      <ul>
-        <li *ngFor="let m of movimientos">
-          {{ m.fecha | date: 'dd/MM/yy' }} - {{ m.producto }} - {{ m.cantidad }} - {{ m.tipo }}
-        </li>
-      </ul>
-    </div>
-  `,
+  templateUrl: './entrada-salida.component.html',
+  styleUrls: ['./entrada-salida.component.css']
 })
-export class EntradaSalidaComponent {
-  producto = '';
-  cantidad = 1;
-  tipo = 'entrada';
+export class EntradaSalidaComponent implements OnInit {
 
-  movimientos: { producto: string; cantidad: number; tipo: string; fecha: Date }[] = [];
+  productos: ProductoInventario[] = [];
+  paginaActual: number = 1;
+  registrosPorPagina: number = 10;
+  textoBusqueda: string = '';
 
-  registrarMovimiento() {
-    if (!this.producto.trim() || this.cantidad <= 0) return;
+  ngOnInit() {
+    this.productos = [
+      { codigo: '512202423387', descripcion: 'POLOS DE MIGUEL', ingresos: 23, salidas: 8, stock: 15 },
+      { codigo: '56202517190', descripcion: 'ZAPATO DEPORTIVO', ingresos: 2, salidas: 0, stock: 2 },
+      { codigo: '5620251721', descripcion: 'ZAPATO LUCHO', ingresos: 4, salidas: 1, stock: 3 },
+      { codigo: '61120240632', descripcion: 'GOKU', ingresos: 262, salidas: 4, stock: 258 },
+      { codigo: '611202414672', descripcion: 'PANTALON', ingresos: 41, salidas: 13, stock: 28 },
+      { codigo: '65202520291', descripcion: 'JOGGER CARGO', ingresos: 140, salidas: 1, stock: 139 },
+      { codigo: '6620253466', descripcion: 'CHELAS', ingresos: 2, salidas: 0, stock: 2 },
+      { codigo: '770735053448', descripcion: 'JERSEY MC', ingresos: 30, salidas: 16, stock: 14 },
+      { codigo: '811202420807', descripcion: 'CAMISETA BLANCA CON MANGAS CORTAS', ingresos: 155, salidas: 9, stock: 146 },
+      { codigo: '811202422425', descripcion: 'NXKDNDN', ingresos: 259, salidas: 18, stock: 241 }
+    ];
+  }
 
-    this.movimientos.push({
-      producto: this.producto.trim(),
-      cantidad: this.cantidad,
-      tipo: this.tipo,
-      fecha: new Date(),
-    });
+  actualizarBusqueda(valor: string) {
+    this.textoBusqueda = valor.toLowerCase();
+    this.paginaActual = 1;
+  }
 
-    this.producto = '';
-    this.cantidad = 1;
-    this.tipo = 'entrada';
+  actualizarRegistros(valor: string) {
+    this.registrosPorPagina = parseInt(valor, 10);
+    this.paginaActual = 1;
+  }
+
+  get productosFiltrados() {
+    return this.productos.filter(p =>
+      p.descripcion.toLowerCase().includes(this.textoBusqueda) ||
+      p.codigo.includes(this.textoBusqueda)
+    );
+  }
+
+  get productosPaginados() {
+    const inicio = (this.paginaActual - 1) * this.registrosPorPagina;
+    return this.productosFiltrados.slice(inicio, inicio + this.registrosPorPagina);
+  }
+
+  cambiarPagina(pagina: number) {
+    this.paginaActual = pagina;
+  }
+
+  totalPaginas(): number {
+    return Math.ceil(this.productosFiltrados.length / this.registrosPorPagina);
   }
 }

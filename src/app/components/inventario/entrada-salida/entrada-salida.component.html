@@ -1,144 +1,54 @@
-<div class="inventario-container">
-  <!-- Vista Resumen -->
-  <div *ngIf="vistaActual === 'resumen'">
-    <div class="cards-container">
-      <div class="summary-card bg-entradas" (click)="cambiarVista('entradas')">
-        <div class="card-icon"><i class="fas fa-arrow-down"></i></div>
-        <div class="card-info">
-          <h3>Entradas</h3>
-          <p>{{ totalEntradas }} pares ingresados</p>
-          <small>Últimas 3 entradas</small>
-        </div>
-      </div>
-      <div class="summary-card bg-salidas" (click)="cambiarVista('salidas')">
-        <div class="card-icon"><i class="fas fa-arrow-up"></i></div>
-        <div class="card-info">
-          <h3>Salidas</h3>
-          <p>{{ totalSalidas }} pares vendidos</p>
-          <small>Últimas 3 salidas</small>
-        </div>
-      </div>
-      <div class="summary-card bg-stock">
-        <div class="card-icon"><i class="fas fa-warehouse"></i></div>
-        <div class="card-info">
-          <h3>Stock Actual</h3>
-          <p>{{ stockActual }} pares disponibles</p>
-          <small>Total en inventario</small>
-        </div>
-      </div>
-    </div>
+<div class="contenedor">
+  <h3>Listado de Entradas y Salidas</h3>
 
-    <div class="recientes-container">
-      <div class="recientes-section">
-        <h3><i class="fas fa-sign-in-alt"></i> Últimas Entradas</h3>
-        <div class="movimiento-card" *ngFor="let entrada of entradasRecientes">
-          <div class="movimiento-icon bg-entradas"><i class="fas fa-arrow-down"></i></div>
-          <div class="movimiento-info">
-            <h4>{{ entrada.producto }}</h4>
-            <p>{{ entrada.referencia }} | Talla {{ entrada.talla }} | Color {{ entrada.color }}</p>
-            <div class="movimiento-detalle">
-              <span><i class="fas fa-calendar-alt"></i> {{ formatearFecha(entrada.fecha) }}</span>
-              <span><i class="fas fa-user"></i> {{ entrada.responsable }}</span>
-              <span><i class="fas fa-box-open"></i> {{ entrada.cantidad }} pares</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="recientes-section">
-        <h3><i class="fas fa-sign-out-alt"></i> Últimas Salidas</h3>
-        <div class="movimiento-card" *ngFor="let salida of salidasRecientes">
-          <div class="movimiento-icon bg-salidas"><i class="fas fa-arrow-up"></i></div>
-          <div class="movimiento-info">
-            <h4>{{ salida.producto }}</h4>
-            <p>{{ salida.referencia }} | Talla {{ salida.talla }} | Color {{ salida.color }}</p>
-            <div class="movimiento-detalle">
-              <span><i class="fas fa-calendar-alt"></i> {{ formatearFecha(salida.fecha) }}</span>
-              <span><i class="fas fa-user-tie"></i> {{ salida.responsable }}</span>
-              <span *ngIf="salida.cliente"><i class="fas fa-user"></i> {{ salida.cliente }}</span>
-              <span><i class="fas fa-shopping-bag"></i> {{ salida.cantidad }} pares</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="barra-superior">
+    <button class="btn-exportar">📄</button>
+    <select #selectRPP (change)="actualizarRegistros(selectRPP.value)">
+      <option value="5">Show 5 rows</option>
+      <option value="10" selected>Show 10 rows</option>
+      <option value="15">Show 15 rows</option>
+    </select>
+    <input type="text" placeholder="Buscar..." #buscarInput (input)="actualizarBusqueda(buscarInput.value)" />
   </div>
 
-  <!-- Vista Entradas -->
-  <div *ngIf="vistaActual === 'entradas'">
-    <div class="vista-header">
-      <button class="btn-volver" (click)="cambiarVista('resumen')">
-        <i class="fas fa-arrow-left"></i> Volver
-      </button>
-      <h2><i class="fas fa-arrow-down"></i> Registro de Entradas</h2>
-    </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Descripción</th>
+        <th>Ingresos</th>
+        <th>Salidas</th>
+        <th>Stock</th>
+        <th>Opciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let producto of productosPaginados">
+        <td>{{ producto.codigo }}</td>
+        <td>{{ producto.descripcion }}</td>
+        <td>{{ producto.ingresos }}</td>
+        <td>{{ producto.salidas }}</td>
+        <td>{{ producto.stock }}</td>
+        <td>
+          <button title="Ver" class="btn-ver">👁️</button>
+          <button title="Imprimir" class="btn-print">🖨️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Producto</th>
-            <th>Referencia</th>
-            <th>Talla</th>
-            <th>Color</th>
-            <th>Cantidad</th>
-            <th>Responsable</th>
-            <th>Motivo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let entrada of movimientos.filter(m => m.tipo === 'entrada')">
-            <td>{{ formatearFecha(entrada.fecha) }}</td>
-            <td>{{ entrada.producto }}</td>
-            <td>{{ entrada.referencia }}</td>
-            <td>{{ entrada.talla }}</td>
-            <td>{{ entrada.color }}</td>
-            <td>{{ entrada.cantidad }}</td>
-            <td>{{ entrada.responsable }}</td>
-            <td>{{ entrada.motivo }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="paginacion">
+    <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
+    <button *ngFor="let pag of [].constructor(totalPaginas()); let i = index"
+            [class.activo]="paginaActual === (i + 1)"
+            (click)="cambiarPagina(i + 1)">
+      {{ i + 1 }}
+    </button>
+    <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas()">Siguiente</button>
   </div>
 
-  <!-- Vista Salidas -->
-  <div *ngIf="vistaActual === 'salidas'">
-    <div class="vista-header">
-      <button class="btn-volver" (click)="cambiarVista('resumen')">
-        <i class="fas fa-arrow-left"></i> Volver
-      </button>
-      <h2><i class="fas fa-arrow-up"></i> Registro de Salidas</h2>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Producto</th>
-            <th>Referencia</th>
-            <th>Talla</th>
-            <th>Color</th>
-            <th>Cantidad</th>
-            <th>Responsable</th>
-            <th>Cliente</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let salida of movimientos.filter(m => m.tipo === 'salida')">
-            <td>{{ formatearFecha(salida.fecha) }}</td>
-            <td>{{ salida.producto }}</td>
-            <td>{{ salida.referencia }}</td>
-            <td>{{ salida.talla }}</td>
-            <td>{{ salida.color }}</td>
-            <td>{{ salida.cantidad }}</td>
-            <td>{{ salida.responsable }}</td>
-            <td>{{ salida.cliente }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="reporte">
+    <h4>Reporte Stock por Producto</h4>
+    <button class="btn-reporte">Reporte Inventario 📁</button>
   </div>
 </div>
