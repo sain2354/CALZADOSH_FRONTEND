@@ -1,188 +1,124 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import * as XLSX from 'xlsx';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-import html2canvas from 'html2canvas';
+import { DetallePedidoComponent } from './detalles_pedidos/detalle-pedido.component';
 
-type EstadoPedido = 'EnPreparacion' | 'Enviado' | 'Entregado';
-type EstadoPago = 'PendienteValidacion' | 'Pagado' | 'Rechazado';
-type MetodoPago = 'Yape' | 'Plin' | 'Manual';
+type EstadoPedido = 'Pendiente Validación' | 'Pago Validado' | 'En Preparación' | 'Enviado' | 'Entregado' | 'Cancelado';
+type MetodoPago = 'Yape' | 'Plin';
+type EstadoPago = 'Pendiente' | 'Validado' | 'Rechazado';
 
 interface ProductoPedido {
   id: string;
   nombre: string;
   imagen: string;
-  talla?: string;
-  precioUnitario: number;
   cantidad: number;
-}
-
-interface DireccionEnvio {
-  calle: string;
-  ciudad: string;
-  departamento: string;
-  referencia: string;
-  codigoPostal?: string;
-}
-
-interface Pago {
-  metodo: MetodoPago;
-  estado: EstadoPago;
-  comprobante?: string;
-  idTransaccion?: string;
-  fechaValidacion?: Date;
-  validadoPor?: string;
-  motivoRechazo?: string;
-}
-
-interface EstadoHistorico {
-  estado: string;
-  fecha: Date;
-  usuario?: string;
-  comentario?: string;
+  talla: string;
+  precioUnitario: number;
 }
 
 interface Pedido {
   id: string;
   cliente: string;
-  clienteId: string;
   productos: ProductoPedido[];
-  direccion: DireccionEnvio;
-  pago: Pago;
-  estadoPedido: EstadoPedido;
+  total: number;
   fechaCreacion: Date;
   fechaActualizacion: Date;
-  historialEstados: EstadoHistorico[];
-  costoEnvio: number;
-  descuento: number;
+  estadoPedido: EstadoPedido;
+  pago: {
+    metodo: MetodoPago;
+    estado: EstadoPago;
+    comprobante: string;
+    codigoValidacion?: string;
+    fechaValidacion?: Date;
+  };
+  direccionEnvio: string;
+  telefonoContacto: string;
 }
 
 @Component({
-  selector: 'app-pedido',
+  selector: 'app-pedidos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DetallePedidoComponent],
   templateUrl: './pedido.component.html',
   styleUrls: ['./pedido.component.css']
 })
 export class PedidoComponent {
   pedidos: Pedido[] = [
     {
-      id: 'PED001',
+      id: 'PED-001',
       cliente: 'Juan Pérez',
-      clienteId: 'USR001',
       productos: [
         {
-          id: 'PROD01',
-          nombre: 'Zapatillas deportivas',
-          imagen: 'https://example.com/zapatillas.jpg',
-          talla: '42',
-          precioUnitario: 120.00,
-          cantidad: 2
+          id: 'ZAP-001',
+          nombre: 'Zapatillas Running',
+          imagen: 'assets/productos/zap-running.jpg',
+          cantidad: 1,
+          talla: '40',
+          precioUnitario: 120.50
         }
       ],
-      direccion: {
-        calle: 'Av. Lima 123',
-        ciudad: 'Lima',
-        departamento: 'Lima',
-        referencia: 'Frente al parque'
-      },
+      total: 120.50,
+      fechaCreacion: new Date('2023-06-15T10:30:00'),
+      fechaActualizacion: new Date('2023-06-15T10:30:00'),
+      estadoPedido: 'Pendiente Validación',
       pago: {
         metodo: 'Yape',
-        estado: 'Pagado',
-        comprobante: 'data:image/png;base64,...',
-        idTransaccion: 'TRANS001'
+        estado: 'Pendiente',
+        comprobante: 'assets/comprobantes/yape-001.jpg',
+        codigoValidacion: '5A6B7C'
       },
-      estadoPedido: 'Enviado',
-      fechaCreacion: new Date('2023-05-15T10:30:00'),
-      fechaActualizacion: new Date('2023-05-16T09:15:00'),
-      historialEstados: [
+      direccionEnvio: 'Av. Lima 123, Miraflores',
+      telefonoContacto: '987654321'
+    },
+    {
+      id: 'PED-002',
+      cliente: 'María Gómez',
+      productos: [
         {
-          estado: 'PendienteValidacion',
-          fecha: new Date('2023-05-15T10:30:00'),
-          usuario: 'Sistema',
-          comentario: 'Pedido creado'
-        },
-        {
-          estado: 'Pagado',
-          fecha: new Date('2023-05-15T14:45:00'),
-          usuario: 'Admin',
-          comentario: 'Pago validado'
-        },
-        {
-          estado: 'EnPreparacion',
-          fecha: new Date('2023-05-15T16:20:00'),
-          usuario: 'Sistema',
-          comentario: 'Preparando pedido'
-        },
-        {
-          estado: 'Enviado',
-          fecha: new Date('2023-05-16T09:15:00'),
-          usuario: 'Admin',
-          comentario: 'Pedido despachado'
+          id: 'ZAP-002',
+          nombre: 'Zapatos Formales',
+          imagen: 'assets/productos/zap-formal.jpg',
+          cantidad: 2,
+          talla: '38',
+          precioUnitario: 85.30
         }
       ],
-      costoEnvio: 15.00,
-      descuento: 10.00
+      total: 170.60,
+      fechaCreacion: new Date('2023-06-14T15:45:00'),
+      fechaActualizacion: new Date('2023-06-15T09:20:00'),
+      estadoPedido: 'En Preparación',
+      pago: {
+        metodo: 'Plin',
+        estado: 'Validado',
+        comprobante: 'assets/comprobantes/plin-002.jpg',
+        codigoValidacion: '3D4E5F',
+        fechaValidacion: new Date('2023-06-14T16:30:00')
+      },
+      direccionEnvio: 'Calle Los Pinos 456, Surco',
+      telefonoContacto: '912345678'
     }
   ];
 
-  pedidosFiltrados: Pedido[] = [...this.pedidos];
-  pedidosPaginados: Pedido[] = [];
-  filtro = '';
-  itemsPorPagina = 10;
-  paginaActual = 1;
-  totalPaginas = 1;
-  inicioItem = 0;
-  finItem = 0;
-  paginasMostrar: number[] = [];
+  pedidoSeleccionado: Pedido | null = null;
+  mostrarDetalle = false;
+  mostrarFiltros = false;
+  
   filtros = {
-    estadoPago: '' as EstadoPago | '',
-    estadoPedido: '' as EstadoPedido | '',
-    metodoPago: '' as MetodoPago | '',
+    estadoPedido: '',
+    estadoPago: '',
+    metodoPago: '',
     fechaDesde: '',
     fechaHasta: '',
     cliente: ''
   };
-  mostrarModalDetalle = false;
-  mostrarModalValidar = false;
-  mostrarModalRechazar = false;
-  mostrarMenuExportar = false;
-  pedidoSeleccionado: Pedido | null = null;
-  motivoRechazo = '';
-  estadosPago: EstadoPago[] = ['PendienteValidacion', 'Pagado', 'Rechazado'];
-  estadosPedido: EstadoPedido[] = ['EnPreparacion', 'Enviado', 'Entregado'];
-  metodosPago: MetodoPago[] = ['Yape', 'Plin', 'Manual'];
 
-  constructor() {
-    this.filtrarYActualizarPagina();
-  }
-
-  cambiarItemsPorPagina(): void {
-    this.paginaActual = 1;
-    this.filtrarYActualizarPagina();
-  }
-
-  calcularTotalProductos(pedido: Pedido): number {
-    return pedido.productos.reduce((total, producto) => 
-      total + (producto.precioUnitario * producto.cantidad), 0);
-  }
-
-  calcularTotalVenta(pedido: Pedido): number {
-    return this.calcularTotalProductos(pedido) + pedido.costoEnvio - pedido.descuento;
-  }
-
-  aplicarFiltros(): void {
-    this.pedidosFiltrados = this.pedidos.filter(pedido => {
-      const cumpleEstadoPago = !this.filtros.estadoPago || 
-                             pedido.pago.estado === this.filtros.estadoPago;
-      const cumpleEstadoPedido = !this.filtros.estadoPedido || 
-                               pedido.estadoPedido === this.filtros.estadoPedido;
-      const cumpleMetodoPago = !this.filtros.metodoPago || 
-                              pedido.pago.metodo === this.filtros.metodoPago;
+  get pedidosFiltrados(): Pedido[] {
+    return this.pedidos.filter(pedido => {
+      const cumpleEstadoPedido = !this.filtros.estadoPedido || pedido.estadoPedido === this.filtros.estadoPedido;
+      const cumpleEstadoPago = !this.filtros.estadoPago || pedido.pago.estado === this.filtros.estadoPago;
+      const cumpleMetodo = !this.filtros.metodoPago || pedido.pago.metodo === this.filtros.metodoPago;
       const cumpleCliente = !this.filtros.cliente || 
-                           pedido.cliente.toLowerCase().includes(this.filtros.cliente.toLowerCase());
+                          pedido.cliente.toLowerCase().includes(this.filtros.cliente.toLowerCase());
       
       let cumpleFecha = true;
       if (this.filtros.fechaDesde) {
@@ -194,245 +130,69 @@ export class PedidoComponent {
         cumpleFecha = cumpleFecha && new Date(pedido.fechaCreacion) <= fechaHasta;
       }
       
-      return cumpleEstadoPago && cumpleEstadoPedido && cumpleMetodoPago && 
-             cumpleCliente && cumpleFecha;
+      return cumpleEstadoPedido && cumpleEstadoPago && cumpleMetodo && cumpleCliente && cumpleFecha;
     });
-    
-    this.paginaActual = 1;
-    this.filtrarYActualizarPagina();
   }
 
-  filtrarYActualizarPagina(): void {
-    this.totalPaginas = Math.ceil(this.pedidosFiltrados.length / this.itemsPorPagina);
-    this.inicioItem = (this.paginaActual - 1) * this.itemsPorPagina + 1;
-    this.finItem = Math.min(this.paginaActual * this.itemsPorPagina, this.pedidosFiltrados.length);
-    
-    this.pedidosPaginados = this.pedidosFiltrados.slice(
-      (this.paginaActual - 1) * this.itemsPorPagina,
-      this.paginaActual * this.itemsPorPagina
-    );
-    
-    this.actualizarPaginasMostrar();
+  verDetalle(pedido: Pedido) {
+    this.pedidoSeleccionado = pedido;
+    this.mostrarDetalle = true;
   }
 
-  cambiarPagina(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.totalPaginas) {
-      this.paginaActual = pagina;
-      this.filtrarYActualizarPagina();
+  eliminarPedido(pedido: Pedido) {
+    if(confirm(`¿Está seguro de eliminar el pedido ${pedido.id}?`)) {
+      this.pedidos = this.pedidos.filter(p => p.id !== pedido.id);
     }
   }
 
-  actualizarPaginasMostrar(): void {
-    const paginas: number[] = [];
-    const paginasVisibles = 5;
+  cambiarEstadoPedido(pedido: Pedido, event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const nuevoEstado = select.value as EstadoPedido;
     
-    let inicio = Math.max(1, this.paginaActual - Math.floor(paginasVisibles / 2));
-    let fin = Math.min(this.totalPaginas, inicio + paginasVisibles - 1);
-    
-    if (fin - inicio + 1 < paginasVisibles) {
-      inicio = Math.max(1, fin - paginasVisibles + 1);
-    }
-    
-    for (let i = inicio; i <= fin; i++) {
-      paginas.push(i);
-    }
-    
-    this.paginasMostrar = paginas;
-  }
-
-  verDetalle(pedido: Pedido): void {
-    this.pedidoSeleccionado = { ...pedido };
-    this.mostrarModalDetalle = true;
-  }
-
-  abrirModalValidar(pedido: Pedido): void {
-    this.pedidoSeleccionado = { ...pedido };
-    this.mostrarModalValidar = true;
-  }
-
-  abrirModalRechazar(pedido: Pedido): void {
-    this.pedidoSeleccionado = { ...pedido };
-    this.motivoRechazo = '';
-    this.mostrarModalRechazar = true;
-  }
-
-  verComprobante(pedido: Pedido): void {
-    this.pedidoSeleccionado = { ...pedido };
-    this.mostrarModalDetalle = true;
-  }
-
-  validarPago(aprobado: boolean): void {
-    if (!this.pedidoSeleccionado) return;
-
-    if (aprobado) {
-      this.pedidoSeleccionado.pago.estado = 'Pagado';
-      this.pedidoSeleccionado.estadoPedido = 'EnPreparacion';
-      this.pedidoSeleccionado.pago.fechaValidacion = new Date();
-      this.pedidoSeleccionado.pago.validadoPor = 'Admin';
-      this.agregarHistorial(
-        this.pedidoSeleccionado, 
-        'Pago validado', 
-        'Admin'
-      );
-    } else {
-      this.pedidoSeleccionado.pago.estado = 'Rechazado';
-      this.pedidoSeleccionado.pago.motivoRechazo = this.motivoRechazo;
-      this.agregarHistorial(
-        this.pedidoSeleccionado, 
-        `Pago rechazado: ${this.motivoRechazo}`, 
-        'Admin'
-      );
-    }
-
-    this.pedidoSeleccionado.fechaActualizacion = new Date();
-    
-    const index = this.pedidos.findIndex(p => p.id === this.pedidoSeleccionado?.id);
-    if (index !== -1) {
-      this.pedidos[index] = this.pedidoSeleccionado;
-    }
-    
-    this.aplicarFiltros();
-    this.cerrarModal();
-  }
-
-  cambiarEstadoPedido(pedido: Pedido, nuevoEstado: EstadoPedido): void {
     pedido.estadoPedido = nuevoEstado;
     pedido.fechaActualizacion = new Date();
-    this.agregarHistorial(
-      pedido, 
-      `Estado cambiado a ${nuevoEstado}`, 
-      'Admin'
-    );
     
-    const index = this.pedidos.findIndex(p => p.id === pedido.id);
-    if (index !== -1) {
-      this.pedidos[index] = pedido;
-    }
-    
-    this.aplicarFiltros();
-  }
-
-  eliminarPedido(pedido: Pedido): void {
-    if (confirm('¿Estás seguro de eliminar este pedido?')) {
-      this.pedidos = this.pedidos.filter(p => p.id !== pedido.id);
-      this.aplicarFiltros();
+    // Si el estado es "Pago Validado", actualizar también el estado de pago
+    if(nuevoEstado === 'Pago Validado') {
+      pedido.pago.estado = 'Validado';
+      pedido.pago.fechaValidacion = new Date();
     }
   }
 
-  private agregarHistorial(pedido: Pedido, comentario: string, usuario: string): void {
-    pedido.historialEstados.push({
-      estado: pedido.estadoPedido,
-      fecha: new Date(),
-      usuario,
-      comentario
+  formatearFecha(fecha: Date): string {
+    return fecha.toLocaleString('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
   }
 
-  exportarTabla(formato: string): void {
-    this.mostrarMenuExportar = false;
-    
-    switch(formato) {
-      case 'Excel':
-        this.exportarExcel();
-        break;
-      case 'PDF':
-        this.exportarPDF();
-        break;
-      case 'Imagen':
-        this.exportarImagen();
-        break;
-    }
-  }
-
-  exportarExcel(): void {
-    const data = this.pedidosFiltrados.map(pedido => ({
-      'ID': pedido.id,
-      'Cliente': pedido.cliente,
-      'Total Productos': this.calcularTotalProductos(pedido),
-      'Costo Envío': pedido.costoEnvio,
-      'Descuento': pedido.descuento,
-      'Total Venta': this.calcularTotalVenta(pedido),
-      'Método Pago': pedido.pago.metodo,
-      'Estado Pago': pedido.pago.estado,
-      'Estado Pedido': pedido.estadoPedido,
-      'Fecha Creación': pedido.fechaCreacion,
-      'Última Actualización': pedido.fechaActualizacion
-    }));
-    
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Pedidos');
-    XLSX.writeFile(wb, 'pedidos.xlsx');
-  }
-
-  exportarPDF(): void {
-    const doc = new jsPDF();
-    const title = 'Listado de Pedidos';
-    const headers = [
-      ['ID', 'Cliente', 'Total', 'Estado Pago', 'Estado Pedido', 'Fecha']
-    ];
-    
-    const data = this.pedidosFiltrados.map(pedido => [
-      pedido.id,
-      pedido.cliente,
-      `S/ ${this.calcularTotalVenta(pedido).toFixed(2)}`,
-      pedido.pago.estado,
-      pedido.estadoPedido,
-      new Date(pedido.fechaCreacion).toLocaleDateString()
-    ]);
-    
-    (doc as any).autoTable({
-      head: headers,
-      body: data,
-      startY: 20,
-      headStyles: {
-        fillColor: [0, 188, 212],
-        textColor: 255,
-        fontStyle: 'bold'
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245]
-      },
-      margin: { top: 30 }
-    });
-    
-    doc.text(title, 14, 15);
-    doc.save('pedidos.pdf');
-  }
-
-  exportarImagen(): void {
-    const element = document.getElementById('tablaPedidos');
-    if (element) {
-      html2canvas(element).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = 'pedidos.png';
-        link.href = imgData;
-        link.click();
-      });
-    }
-  }
-
-  abrirMenuExportar(): void {
-    this.mostrarMenuExportar = !this.mostrarMenuExportar;
-  }
-
-  cerrarModal(): void {
-    this.mostrarModalDetalle = false;
-    this.mostrarModalValidar = false;
-    this.mostrarModalRechazar = false;
-    this.pedidoSeleccionado = null;
-  }
-
-  limpiarFiltros(): void {
+  limpiarFiltros() {
     this.filtros = {
-      estadoPago: '',
       estadoPedido: '',
+      estadoPago: '',
       metodoPago: '',
       fechaDesde: '',
       fechaHasta: '',
       cliente: ''
     };
-    this.aplicarFiltros();
+  }
+
+  actualizarEstadoPago(event: {id: string, estado: EstadoPago}) {
+    const pedido = this.pedidos.find(p => p.id === event.id);
+    if(pedido) {
+      pedido.pago.estado = event.estado;
+      pedido.fechaActualizacion = new Date();
+      
+      // Si el pago fue validado, cambiar estado del pedido
+      if(event.estado === 'Validado') {
+        pedido.estadoPedido = 'Pago Validado';
+      } else if(event.estado === 'Rechazado') {
+        pedido.estadoPedido = 'Cancelado';
+      }
+    }
   }
 }

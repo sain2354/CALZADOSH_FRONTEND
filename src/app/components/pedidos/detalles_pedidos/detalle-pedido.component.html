@@ -1,0 +1,66 @@
+<div class="contenedor-detalle">
+  <div class="cabecera-detalle">
+    <h3>Pedido #{{pedido.id}}</h3>
+    <button (click)="cerrar.emit()" class="btn-cerrar">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  
+  <div class="cuerpo-detalle">
+    <div class="informacion-cliente">
+      <h4>Información del Cliente</h4>
+      <p><strong>Nombre:</strong> {{pedido.cliente}}</p>
+      <p><strong>Teléfono:</strong> {{pedido.telefonoContacto}}</p>
+      <p><strong>Dirección:</strong> {{pedido.direccionEnvio}}</p>
+    </div>
+
+    <div class="informacion-pedido">
+      <h4>Detalles del Pedido</h4>
+      <div *ngFor="let producto of pedido.productos" class="producto-item">
+        <img [src]="producto.imagen" alt="{{producto.nombre}}">
+        <div class="producto-info">
+          <p><strong>{{producto.nombre}}</strong></p>
+          <p>Talla: {{producto.talla}}</p>
+          <p>Cantidad: {{producto.cantidad}}</p>
+          <p>Precio unitario: S/ {{producto.precioUnitario.toFixed(2)}}</p>
+          <p>Subtotal: S/ {{(producto.precioUnitario * producto.cantidad).toFixed(2)}}</p>
+        </div>
+      </div>
+      <p class="total"><strong>Total:</strong> S/ {{pedido.total.toFixed(2)}}</p>
+    </div>
+
+    <div class="informacion-pago">
+      <h4>Información de Pago</h4>
+      <p><strong>Método:</strong> {{pedido.pago.metodo}}</p>
+      <p><strong>Estado:</strong> 
+        <span class="estado-badge" [class]="pedido.pago.estado.toLowerCase()">
+          {{pedido.pago.estado}}
+        </span>
+      </p>
+      <p><strong>Código Validación:</strong> {{pedido.pago.codigoValidacion || 'N/A'}}</p>
+      <p><strong>Fecha Validación:</strong> 
+        {{pedido.pago.fechaValidacion ? (pedido.pago.fechaValidacion | date:'dd/MM/yyyy hh:mm a') : 'Pendiente'}}
+      </p>
+      
+      <button (click)="mostrarComprobante = true" class="btn-comprobante">
+        Ver Comprobante
+      </button>
+      
+      <div *ngIf="pedido.pago.estado === 'Pendiente'" class="validacion-pago">
+        <button (click)="validarPago(true)" class="btn-validar success">
+          Validar Pago
+        </button>
+        <button (click)="validarPago(false)" class="btn-validar danger">
+          Rechazar Pago
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <app-comprobante-pago 
+    *ngIf="mostrarComprobante"
+    [comprobante]="pedido.pago.comprobante"
+    [metodo]="pedido.pago.metodo"
+    (cerrar)="mostrarComprobante = false">
+  </app-comprobante-pago>
+</div>

@@ -1,310 +1,141 @@
-<div class="pedido-container">
-  <!-- Filtros avanzados -->
-  <div class="filtros-avanzados">
-    <h3>Filtros</h3>
-    <div class="filtros-grid">
-      <div class="filtro-item">
-        <label>Estado Pago:</label>
-        <select [(ngModel)]="filtros.estadoPago" (change)="aplicarFiltros()">
-          <option value="">Todos</option>
-          <option *ngFor="let estado of estadosPago" [value]="estado">{{estado}}</option>
-        </select>
-      </div>
-      
-      <div class="filtro-item">
+<div class="contenedor-pedidos">
+  <!-- Controles de filtro -->
+  <div class="controles-filtro">
+    <button (click)="mostrarFiltros = !mostrarFiltros" class="btn-filtros">
+      {{mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros'}}
+    </button>
+
+    <div *ngIf="mostrarFiltros" class="panel-filtros">
+      <div class="filtro-grupo">
         <label>Estado Pedido:</label>
-        <select [(ngModel)]="filtros.estadoPedido" (change)="aplicarFiltros()">
+        <select [(ngModel)]="filtros.estadoPedido">
           <option value="">Todos</option>
-          <option *ngFor="let estado of estadosPedido" [value]="estado">{{estado}}</option>
+          <option value="Pendiente Validación">Pendiente Validación</option>
+          <option value="Pago Validado">Pago Validado</option>
+          <option value="En Preparación">En Preparación</option>
+          <option value="Enviado">Enviado</option>
+          <option value="Entregado">Entregado</option>
+          <option value="Cancelado">Cancelado</option>
         </select>
       </div>
-      
-      <div class="filtro-item">
-        <label>Método Pago:</label>
-        <select [(ngModel)]="filtros.metodoPago" (change)="aplicarFiltros()">
+
+      <div class="filtro-grupo">
+        <label>Estado Pago:</label>
+        <select [(ngModel)]="filtros.estadoPago">
           <option value="">Todos</option>
-          <option *ngFor="let metodo of metodosPago" [value]="metodo">{{metodo}}</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Validado">Validado</option>
+          <option value="Rechazado">Rechazado</option>
         </select>
       </div>
-      
-      <div class="filtro-item">
-        <label>Fecha Desde:</label>
-        <input type="date" [(ngModel)]="filtros.fechaDesde" (change)="aplicarFiltros()">
+
+      <div class="filtro-grupo">
+        <label>Método de pago:</label>
+        <select [(ngModel)]="filtros.metodoPago">
+          <option value="">Todos</option>
+          <option value="Yape">Yape</option>
+          <option value="Plin">Plin</option>
+        </select>
       </div>
-      
-      <div class="filtro-item">
-        <label>Fecha Hasta:</label>
-        <input type="date" [(ngModel)]="filtros.fechaHasta" (change)="aplicarFiltros()">
-      </div>
-      
-      <div class="filtro-item">
+
+      <div class="filtro-grupo">
         <label>Cliente:</label>
-        <input type="text" [(ngModel)]="filtros.cliente" (input)="aplicarFiltros()" placeholder="Buscar cliente...">
+        <input type="text" [(ngModel)]="filtros.cliente" placeholder="Buscar cliente...">
       </div>
-    </div>
-    
-    <button class="btn btn-secondary" (click)="limpiarFiltros()">Limpiar Filtros</button>
-  </div>
 
-  <!-- Controles de tabla -->
-  <div class="table-controls">
-    <div class="left-controls">
-      <button class="btn btn-secondary" (click)="abrirMenuExportar()">📥 Exportar</button>
-      <div class="export-menu" *ngIf="mostrarMenuExportar">
-        <button (click)="exportarTabla('Excel')">Excel</button>
-        <button (click)="exportarTabla('PDF')">PDF</button>
-        <button (click)="exportarTabla('Imagen')">Imagen</button>
+      <div class="filtro-grupo">
+        <label>Fecha desde:</label>
+        <input type="date" [(ngModel)]="filtros.fechaDesde">
       </div>
-    </div>
-    <div class="right-controls">
-      Mostrar:
-      <select [(ngModel)]="itemsPorPagina" (change)="cambiarItemsPorPagina()">
-        <option value="5">5</option>
-        <option value="10">10</option>
-        <option value="20">20</option>
-        <option value="50">50</option>
-      </select>
-    </div>
-  </div>
 
-  <!-- Tabla principal -->
-  <table class="pedido-table" id="tablaPedidos">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Cliente</th>
-        <th>Total Productos</th>
-        <th>Costo Envío</th>
-        <th>Descuento</th>
-        <th>Total Venta</th>
-        <th>Método Pago</th>
-        <th>Estado Pago</th>
-        <th>Comprobante</th>
-        <th>Estado Pedido</th>
-        <th>Fecha Creación</th>
-        <th>Última Actualización</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngIf="pedidosPaginados.length === 0">
-        <td colspan="13">No se encontraron pedidos con los filtros aplicados</td>
-      </tr>
-      <tr *ngFor="let pedido of pedidosPaginados">
-        <td>{{pedido.id}}</td>
-        <td>{{pedido.cliente}}</td>
-        <td>S/ {{calcularTotalProductos(pedido) | number:'1.2-2'}}</td>
-        <td>S/ {{pedido.costoEnvio | number:'1.2-2'}}</td>
-        <td>S/ {{pedido.descuento | number:'1.2-2'}}</td>
-        <td>S/ {{calcularTotalVenta(pedido) | number:'1.2-2'}}</td>
-        <td>{{pedido.pago.metodo}}</td>
-        <td>
-          <span class="estado-badge estado-{{pedido.pago.estado.toLowerCase()}}">
-            {{pedido.pago.estado}}
-          </span>
-        </td>
-        <td>
-          <button *ngIf="pedido.pago.comprobante" class="btn btn-info" 
-                  (click)="verComprobante(pedido)" title="Ver comprobante">
-            📄
-          </button>
-        </td>
-        <td>
-          <span class="estado-badge estado-{{pedido.estadoPedido.toLowerCase()}}">
-            {{pedido.estadoPedido}}
-          </span>
-        </td>
-        <td>{{pedido.fechaCreacion | date:'dd/MM/yyyy HH:mm'}}</td>
-        <td>{{pedido.fechaActualizacion | date:'dd/MM/yyyy HH:mm'}}</td>
-        <td class="acciones-cell">
-          <button class="btn btn-info" (click)="verDetalle(pedido)" title="Ver detalle">👁️</button>
-          
-          <button *ngIf="pedido.pago.estado === 'PendienteValidacion'" 
-                  class="btn btn-success" (click)="abrirModalValidar(pedido)" title="Validar pago">
-            ✓
-          </button>
-          
-          <button *ngIf="pedido.pago.estado === 'PendienteValidacion'" 
-                  class="btn btn-danger" (click)="abrirModalRechazar(pedido)" title="Rechazar pago">
-            ✗
-          </button>
-          
-          <button *ngIf="pedido.estadoPedido === 'EnPreparacion' && pedido.pago.estado === 'Pagado'"
-                  class="btn btn-warning" (click)="cambiarEstadoPedido(pedido, 'Enviado')" title="Marcar como enviado">
-            🚚
-          </button>
-          
-          <button *ngIf="pedido.estadoPedido === 'Enviado'"
-                  class="btn btn-success" (click)="cambiarEstadoPedido(pedido, 'Entregado')" title="Marcar como entregado">
-            📦
-          </button>
-          
-          <button class="btn btn-secondary" (click)="eliminarPedido(pedido)" title="Eliminar">🗑️</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+      <div class="filtro-grupo">
+        <label>Fecha hasta:</label>
+        <input type="date" [(ngModel)]="filtros.fechaHasta">
+      </div>
 
-  <!-- Paginación -->
-  <div class="pagination-controls">
-    <div class="pagination-info">
-      Mostrando {{inicioItem}} al {{finItem}} de {{pedidosFiltrados.length}} registros
-    </div>
-    <div class="pagination-buttons">
-      <button class="btn btn-secondary" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
-        Anterior
-      </button>
-      <button *ngFor="let pagina of paginasMostrar" class="btn" 
-              [class.btn-primary]="pagina === paginaActual" 
-              [class.btn-secondary]="pagina !== paginaActual"
-              (click)="cambiarPagina(pagina)">
-        {{pagina}}
-      </button>
-      <button class="btn btn-secondary" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
-        Siguiente
+      <button (click)="limpiarFiltros()" class="btn-limpiar">
+        Limpiar filtros
       </button>
     </div>
   </div>
 
-  <!-- Modal Detalle Pedido -->
-  <div class="modal" *ngIf="mostrarModalDetalle && pedidoSeleccionado">
-    <div class="modal-content modal-lg">
-      <h3>Detalle del Pedido #{{pedidoSeleccionado.id}}</h3>
-      
-      <div class="row">
-        <div class="col-md-6">
-          <h4>Datos del Cliente</h4>
-          <p><strong>Nombre:</strong> {{pedidoSeleccionado.cliente}}</p>
-          <p><strong>ID:</strong> {{pedidoSeleccionado.clienteId}}</p>
-          
-          <h4>Dirección de Envío</h4>
-          <p>{{pedidoSeleccionado.direccion.calle}}</p>
-          <p>{{pedidoSeleccionado.direccion.ciudad}}, {{pedidoSeleccionado.direccion.departamento}}</p>
-          <p>Referencia: {{pedidoSeleccionado.direccion.referencia}}</p>
-        </div>
-        
-        <div class="col-md-6">
-          <h4>Información de Pago</h4>
-          <p><strong>Método:</strong> {{pedidoSeleccionado.pago.metodo}}</p>
-          <p><strong>Estado:</strong> 
-            <span class="estado-badge estado-{{pedidoSeleccionado.pago.estado.toLowerCase()}}">
-              {{pedidoSeleccionado.pago.estado}}
-            </span>
-          </p>
-          <p *ngIf="pedidoSeleccionado.pago.idTransaccion">
-            <strong>ID Transacción:</strong> {{pedidoSeleccionado.pago.idTransaccion}}
-          </p>
-          <p *ngIf="pedidoSeleccionado.pago.motivoRechazo">
-            <strong>Motivo Rechazo:</strong> {{pedidoSeleccionado.pago.motivoRechazo}}
-          </p>
-          
-          <h4>Totales</h4>
-          <p><strong>Subtotal:</strong> S/ {{calcularTotalProductos(pedidoSeleccionado) | number:'1.2-2'}}</p>
-          <p><strong>Envío:</strong> S/ {{pedidoSeleccionado.costoEnvio | number:'1.2-2'}}</p>
-          <p><strong>Descuento:</strong> S/ {{pedidoSeleccionado.descuento | number:'1.2-2'}}</p>
-          <p><strong>Total:</strong> S/ {{calcularTotalVenta(pedidoSeleccionado) | number:'1.2-2'}}</p>
-        </div>
-      </div>
-      
-      <div class="row">
-        <div class="col-md-12">
-          <h4>Productos</h4>
-          <table class="productos-table">
-            <thead>
-              <tr>
-                <th>Imagen</th>
-                <th>Producto</th>
-                <th>Talla</th>
-                <th>Precio Unit.</th>
-                <th>Cantidad</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let producto of pedidoSeleccionado.productos">
-                <td><img [src]="producto.imagen" class="producto-imagen" alt="Producto"></td>
-                <td>{{producto.nombre}}</td>
-                <td>{{producto.talla || '-'}}</td>
-                <td>S/ {{producto.precioUnitario | number:'1.2-2'}}</td>
-                <td>{{producto.cantidad}}</td>
-                <td>S/ {{producto.precioUnitario * producto.cantidad | number:'1.2-2'}}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <div class="row" *ngIf="pedidoSeleccionado.pago.comprobante">
-        <div class="col-md-12">
-          <h4>Comprobante de Pago</h4>
-          <img [src]="pedidoSeleccionado.pago.comprobante" class="comprobante-img" alt="Comprobante">
-        </div>
-      </div>
-      
-      <div class="row">
-        <div class="col-md-12">
-          <h4>Historial de Estados</h4>
-          <div class="timeline">
-            <div *ngFor="let estado of pedidoSeleccionado.historialEstados" class="timeline-item">
-              <div class="timeline-date">{{estado.fecha | date:'dd/MM/yyyy HH:mm'}}</div>
-              <div class="timeline-content">
-                <strong>{{estado.estado}}</strong>
-                <p *ngIf="estado.comentario">{{estado.comentario}}</p>
-                <small *ngIf="estado.usuario">Por: {{estado.usuario}}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="modal-actions">
-        <button class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
-      </div>
-    </div>
+  <!-- Tabla de pedidos -->
+<div class="tabla-pedidos">
+  <div class="tabla-cabecera">
+    <div>ID</div>
+    <div>Cliente</div>
+    <div>Productos</div>
+    <div>Cantidad</div>
+    <div>Talla</div>
+    <div>Total</div>
+    <div>Método Pago</div>
+    <div>Estado Pago</div>
+    <div>Estado Pedido</div>
+    <div>Fecha Creación</div>
+    <div>Fecha Actualización</div>
+    <div class="acciones-header">Acciones</div>
   </div>
 
-  <!-- Modal Validar Pago -->
-  <div class="modal" *ngIf="mostrarModalValidar && pedidoSeleccionado">
-    <div class="modal-content">
-      <h3>Validar Pago - Pedido #{{pedidoSeleccionado.id}}</h3>
-      <p>Cliente: {{pedidoSeleccionado.cliente}}</p>
-      <p>Total: S/ {{calcularTotalVenta(pedidoSeleccionado) | number:'1.2-2'}}</p>
-      
-      <div *ngIf="pedidoSeleccionado.pago.comprobante">
-        <h4>Comprobante</h4>
-        <img [src]="pedidoSeleccionado.pago.comprobante" class="comprobante-img-preview" alt="Comprobante">
+  <div class="tabla-cuerpo">
+    <div *ngFor="let pedido of pedidosFiltrados" class="tabla-fila">
+      <div>{{pedido.id}}</div>
+      <div>{{pedido.cliente}}</div>
+      <div>
+        <div *ngFor="let producto of pedido.productos">
+          {{producto.nombre}}
+        </div>
       </div>
-      
-      <p *ngIf="pedidoSeleccionado.pago.idTransaccion">
-        <strong>ID Transacción:</strong> {{pedidoSeleccionado.pago.idTransaccion}}
-      </p>
-      
-      <div class="modal-actions">
-        <button class="btn btn-success" (click)="validarPago(true)">Confirmar Pago</button>
-        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
+      <div>
+        <div *ngFor="let producto of pedido.productos">
+          {{producto.cantidad}}
+        </div>
+      </div>
+      <div>
+        <div *ngFor="let producto of pedido.productos">
+          {{producto.talla}}
+        </div>
+      </div>
+      <div>S/ {{pedido.total.toFixed(2)}}</div>
+      <div>{{pedido.pago.metodo}}</div>
+      <div>
+        <span class="estado-badge" [class]="pedido.pago.estado.toLowerCase()">
+          {{pedido.pago.estado}}
+        </span>
+      </div>
+      <div>
+        <span class="estado-badge" [class]="pedido.estadoPedido.toLowerCase().replace(' ', '-')">
+          {{pedido.estadoPedido}}
+        </span>
+      </div>
+      <div>{{formatearFecha(pedido.fechaCreacion)}}</div>
+      <div>{{formatearFecha(pedido.fechaActualizacion)}}</div>
+      <div class="acciones-cell">
+        <div class="acciones-container">
+          <button (click)="verDetalle(pedido)" title="Ver detalle" class="btn-accion">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button (click)="eliminarPedido(pedido)" title="Eliminar" class="btn-accion">
+            <i class="fas fa-trash"></i>
+          </button>
+          <select (change)="cambiarEstadoPedido(pedido, $event)" [value]="pedido.estadoPedido" class="select-estado">
+            <option value="Pendiente Validación">Pendiente</option>
+            <option value="Pago Validado">Validado</option>
+            <option value="En Preparación">Preparación</option>
+            <option value="Enviado">Enviado</option>
+            <option value="Entregado">Entregado</option>
+            <option value="Cancelado">Cancelar</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Modal Rechazar Pago -->
-  <div class="modal" *ngIf="mostrarModalRechazar && pedidoSeleccionado">
-    <div class="modal-content">
-      <h3>Rechazar Pago - Pedido #{{pedidoSeleccionado.id}}</h3>
-      <p>Cliente: {{pedidoSeleccionado.cliente}}</p>
-      <p>Total: S/ {{calcularTotalVenta(pedidoSeleccionado) | number:'1.2-2'}}</p>
-      
-      <div class="form-group">
-        <label for="motivoRechazo">Motivo del Rechazo:</label>
-        <textarea id="motivoRechazo" [(ngModel)]="motivoRechazo" class="form-control" rows="3" 
-                  placeholder="Ingrese el motivo del rechazo..."></textarea>
-      </div>
-      
-      <div class="modal-actions">
-        <button class="btn btn-danger" (click)="validarPago(false)" [disabled]="!motivoRechazo">
-          Rechazar Pago
-        </button>
-        <button class="btn btn-secondary" (click)="cerrarModal()">Cancelar</button>
-      </div>
-    </div>
-  </div>
+  <!-- Modal de detalle -->
+  <app-detalle-pedido 
+    *ngIf="mostrarDetalle && pedidoSeleccionado"
+    [pedido]="pedidoSeleccionado"
+    (cerrar)="mostrarDetalle = false"
+    (actualizarEstadoPago)="actualizarEstadoPago($event)">
+  </app-detalle-pedido>
 </div>

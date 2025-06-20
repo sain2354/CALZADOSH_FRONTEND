@@ -1,0 +1,170 @@
+.contenedor-detalle {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 1000;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.cabecera-detalle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.cabecera-detalle h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.btn-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s;
+}
+
+.btn-cerrar:hover {
+  color: #333;
+}
+
+.cuerpo-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.informacion-cliente, 
+.informacion-pedido,
+.informacion-pago {
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #444;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+.producto-item {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.producto-item img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.producto-info {
+  flex: 1;
+}
+
+.total {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  text-align: right;
+  color: #333;
+}
+
+/* Estados */
+.estado-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.pendiente { background: #FFF3CD; color: #856404; }
+.validado { background: #D4EDDA; color: #155724; }
+.rechazado { background: #F8D7DA; color: #721C24; }
+
+.btn-comprobante {
+  background: #00bcd4;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+  font-weight: bold;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.btn-comprobante:hover {
+  background: #0097a7;
+}
+
+.validacion-pago {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-validar {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  flex: 1;
+  transition: opacity 0.2s;
+}
+
+.btn-validar:hover {
+  opacity: 0.9;
+}
+
+.success { background: #28A745; color: white; }
+.danger { background: #DC3545; color: white; }
+
+@media (max-width: 768px) {
+  .contenedor-detalle {
+    width: 95%;
+    padding: 1rem;
+  }
+  
+  .producto-item {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .producto-item img {
+    width: 100%;
+    height: auto;
+  }
+  
+  .validacion-pago {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
