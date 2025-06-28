@@ -26,8 +26,11 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
+
+      // Nuevo módulo de pedidos
       { path: 'caja', component: PedidoComponent },
 
+      // Rutas de productos
       {
         path: 'productos',
         children: [
@@ -37,6 +40,7 @@ export const routes: Routes = [
       },
       { path: 'categorias', component: ListadoCategoriaComponent },
 
+      // Rutas de ventas
       {
         path: 'ventas',
         children: [
@@ -46,6 +50,7 @@ export const routes: Routes = [
         ]
       },
 
+      // Rutas de compras
       {
         path: 'compras',
         children: [
@@ -58,6 +63,7 @@ export const routes: Routes = [
       { path: 'clientes', component: ListadoPersonaComponent },
       { path: 'proveedores', component: ListadoPersonaComponent },
 
+      // Inventario
       {
         path: 'inventario',
         children: [
@@ -66,6 +72,7 @@ export const routes: Routes = [
         ]
       },
 
+      // Usuarios
       {
         path: 'usuarios',
         children: [

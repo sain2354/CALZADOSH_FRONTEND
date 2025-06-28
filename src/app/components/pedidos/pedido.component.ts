@@ -1,172 +1,111 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule }    from '@angular/common';
+import { FormsModule }     from '@angular/forms';
+import { NgxPaginationModule } from 'ngx-pagination';
+import { PedidoService, Pedido } from '../../services/pedido.service';
 import { DetallePedidoComponent } from './detalles_pedidos/detalle-pedido.component';
 
-type EstadoPedido = 'Pendiente Validación' | 'Pago Validado' | 'En Preparación' | 'Enviado' | 'Entregado' | 'Cancelado';
-type MetodoPago = 'Yape' | 'Plin';
-type EstadoPago = 'Pendiente' | 'Validado' | 'Rechazado';
-
-interface ProductoPedido {
-  id: string;
-  nombre: string;
-  imagen: string;
-  cantidad: number;
-  talla: string;
-  precioUnitario: number;
-}
-
-interface Pedido {
-  id: string;
-  cliente: string;
-  productos: ProductoPedido[];
-  total: number;
-  fechaCreacion: Date;
-  fechaActualizacion: Date;
-  estadoPedido: EstadoPedido;
-  pago: {
-    metodo: MetodoPago;
-    estado: EstadoPago;
-    comprobante: string;
-    codigoValidacion?: string;
-    fechaValidacion?: Date;
-  };
-  direccionEnvio: string;
-  telefonoContacto: string;
-}
+type EstadoPedido =
+  | 'Pendiente Validación'
+  | 'Pago Validado'
+  | 'En Preparación'
+  | 'Enviado'
+  | 'Entregado'
+  | 'Cancelado';
 
 @Component({
   selector: 'app-pedidos',
   standalone: true,
-  imports: [CommonModule, FormsModule, DetallePedidoComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgxPaginationModule,
+    DetallePedidoComponent
+  ],
   templateUrl: './pedido.component.html',
   styleUrls: ['./pedido.component.css']
 })
-export class PedidoComponent {
-  pedidos: Pedido[] = [
-    {
-      id: 'PED-001',
-      cliente: 'Juan Pérez',
-      productos: [
-        {
-          id: 'ZAP-001',
-          nombre: 'Zapatillas Running',
-          imagen: 'assets/productos/zap-running.jpg',
-          cantidad: 1,
-          talla: '40',
-          precioUnitario: 120.50
-        }
-      ],
-      total: 120.50,
-      fechaCreacion: new Date('2023-06-15T10:30:00'),
-      fechaActualizacion: new Date('2023-06-15T10:30:00'),
-      estadoPedido: 'Pendiente Validación',
-      pago: {
-        metodo: 'Yape',
-        estado: 'Pendiente',
-        comprobante: 'assets/comprobantes/yape-001.jpg',
-        codigoValidacion: '5A6B7C'
-      },
-      direccionEnvio: 'Av. Lima 123, Miraflores',
-      telefonoContacto: '987654321'
-    },
-    {
-      id: 'PED-002',
-      cliente: 'María Gómez',
-      productos: [
-        {
-          id: 'ZAP-002',
-          nombre: 'Zapatos Formales',
-          imagen: 'assets/productos/zap-formal.jpg',
-          cantidad: 2,
-          talla: '38',
-          precioUnitario: 85.30
-        }
-      ],
-      total: 170.60,
-      fechaCreacion: new Date('2023-06-14T15:45:00'),
-      fechaActualizacion: new Date('2023-06-15T09:20:00'),
-      estadoPedido: 'En Preparación',
-      pago: {
-        metodo: 'Plin',
-        estado: 'Validado',
-        comprobante: 'assets/comprobantes/plin-002.jpg',
-        codigoValidacion: '3D4E5F',
-        fechaValidacion: new Date('2023-06-14T16:30:00')
-      },
-      direccionEnvio: 'Calle Los Pinos 456, Surco',
-      telefonoContacto: '912345678'
-    }
-  ];
-
-  pedidoSeleccionado: Pedido | null = null;
-  mostrarDetalle = false;
-  mostrarFiltros = false;
-  
+export class PedidoComponent implements OnInit {
+  pedidos: Pedido[] = [];
   filtros = {
     estadoPedido: '',
     estadoPago: '',
-    metodoPago: '',
+    cliente: '',
     fechaDesde: '',
-    fechaHasta: '',
-    cliente: ''
+    fechaHasta: ''
   };
+  page = 1;
+  pageSize = 10;
+  mostrarFiltros = false;
 
-  get pedidosFiltrados(): Pedido[] {
-    return this.pedidos.filter(pedido => {
-      const cumpleEstadoPedido = !this.filtros.estadoPedido || pedido.estadoPedido === this.filtros.estadoPedido;
-      const cumpleEstadoPago = !this.filtros.estadoPago || pedido.pago.estado === this.filtros.estadoPago;
-      const cumpleMetodo = !this.filtros.metodoPago || pedido.pago.metodo === this.filtros.metodoPago;
-      const cumpleCliente = !this.filtros.cliente || 
-                          pedido.cliente.toLowerCase().includes(this.filtros.cliente.toLowerCase());
-      
-      let cumpleFecha = true;
-      if (this.filtros.fechaDesde) {
-        const fechaDesde = new Date(this.filtros.fechaDesde);
-        cumpleFecha = cumpleFecha && new Date(pedido.fechaCreacion) >= fechaDesde;
-      }
-      if (this.filtros.fechaHasta) {
-        const fechaHasta = new Date(this.filtros.fechaHasta);
-        cumpleFecha = cumpleFecha && new Date(pedido.fechaCreacion) <= fechaHasta;
-      }
-      
-      return cumpleEstadoPedido && cumpleEstadoPago && cumpleMetodo && cumpleCliente && cumpleFecha;
+  pedidoSeleccionado: Pedido | null = null;
+  mostrarDetalle = false;
+
+  estados: EstadoPedido[] = [
+    'Pendiente Validación',
+    'Pago Validado',
+    'En Preparación',
+    'Enviado',
+    'Entregado',
+    'Cancelado'
+  ];
+
+  constructor(private pedidoSvc: PedidoService) {}
+
+  ngOnInit(): void {
+    this.cargarPedidos();
+  }
+
+  cargarPedidos() {
+    this.pedidoSvc.getPedidos().subscribe({
+      next: data => this.pedidos = data,
+      error: err => console.error('Error cargando pedidos', err)
     });
   }
 
-  verDetalle(pedido: Pedido) {
-    this.pedidoSeleccionado = pedido;
-    this.mostrarDetalle = true;
+  verDetalle(p: Pedido) {
+    this.pedidoSvc.getDetallePedido(p.idVenta).subscribe({
+      next: detalle => {
+        this.pedidoSeleccionado = detalle;
+        this.mostrarDetalle = true;
+      },
+      error: err => console.error('Error trayendo detalle', err)
+    });
   }
 
-  eliminarPedido(pedido: Pedido) {
-    if(confirm(`¿Está seguro de eliminar el pedido ${pedido.id}?`)) {
-      this.pedidos = this.pedidos.filter(p => p.id !== pedido.id);
-    }
+  cerrarDetalle() {
+    this.mostrarDetalle = false;
+    this.pedidoSeleccionado = null;
   }
 
-  cambiarEstadoPedido(pedido: Pedido, event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const nuevoEstado = select.value as EstadoPedido;
-    
-    pedido.estadoPedido = nuevoEstado;
-    pedido.fechaActualizacion = new Date();
-    
-    // Si el estado es "Pago Validado", actualizar también el estado de pago
-    if(nuevoEstado === 'Pago Validado') {
-      pedido.pago.estado = 'Validado';
-      pedido.pago.fechaValidacion = new Date();
-    }
+  eliminarPedido(p: Pedido) {
+    if (!confirm(`¿Eliminar pedido ${p.idVenta}?`)) return;
+    this.pedidoSvc.eliminarPedido(p.idVenta).subscribe({
+      next: () =>
+        this.pedidos = this.pedidos.filter(x => x.idVenta !== p.idVenta),
+      error: err => console.error('Error eliminando', err)
+    });
   }
 
-  formatearFecha(fecha: Date): string {
-    return fecha.toLocaleString('es-PE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+  cambiarEstadoPedido(p: Pedido, e: Event) {
+    const nuevo = (e.target as HTMLSelectElement).value as EstadoPedido;
+    this.pedidoSvc.cambiarEstado(p.idVenta, nuevo).subscribe({
+      next: () => p.estado = nuevo,
+      error: err => console.error('Error cambiando estado', err)
+    });
+  }
+
+  get pedidosFiltrados(): Pedido[] {
+    return this.pedidos.filter(p => {
+      const { estadoPedido, estadoPago, cliente, fechaDesde, fechaHasta } = this.filtros;
+
+      if (estadoPedido && p.estado !== estadoPedido) return false;
+      if (estadoPago   && p.estadoPago !== estadoPago) return false;
+      if (cliente && !(p.cliente?.idUsuario.toString().includes(cliente))) return false;
+      if (fechaDesde && new Date(p.fecha) < new Date(fechaDesde)) return false;
+      if (fechaHasta && new Date(p.fecha) > new Date(fechaHasta)) return false;
+
+      return true;
     });
   }
 
@@ -174,25 +113,16 @@ export class PedidoComponent {
     this.filtros = {
       estadoPedido: '',
       estadoPago: '',
-      metodoPago: '',
+      cliente: '',
       fechaDesde: '',
-      fechaHasta: '',
-      cliente: ''
+      fechaHasta: ''
     };
   }
 
-  actualizarEstadoPago(event: {id: string, estado: EstadoPago}) {
-    const pedido = this.pedidos.find(p => p.id === event.id);
-    if(pedido) {
-      pedido.pago.estado = event.estado;
-      pedido.fechaActualizacion = new Date();
-      
-      // Si el pago fue validado, cambiar estado del pedido
-      if(event.estado === 'Validado') {
-        pedido.estadoPedido = 'Pago Validado';
-      } else if(event.estado === 'Rechazado') {
-        pedido.estadoPedido = 'Cancelado';
-      }
-    }
+  formatearFecha(f: string): string {
+    return new Date(f).toLocaleString('es-PE', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    });
   }
 }

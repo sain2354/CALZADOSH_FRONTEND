@@ -1,12 +1,9 @@
 <div class="contenedor-comprobante">
   <div class="cabecera-comprobante">
-    <h3>Comprobante de {{metodo}}</h3>
-    <button (click)="cerrar.emit()" class="btn-cerrar">
-      <i class="fas fa-times"></i>
-    </button>
+    <h3>Comprobante de {{ metodo }}</h3>
+    <button (click)="cerrar.emit()" class="btn-cerrar"><i class="fas fa-times"></i></button>
   </div>
-  
   <div class="imagen-comprobante">
-    <img [src]="comprobante" [alt]="'Comprobante de ' + metodo">
+    <img [src]="comprobante" [alt]="'Comprobante de ' + metodo" />
   </div>
 </div>
