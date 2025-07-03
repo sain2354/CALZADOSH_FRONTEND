@@ -1,10 +1,16 @@
-import { Routes } from '@angular/router';
-import { LoginComponent } from './auth/login/login.component';
-import { authGuard } from './auth/auth.guard';
+// src/app/app.routes.ts
 
+import { Routes } from '@angular/router';
 import { LayoutComponent } from './components/layout/layout.component';
+
+// Componentes del Login
+import { LoginComponent } from './auth/login/login.component';
+
+// Nuevos componentes
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { PedidoComponent } from './components/pedidos/pedido.component';
+
+// Componentes existentes
 import { ListadoProductosComponent } from './components/productos/listado-productos/listado-productos.component';
 import { ListadoCategoriaComponent } from './components/productos/listado-categoria/listado-categoria.component';
 import { PuntoVentaComponent } from './components/ventas/punto-venta/punto-venta.component';
@@ -17,14 +23,13 @@ import { ListaUsuarioComponent } from './components/usuarios/lista-usuario/lista
 import { RolPerfilComponent } from './components/usuarios/rol-perfil/rol-perfil.component';
 
 export const routes: Routes = [
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
 
   {
     path: '',
     component: LayoutComponent,
-    canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
 
       // Nuevo módulo de pedidos
@@ -60,6 +65,7 @@ export const routes: Routes = [
         ]
       },
 
+      // Clientes / Proveedores
       { path: 'clientes', component: ListadoPersonaComponent },
       { path: 'proveedores', component: ListadoPersonaComponent },
 
@@ -81,7 +87,5 @@ export const routes: Routes = [
         ]
       }
     ]
-  },
-
-  { path: '**', redirectTo: 'login' }
+  }
 ];

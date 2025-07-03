@@ -1,49 +1,84 @@
-form {
-  max-width: 400px;
-  margin: 80px auto;
-  padding: 24px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #f9f9f9;
+/* Fondo oscuro profundo */
+.login-background {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom right, #0d0d1a, #1a0033); /* más oscuro */
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
+/* Caja del login */
+.login-box {
+  background: rgba(0, 0, 0, 0.4); /* fondo translúcido */
+  padding: 50px;
+  border-radius: 12px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 32px;
+  margin-bottom: 35px;
 }
 
-label {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 16px;
-  border: 1px solid #aaa;
-  border-radius: 4px;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #1976d2;
+.login-box h2 {
   color: white;
+  margin-bottom: 35px;
+  font-size: 30px;
+}
+
+/* Inputs */
+.login-box input {
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 25px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
+  background-color: #1a1a1a;
+  color: white;
+  font-size: 16px;
+}
+
+.login-box input::placeholder {
+  color: #aaa;
+}
+
+/* Botón más grande y estilizado */
+.login-box button {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(to bottom, #63a4ff, #1a75ff);
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  font-size: 17px;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-button:hover {
-  background-color: #115293;
+.login-box button:hover {
+  background: linear-gradient(to bottom, #5c9eff, #1565c0);
 }
 
-a {
-  display: block;
-  text-align: center;
-  margin-top: 10px;
-  color: #1976d2;
-  text-decoration: none;
+/* Contenedor del input de contraseña con ícono */
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container input {
+  padding-right: 40px;
+}
+
+.password-container i {
+  position: absolute;
+  top: 40%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #ccc;
+  cursor: pointer;
+  font-size: 18px;
 }
