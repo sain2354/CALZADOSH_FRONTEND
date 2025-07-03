@@ -1,4 +1,59 @@
 <div class="dashboard-container">
-    <h2>Dashboard</h2>
-    <p>Bienvenido al panel de control. Aquí se mostrarán estadísticas y gráficos.</p>
+  <h2>¡Bienvenido al Panel de Control!</h2>
+  <p>Aquí tienes una visión general del estado actual de tu negocio.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-content">
+        <div class="card-title-number">
+          <p class="card-title">Visitas a la página</p>
+          <div class="card-number">13K</div>
+        </div>
+        <span class="ver-link" (click)="verDetalle('traffic')">Ver</span>
+      </div>
+      <div class="progress-bar yellow"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-content">
+        <div class="card-title-number">
+          <p class="card-title">Productos vendidos</p>
+          <div class="card-number">1,890</div>
+        </div>
+        <span class="ver-link" (click)="verDetalle('products')">Ver</span>
+      </div>
+      <div class="progress-bar green"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-content">
+        <div class="card-title-number">
+          <p class="card-title">Capacidad del servidor</p>
+          <div class="card-number">14%</div>
+        </div>
+        <span class="ver-link" (click)="verDetalle('server')">Ver</span>
+      </div>
+      <div class="progress-bar blue"></div>
+    </div>
   </div>
+
+  <div class="charts">
+    <div class="chart">
+      <h4>Tráfico</h4>
+      <canvas id="trafficChart"></canvas>
+    </div>
+    <div class="chart">
+      <h4>Vistas de productos</h4>
+      <canvas id="donutChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content">
+    <h3>{{ modalTitle }}</h3>
+    <canvas id="modalChart"></canvas>
+    <span class="close-link" (click)="cerrarModal()">Cerrar</span>
+  </div>
+</div>
