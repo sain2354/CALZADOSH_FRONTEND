@@ -75,11 +75,11 @@
 
 .password-container i {
   position: absolute;
-  top: 38%;
-  right: 12px;
+  top: 35%;
+  right: 14px;
   transform: translateY(-50%);
   color: #ccc;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
 }
 
