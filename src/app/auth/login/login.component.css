@@ -1,10 +1,11 @@
-/* Fondo degradado oscuro */
+/* Fondo degradado oscuro (azul negro) */
 .login-background {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #0b0c10, #1f2833); /* negro azulado oscuro */
+  background: linear-gradient(135deg, #0b0c10, #1f2833);
+  font-family: 'Poppins', sans-serif;
 }
 
 /* Caja visible del login que resalta */
@@ -13,7 +14,7 @@
   padding: 60px 50px;
   border-radius: 14px;
   width: 100%;
-  max-width: 520px;
+  max-width: 500px;
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
@@ -22,51 +23,47 @@
 
 /* Título */
 .login-box h2 {
-  color: #ffffff;
+  color: white;
+  margin-bottom: 35px;
   font-size: 36px;
-  margin-bottom: 40px;
-  font-weight: 700;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+  font-weight: 700; /* <- Negrita */
 }
 
 /* Inputs */
 .login-box input {
   width: 100%;
-  padding: 18px;
-  margin-bottom: 28px;
+  padding: 16px;
+  margin-bottom: 25px;
   border: none;
-  border-radius: 8px;
-  background-color: #2e2e2e;
+  border-radius: 6px;
+  background-color: #1a1a1a;
   color: white;
-  font-size: 18px;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
-}
-
-.login-box input::placeholder {
-  color: #bbb;
   font-size: 16px;
 }
 
-/* Botón */
+.login-box input::placeholder {
+  color: #aaa;
+}
+
+/* Botón más grande y estilizado */
 .login-box button {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(to right, #4d90fe, #357ae8);
+  background: linear-gradient(to bottom, #63a4ff, #1a75ff);
   border: none;
-  border-radius: 8px;
   color: white;
   font-weight: bold;
-  font-size: 18px;
+  border-radius: 6px;
+  font-size: 17px;
   cursor: pointer;
   transition: background 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .login-box button:hover {
-  background: linear-gradient(to right, #5aa0ff, #2e6ce0);
+  background: linear-gradient(to bottom, #5c9eff, #1565c0);
 }
 
-/* Contraseña con ícono */
+/* Contenedor del input de contraseña con ícono */
 .password-container {
   position: relative;
   width: 100%;
@@ -78,10 +75,11 @@
 
 .password-container i {
   position: absolute;
-  top: 35%;
-  right: 14px;
+  top: 40%;
+  right: 12px;
   transform: translateY(-50%);
   color: #ccc;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
 }
+

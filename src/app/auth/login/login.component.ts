@@ -25,4 +25,4 @@ export class LoginComponent {
     // Permite ingresar sin validación
     this.router.navigate(['/dashboard']);
   }
-}      
+}
