@@ -7,9 +7,14 @@
   background: linear-gradient(135deg, #0b0c10, #1f2833); /* negro azulado oscuro */
 }
 
-/* Formulario de login sin caja visible */
+/* Caja visible del login que resalta */
 .login-box {
-  width: 420px;
+  background-color: rgba(0, 0, 0, 0.85); /* negro sólido translúcido */
+  padding: 60px 50px;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
   align-items: center;
