@@ -1,69 +1,67 @@
-/* Fondo oscuro profundo */
+/* Fondo degradado oscuro */
 .login-background {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(to bottom right, #0d0d1a, #1a0033); /* más oscuro */
+  background: linear-gradient(135deg, #0b0c10, #1f2833); /* negro azulado oscuro */
 }
 
-/* Caja del login */
+/* Formulario de login sin caja visible */
 .login-box {
-  background: rgba(0, 0, 0, 0.4); /* fondo translúcido */
-  padding: 50px;
-  border-radius: 12px;
-  width: 400px;
+  width: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-size: 32px;
-  margin-bottom: 35px;
 }
 
+/* Título */
 .login-box h2 {
-  color: white;
-  margin-bottom: 35px;
-  font-size: 30px;
+  color: #ffffff;
+  font-size: 36px;
+  margin-bottom: 40px;
+  font-weight: 700;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 /* Inputs */
 .login-box input {
   width: 100%;
-  padding: 16px;
-  margin-bottom: 25px;
+  padding: 18px;
+  margin-bottom: 28px;
   border: none;
-  border-radius: 6px;
-  background-color: #1a1a1a;
+  border-radius: 8px;
+  background-color: #2e2e2e;
   color: white;
-  font-size: 16px;
+  font-size: 18px;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
 }
 
 .login-box input::placeholder {
-  color: #aaa;
+  color: #bbb;
+  font-size: 16px;
 }
 
-/* Botón más grande y estilizado */
+/* Botón */
 .login-box button {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(to bottom, #63a4ff, #1a75ff);
+  background: linear-gradient(to right, #4d90fe, #357ae8);
   border: none;
+  border-radius: 8px;
   color: white;
   font-weight: bold;
-  border-radius: 6px;
-  font-size: 17px;
+  font-size: 18px;
   cursor: pointer;
   transition: background 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .login-box button:hover {
-  background: linear-gradient(to bottom, #5c9eff, #1565c0);
+  background: linear-gradient(to right, #5aa0ff, #2e6ce0);
 }
 
-/* Contenedor del input de contraseña con ícono */
+/* Contraseña con ícono */
 .password-container {
   position: relative;
   width: 100%;
@@ -75,10 +73,10 @@
 
 .password-container i {
   position: absolute;
-  top: 40%;
-  right: 12px;
+  top: 35%;
+  right: 14px;
   transform: translateY(-50%);
   color: #ccc;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
 }
