@@ -1,8 +1,13 @@
 import { Component, AfterViewInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto';
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
+  imports: [
+    CommonModule     // <— esto es imprescindible
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

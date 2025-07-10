@@ -1,5 +1,5 @@
 export interface Producto {
-  idProducto?: number;       // <-- en lugar de "id?"
+  idProducto?: number;
   codigoBarra?: string;
   categoria?: string;
   nombre: string;
@@ -13,4 +13,10 @@ export interface Producto {
   stockMinimo?: number;
   idUnidadMedida?: number;
   foto?: string;
+
+  // — Nuevos campos —
+  mpn?: string;
+  shippingInfo?: string;
+  material?: string;
+  color?: string;
 }

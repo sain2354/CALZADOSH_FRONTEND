@@ -172,15 +172,16 @@
 <!-- Modal de Registrar Nuevo Producto -->
 <div *ngIf="modalAbierto" class="modal">
   <div class="modal-content">
-    <h3>Registrar Nuevo Producto</h3>
+    <h3>{{ producto.idProducto ? 'Editar' : 'Registrar Nuevo' }} Producto</h3>
     <form (ngSubmit)="guardarProducto()">
       <div class="form-grid grid-2">
+        <!-- Campos existentes -->
         <div class="form-group">
           <label>Código de Barra:</label>
           <input
             type="text"
             [(ngModel)]="producto.codigoBarra"
-            name="codigo"
+            name="codigoBarra"
             required
           />
         </div>
@@ -296,6 +297,42 @@
             <option [value]="false">Inactivo</option>
           </select>
         </div>
+
+        <!-- —— NUEVOS CAMPOS —— -->
+        <div class="form-group">
+          <label>MPN:</label>
+          <input
+            type="text"
+            [(ngModel)]="producto.mpn"
+            name="mpn"
+          />
+        </div>
+        <div class="form-group">
+          <label>Material:</label>
+          <input
+            type="text"
+            [(ngModel)]="producto.material"
+            name="material"
+          />
+        </div>
+        <div class="form-group">
+          <label>Color:</label>
+          <input
+            type="text"
+            [(ngModel)]="producto.color"
+            name="color"
+          />
+        </div>
+        <div class="form-group">
+          <label>Envío:</label>
+          <textarea
+            [(ngModel)]="producto.shippingInfo"
+            name="shippingInfo"
+            readonly
+          ></textarea>
+        </div>
+        <!-- —— FIN CAMBIOS —— -->
+
       </div>
 
       <hr />

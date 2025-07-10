@@ -5,19 +5,19 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 
 import { ProductoService } from '../../../services/producto.service';
-import { Producto } from '../../../models/producto.model';
 import { TallaService } from '../../../services/talla.service';
 import { TallaProductoService } from '../../../services/talla-producto.service';
+import { Producto } from '../../../models/producto.model';
 import { Talla } from '../../../models/talla.model';
 
 @Component({
   selector: 'app-listado-productos',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    NgxPaginationModule,
-    AutocompleteLibModule
+    CommonModule,          // *ngIf, *ngFor, ngClass...
+    FormsModule,           // [(ngModel)]
+    NgxPaginationModule,   // paginate pipe/directive
+    AutocompleteLibModule  // <ng-autocomplete>
   ],
   templateUrl: './listado-productos.component.html',
   styleUrls: ['./listado-productos.component.css']
@@ -76,7 +76,7 @@ export class ListadoProductosComponent implements OnInit {
     { id: 3, nombre: 'Par' }
   ];
 
-  // Modal
+    // Modal
   modalAbierto: boolean = false;
   producto: Producto = this.nuevoProducto();
   subcategoriasFiltradas: { id: number, nombre: string }[] = [];
@@ -102,7 +102,7 @@ export class ListadoProductosComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarTallas();
-    this.cargarProductos(); // Carga inicial
+    this.cargarProductos();
   }
 
   // ============ CARGAR PRODUCTOS (FILTRADO POR cat) SIN PAGINACIÓN DEL SERVIDOR ============
@@ -199,6 +199,9 @@ export class ListadoProductosComponent implements OnInit {
   abrirModal() {
     this.modalAbierto = true;
     this.subcategoriasFiltradas = [];
+    this.producto = this.nuevoProducto();
+    // Asignamos valor por defecto a shippingInfo
+    this.producto.shippingInfo = 'Envíos a nivel nacional, precio de delivery no incluido';
   }
 
   cerrarModal() {
@@ -210,12 +213,10 @@ export class ListadoProductosComponent implements OnInit {
     this.archivoSeleccionado = null;
   }
 
-  // ============ GUARDAR PRODUCTO (USANDO createWithFile) ============
   guardarProducto() {
-    // Creamos un FormData para enviar multipart/form-data
     const formData = new FormData();
 
-    // Añadimos las propiedades del producto como campos
+  // Añadimos las propiedades del producto como campos
     formData.append('IdCategoria', String(this.producto.idCategoria ?? 0));
     if (this.producto.idSubCategoria) {
       formData.append('IdSubCategoria', String(this.producto.idSubCategoria));
@@ -233,14 +234,26 @@ export class ListadoProductosComponent implements OnInit {
     formData.append('IdUnidadMedida', String(this.producto.idUnidadMedida ?? 0));
     formData.append('Estado', this.producto.estado ? 'true' : 'false');
 
-    // Si se seleccionó un archivo, lo agregamos al FormData
+    // — Nuevos campos —
+    if (this.producto.mpn) {
+      formData.append('Mpn', this.producto.mpn);
+    }
+    formData.append('ShippingInfo', this.producto.shippingInfo || '');
+    if (this.producto.material) {
+      formData.append('Material', this.producto.material);
+    }
+    if (this.producto.color) {
+      formData.append('Color', this.producto.color);
+    }
+
     if (this.archivoSeleccionado) {
       formData.append('file', this.archivoSeleccionado);
     }
 
-    // Llamamos al nuevo método del servicio que envía FormData
+
     this.productoService.crearProductoConArchivo(formData).subscribe({
       next: (productoCreado) => {
+        
         console.log('Producto creado con éxito:', productoCreado);
 
         // Asociar tallas (si hay) una vez creado el producto
@@ -251,10 +264,33 @@ export class ListadoProductosComponent implements OnInit {
           this.cerrarModal();
         }
       },
+
       error: (error: any) => {
         console.error('Error al guardar el producto:', error);
       }
     });
+  }
+
+  private nuevoProducto(): Producto {
+    return {
+      idProducto: 0,
+      codigoBarra: '',
+      idCategoria: 0,
+      idSubCategoria: 0,
+      nombre: '',
+      precioCompra: 0,
+      precioVenta: 0,
+      stock: 0,
+      stockMinimo: 0,
+      idUnidadMedida: 0,
+      estado: true,
+      foto: '',
+      // inicializamos nuevos campos
+      mpn: '',
+      shippingInfo: '',
+      material: '',
+      color: ''
+    };
   }
 
   // ============ GUARDAR TALLAS ============
@@ -345,23 +381,7 @@ export class ListadoProductosComponent implements OnInit {
     }
   }
 
-  private nuevoProducto(): Producto {
-    return {
-      idProducto: 0,
-      codigoBarra: '',
-      idCategoria: 0,
-      idSubCategoria: 0,
-      nombre: '',
-      precioCompra: 0,
-      precioVenta: 0,
-      stock: 0,
-      stockMinimo: 0,
-      idUnidadMedida: 0,
-      estado: true,
-      foto: ''
-    };
-  }
-
+  
   // ============ OPCIONES (Editar, Stock, etc.) ============
   editarProducto(prod: Producto) {
     console.log('Editar producto:', prod);
