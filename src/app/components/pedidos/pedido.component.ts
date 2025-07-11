@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule }    from '@angular/common';
-import { FormsModule }     from '@angular/forms';
-import { NgxPaginationModule } from 'ngx-pagination';
-import { PedidoService, Pedido } from '../../services/pedido.service';
-import { DetallePedidoComponent } from './detalles_pedidos/detalle-pedido.component';
+// src/app/components/pedido/pedido.component.ts
+import { Component, OnInit }        from '@angular/core';
+import { CommonModule }             from '@angular/common';
+import { FormsModule }              from '@angular/forms';
+import { NgxPaginationModule }      from 'ngx-pagination';
+import { PedidoService }            from '../../services/pedido.service';
+import { Pedido }                   from '../../models/pedido.model';
+import { DetallePedidoComponent }   from './detalles_pedidos/detalle-pedido.component';
 
 type EstadoPedido =
   | 'Pendiente Validación'
@@ -40,6 +42,11 @@ export class PedidoComponent implements OnInit {
 
   pedidoSeleccionado: Pedido | null = null;
   mostrarDetalle = false;
+
+  showConfirmModal = false;
+  pedidoToDelete: Pedido | null = null;
+  showAlert = false;
+  alertMessage = '';
 
   estados: EstadoPedido[] = [
     'Pendiente Validación',
@@ -79,12 +86,38 @@ export class PedidoComponent implements OnInit {
   }
 
   eliminarPedido(p: Pedido) {
-    if (!confirm(`¿Eliminar pedido ${p.idVenta}?`)) return;
-    this.pedidoSvc.eliminarPedido(p.idVenta).subscribe({
-      next: () =>
-        this.pedidos = this.pedidos.filter(x => x.idVenta !== p.idVenta),
-      error: err => console.error('Error eliminando', err)
+    const noEliminar = ['Pago Validado', 'En Preparación', 'Enviado', 'Entregado'];
+    if (noEliminar.includes(p.estado as EstadoPedido)) {
+      this.alertMessage = '❌ Este pedido ya está en proceso de envío y no puede ser eliminado.';
+      this.showAlert = true;
+      return;
+    }
+    this.pedidoToDelete = p;
+    this.showConfirmModal = true;
+  }
+
+  confirmDelete() {
+    if (!this.pedidoToDelete) return;
+    this.pedidoSvc.eliminarPedido(this.pedidoToDelete.idVenta).subscribe({
+      next: () => {
+        this.pedidos = this.pedidos.filter(x => x.idVenta !== this.pedidoToDelete!.idVenta);
+        this.closeModal();
+      },
+      error: err => {
+        console.error('Error eliminando', err);
+        this.closeModal();
+      }
     });
+  }
+
+  closeModal() {
+    this.showConfirmModal = false;
+    this.pedidoToDelete = null;
+  }
+
+  closeAlert() {
+    this.showAlert = false;
+    this.alertMessage = '';
   }
 
   cambiarEstadoPedido(p: Pedido, e: Event) {
@@ -98,13 +131,11 @@ export class PedidoComponent implements OnInit {
   get pedidosFiltrados(): Pedido[] {
     return this.pedidos.filter(p => {
       const { estadoPedido, estadoPago, cliente, fechaDesde, fechaHasta } = this.filtros;
-
       if (estadoPedido && p.estado !== estadoPedido) return false;
       if (estadoPago   && p.estadoPago !== estadoPago) return false;
       if (cliente && !(p.cliente?.idUsuario.toString().includes(cliente))) return false;
       if (fechaDesde && new Date(p.fecha) < new Date(fechaDesde)) return false;
       if (fechaHasta && new Date(p.fecha) > new Date(fechaHasta)) return false;
-
       return true;
     });
   }

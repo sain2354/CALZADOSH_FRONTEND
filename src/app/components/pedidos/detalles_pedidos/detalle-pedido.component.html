@@ -23,48 +23,31 @@
     </section>
 
     <!-- Detalles del Pedido -->
-    <section class="informacion-pedido">
-      <h4>Detalles del Pedido</h4>
-      <table class="tabla-detalles">
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Talla</th>
-            <th>Precio U.</th>
-            <th>Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let d of pedido.detalles">
-            <td>
-              <img
-                *ngIf="d.imagenUrl"
-                [src]="d.imagenUrl"
-                [alt]="d.nombreProducto"
-                class="miniatura"
-              />
-            </td>
-            <td>{{ d.nombreProducto }}</td>
-            <td>{{ d.cantidad }}</td>
-            <td>{{ d.talla }}</td>
-            <td>S/ {{ d.precio.toFixed(2) }}</td>
-            <td>S/ {{ d.total.toFixed(2) }}</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="5" class="text-right"><strong>Total pedido:</strong></td>
-            <td>S/ {{ pedido.total.toFixed(2) }}</td>
-          </tr>
-          <tr>
-            <td colspan="5" class="text-right"><strong>Costo envío:</strong></td>
-            <td>S/ {{ pedido.costoEnvio.toFixed(2) }}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </section>
+<section class="informacion-pedido">
+  <h4>Detalles del Pedido</h4>
+
+  <div class="lista-productos">
+    <div class="producto-card" *ngFor="let d of pedido.detalles">
+      <div class="producto-info">
+        <p class="prod-nombre"><strong>{{ d.nombreProducto }}</strong></p>
+        <p><strong>Talla:</strong> {{ d.talla }}</p>
+        <p><strong>Cantidad:</strong> {{ d.cantidad }}</p>
+        <p><strong>Precio U.:</strong> S/ {{ d.precio.toFixed(2) }}</p>
+      </div>
+      <img
+        *ngIf="d.imagenUrl"
+        [src]="d.imagenUrl"
+        [alt]="d.nombreProducto"
+        class="producto-imagen"
+      />
+    </div>
+  </div>
+
+  <div class="resumen-pedido">
+    <p><strong>Costo envío:</strong> S/ {{ pedido.costoEnvio.toFixed(2) }}</p>
+    <p><strong>Total pedido:</strong> S/ {{ pedido.total.toFixed(2) }}</p>
+  </div>
+</section>
 
     <!-- Información de Pago -->
     <section class="informacion-pago">

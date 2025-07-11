@@ -1,3 +1,4 @@
+/* listado-productos.component.css */
 .card {
   margin: 10px auto;
   padding: 10px;
@@ -13,8 +14,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background: #f8f9fa; /* color claro */
-  color: #333;        /* texto oscuro */
+  background: #f8f9fa;
+  color: #333;
   border-radius: 12px 12px 0 0;
   border-bottom: 1px solid #dee2e6;
 }
@@ -92,17 +93,18 @@
   justify-content: center;
   align-items: center;
   overflow-y: auto;
+  z-index: 1000;
 }
 
 .modal-content {
   background: white;
   padding: 20px;
   border-radius: 12px;
-  width: 600px;       /* Ajusta para un ancho más razonable */
+  width: 600px;
   max-width: 90%;
   margin: auto;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  font-size: 0.70rem; /* tamaño de fuente reducido */
+  font-size: 0.70rem;
 }
 
 /* Título del modal */
@@ -131,7 +133,8 @@
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 7px;
   border: 1px solid #ced4da;
@@ -150,4 +153,59 @@
 .table-sm td {
   padding: 0.20rem !important;
   font-size: 0.85rem;
+}
+
+/* Estilos para el modal de código de barras */
+.modal-content .form-group {
+  margin-bottom: 15px;
+}
+
+.modal-content .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.modal-content .form-control {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
 }

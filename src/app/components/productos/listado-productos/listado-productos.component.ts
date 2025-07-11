@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
+import { jsPDF } from 'jspdf';
 
 import { ProductoService } from '../../../services/producto.service';
 import { TallaService } from '../../../services/talla.service';
@@ -87,6 +88,16 @@ export class ListadoProductosComponent implements OnInit {
   tallaSeleccionadaId: number = 0;
   stockTallaSeleccionada: number = 0;
   tallasSeleccionadas: SizeWithStock[] = [];
+
+  // Modal código de barras
+  modalCodigoBarrasAbierto: boolean = false;
+  productoParaCodigo: Producto | null = null;
+  codigoBarrasData = {
+    codigoProducto: '',
+    tallaSeleccionada: '',
+    fila: 1,
+    columna: 1
+  };
 
   // Aquí guardaremos el archivo seleccionado (en vez de usar base64)
   archivoSeleccionado: File | null = null;
@@ -198,44 +209,41 @@ export class ListadoProductosComponent implements OnInit {
   onFocused(e: any) {}
 
   // ============ SUBCATEGORÍAS ============
-  // listado-productos.component.ts
-
   actualizarSubcategorias() {
-  // 1) Filtras subcategorías
-  this.subcategoriasFiltradas = this.subcategorias.filter(
-    s => s.idCategoria === Number(this.producto.idCategoria)
-  );
-  this.producto.idSubCategoria = 0;
+    // 1) Filtras subcategorías
+    this.subcategoriasFiltradas = this.subcategorias.filter(
+      s => s.idCategoria === Number(this.producto.idCategoria)
+    );
+    this.producto.idSubCategoria = 0;
 
-  // 2) Determinas la categoría elegida
-  const cat = this.categorias.find(c => c.id === this.producto.idCategoria)?.nombre;
-  console.log('[DEBUG] actualizarSubcategorias → categoria elegida:', cat);
+    // 2) Determinas la categoría elegida
+    const cat = this.categorias.find(c => c.id === this.producto.idCategoria)?.nombre;
+    console.log('[DEBUG] actualizarSubcategorias → categoria elegida:', cat);
 
-  // 3) Lógicas de carga
-  if (cat && cat !== 'Todos') {
-    console.log('[DEBUG] Llamo a cargarTallasPorCategoria con:', cat);
-    this.cargarTallasPorCategoria(cat);
-  } else {
-    console.log('[DEBUG] Llamo a cargarTallas() (todos)');
-    this.cargarTallas();
+    // 3) Lógicas de carga
+    if (cat && cat !== 'Todos') {
+      console.log('[DEBUG] Llamo a cargarTallasPorCategoria con:', cat);
+      this.cargarTallasPorCategoria(cat);
+    } else {
+      console.log('[DEBUG] Llamo a cargarTallas() (todos)');
+      this.cargarTallas();
+    }
+
+    // 4) Limpieza UI
+    this.tallasSeleccionadas = [];
+    this.tallaSeleccionadaId = 0;
   }
 
-  // 4) Limpieza UI
-  this.tallasSeleccionadas = [];
-  this.tallaSeleccionadaId = 0;
-}
-
-cargarTallasPorCategoria(categoriaNombre?: string) {
-  console.log('[DEBUG] pedir tallas al servicio con filtro:', categoriaNombre);
-  this.tallaService.getTallas(categoriaNombre).subscribe({
-    next: lista => {
-      console.log('[DEBUG] respuesta getTallas:', lista);
-      this.tallasDisponibles = lista;
-    },
-    error: err => console.error('Error al filtrar tallas:', err)
-  });
-}
-
+  cargarTallasPorCategoria(categoriaNombre?: string) {
+    console.log('[DEBUG] pedir tallas al servicio con filtro:', categoriaNombre);
+    this.tallaService.getTallas(categoriaNombre).subscribe({
+      next: lista => {
+        console.log('[DEBUG] respuesta getTallas:', lista);
+        this.tallasDisponibles = lista;
+      },
+      error: (err: any) => console.error('Error al filtrar tallas:', err)
+    });
+  }
 
   // ============ GUARDAR PRODUCTO ============
   guardarProducto() {
@@ -258,39 +266,79 @@ cargarTallasPorCategoria(categoriaNombre?: string) {
     formData.append('Estado', this.producto.estado ? 'true' : 'false');
 
     // Campos adicionales
-    if (this.producto.mpn) {
-      formData.append('Mpn', this.producto.mpn);
-    }
-    formData.append('ShippingInfo', this.producto.shippingInfo ?? '');
-    if (this.producto.material) {
-      formData.append('Material', this.producto.material);
-    }
-    if (this.producto.color) {
-      formData.append('Color', this.producto.color);
-    }
+   // — Campos adicionales —
+if (this.producto.mpn) {
+  formData.append('Mpn', this.producto.mpn);
+}
+formData.append('ShippingInfo', this.producto.shippingInfo || '');
+if (this.producto.material) {
+  formData.append('Material', this.producto.material);
+}
+if (this.producto.color) {
+  formData.append('Color', this.producto.color);
+}
 
-    if (this.archivoSeleccionado) {
-      formData.append('file', this.archivoSeleccionado);
-    }
+// — Array de tallas enriquecidas —
+this.tallasSeleccionadas.forEach((talla, i) => {
+  formData.append(`Sizes[${i}].Usa`,   talla.usa.toString());
+  formData.append(`Sizes[${i}].Eur`,   talla.eur.toString());
+  formData.append(`Sizes[${i}].Cm`,    talla.cm.toString());
+  formData.append(`Sizes[${i}].Stock`, talla.stock.toString());
+});
 
-    this.productoService.crearProductoConArchivo(formData).subscribe({
-      next: (productoCreado) => {
-        console.log('Producto creado con éxito:', productoCreado);
-        if (productoCreado.idProducto && this.tallasSeleccionadas.length) {
-          this.guardarTallasProducto(productoCreado.idProducto);
-        } else {
-          this.cargarProductos();
-          this.cerrarModal();
+// — Imagen —
+if (this.archivoSeleccionado) {
+  formData.append(
+    'imagen',
+    this.archivoSeleccionado,
+    this.archivoSeleccionado.name
+  );
+}
+
+
+    // Si es edición
+    if (this.producto.idProducto && this.producto.idProducto > 0) {
+      this.productoService.updateProducto(this.producto.idProducto, formData).subscribe({
+        next: (productoActualizado) => {
+          console.log('Producto actualizado con éxito:', productoActualizado);
+          if (productoActualizado.idProducto && this.tallasSeleccionadas.length) {
+            this.guardarTallasProducto(productoActualizado.idProducto);
+          } else {
+            this.cargarProductos();
+            this.cerrarModal();
+          }
+        },
+        error: (error: any) => {
+          console.error('Error al actualizar el producto:', error);
         }
-      },
-      error: (error: any) => {
-        console.error('Error al guardar el producto:', error);
-      }
-    });
+      });
+    } 
+    // Si es nuevo
+    else {
+      this.productoService.crearProductoConArchivo(formData).subscribe({
+        next: (productoCreado) => {
+          console.log('Producto creado con éxito:', productoCreado);
+          if (productoCreado.idProducto && this.tallasSeleccionadas.length) {
+            this.guardarTallasProducto(productoCreado.idProducto);
+          } else {
+            this.cargarProductos();
+            this.cerrarModal();
+          }
+        },
+        error: (error: any) => {
+          console.error('Error al guardar el producto:', error);
+        }
+      });
+    }
   }
 
   private guardarTallasProducto(idProducto: number) {
     let pendientes = this.tallasSeleccionadas.length;
+    if (pendientes === 0) {
+      this.cargarProductos();
+      this.cerrarModal();
+      return;
+    }
 
     this.tallasSeleccionadas.forEach((tallaItem) => {
       const request = {
@@ -364,19 +412,19 @@ cargarTallasPorCategoria(categoriaNombre?: string) {
 
   // ============ MODAL ============
   abrirModal() {
-  this.modalAbierto = true;
-  this.producto = this.nuevoProducto();
-  this.tallasSeleccionadas = [];
-  this.subcategoriasFiltradas = [];
+    this.modalAbierto = true;
+    this.producto = this.nuevoProducto();
+    this.tallasSeleccionadas = [];
+    this.subcategoriasFiltradas = [];
 
-  const cat = this.categorias.find(c => c.id === this.producto.idCategoria)?.nombre;
-  if (cat && cat !== 'Todos') {
-    this.cargarTallasPorCategoria(cat);
-  } else {
-    // si es "Todos" o undefined, traemos todas las tallas
-    this.cargarTallas();
+    const cat = this.categorias.find(c => c.id === this.producto.idCategoria)?.nombre;
+    if (cat && cat !== 'Todos') {
+      this.cargarTallasPorCategoria(cat);
+    } else {
+      this.cargarTallas();
+    }
   }
-}
+
   cerrarModal() {
     this.modalAbierto = false;
     this.producto = this.nuevoProducto();
@@ -418,72 +466,68 @@ cargarTallasPorCategoria(categoriaNombre?: string) {
   }
 
   editarProducto(prod: Producto) {
-    console.log('Editar producto:', prod);
-  }
-
-  aumentarStock(prod: Producto) {
-    if (!prod.idProducto) {
-      alert('No se encontró la ID del producto.');
-      return;
-    }
-
-    const cantidad = prompt('¿Cuántas unidades deseas sumar al stock?');
-    if (!cantidad) return;
-
-    const cantNum = parseInt(cantidad, 10);
-    if (isNaN(cantNum) || cantNum <= 0) {
-      alert('Cantidad inválida.');
-      return;
-    }
-
-    const nuevaCantidad = (prod.stock || 0) + cantNum;
-    this.productoService.updateProducto(prod.idProducto, { ...prod, stock: nuevaCantidad })
-      .subscribe({
-        next: () => {
-          prod.stock = nuevaCantidad;
-          alert('Stock aumentado correctamente');
+    this.producto = {...prod};
+    this.modalAbierto = true;
+    
+    if (prod.idProducto) {
+      this.tallaProductoService.getTallasByProducto(prod.idProducto).subscribe({
+        next: (tallas) => {
+          this.tallasSeleccionadas = tallas.map(t => ({
+            idTalla: t.idTalla,
+            usa: t.usa,
+            eur: t.eur,
+            cm: t.cm,
+            stock: t.stock
+          }));
         },
-        error: (err) => {
-          console.error('Error al aumentar stock:', err);
+        error: (err: any) => {
+          console.error('Error al cargar tallas del producto:', err);
         }
       });
-  }
-
-  disminuirStock(prod: Producto) {
-    if (!prod.idProducto) {
-      alert('No se encontró la ID del producto.');
-      return;
     }
-
-    const cantidad = prompt('¿Cuántas unidades deseas restar del stock?');
-    if (!cantidad) return;
-
-    const cantNum = parseInt(cantidad, 10);
-    if (isNaN(cantNum) || cantNum <= 0) {
-      alert('Cantidad inválida.');
-      return;
-    }
-
-    const nuevaCantidad = (prod.stock || 0) - cantNum;
-    if (nuevaCantidad < 0) {
-      alert('No puedes dejar el stock en negativo.');
-      return;
-    }
-
-    this.productoService.updateProducto(prod.idProducto, { ...prod, stock: nuevaCantidad })
-      .subscribe({
-        next: () => {
-          prod.stock = nuevaCantidad;
-          alert('Stock disminuido correctamente');
-        },
-        error: (err) => {
-          console.error('Error al disminuir stock:', err);
-        }
-      });
   }
 
   generarCodigoBarras(prod: Producto) {
-    console.log('Generar código de barras para:', prod);
+    this.productoParaCodigo = prod;
+    this.codigoBarrasData = {
+      codigoProducto: prod.codigoBarra || '',
+      tallaSeleccionada: '',
+      fila: 1,
+      columna: 1
+    };
+    this.modalCodigoBarrasAbierto = true;
+  }
+
+  generarPDFCodigoBarras() {
+    if (!this.productoParaCodigo) return;
+
+    const doc = new jsPDF();
+    
+    doc.setFontSize(12);
+    doc.text(`Código de Barras - ${this.productoParaCodigo.nombre}`, 10, 10);
+    doc.text(`Producto: ${this.productoParaCodigo.nombre}`, 10, 20);
+    doc.text(`Código: ${this.codigoBarrasData.codigoProducto}`, 10, 30);
+    
+    if (this.codigoBarrasData.tallaSeleccionada) {
+      doc.text(`Talla: ${this.codigoBarrasData.tallaSeleccionada}`, 10, 40);
+    }
+    
+    doc.text('CÓDIGO DE BARRAS AQUÍ', 50, 60);
+    doc.text(`Configuración: Fila ${this.codigoBarrasData.fila}, Columna ${this.codigoBarrasData.columna}`, 10, 80);
+    
+    doc.save(`codigo_barras_${this.productoParaCodigo.nombre}.pdf`);
+    this.cerrarModalCodigoBarras();
+  }
+
+  cerrarModalCodigoBarras() {
+    this.modalCodigoBarrasAbierto = false;
+    this.productoParaCodigo = null;
+    this.codigoBarrasData = {
+      codigoProducto: '',
+      tallaSeleccionada: '',
+      fila: 1,
+      columna: 1
+    };
   }
 
   eliminarProducto(prod: Producto) {
@@ -502,7 +546,7 @@ cargarTallasPorCategoria(categoriaNombre?: string) {
           this.aplicarFiltro();
           alert('Producto eliminado con éxito');
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Error al eliminar producto:', err);
           alert('Ocurrió un error al eliminar el producto.');
         }

@@ -1,7 +1,8 @@
+// src/app/components/detalle-pedido/detalle-pedido.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Pedido, Pago } from '../../../services/pedido.service';
+import { CommonModule }           from '@angular/common';
+import { HttpClient }             from '@angular/common/http';
+import { Pedido, Pago }           from '../../../models/pedido.model';
 import { ComprobantePagoComponent } from './comprobante-pago.component';
 
 @Component({

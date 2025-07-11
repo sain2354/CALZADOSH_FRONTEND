@@ -1,10 +1,14 @@
+/* src/app/components/pedido/pedido.component.css */
+
+/* Contenedor principal */
 .contenedor-pedidos {
   max-width: 1200px;
-  margin: 1rem auto;       /* Antes 1.5rem, ahora 1rem para subirlo */
+  margin: 1rem auto;
   padding: 1rem;
   font-family: 'Segoe UI', sans-serif;
 }
 
+/* Botón de filtros */
 .btn-filtros {
   background: #00bcd4;
   color: #fff;
@@ -15,11 +19,14 @@
   margin-bottom: 1rem;
   font-size: 1rem;
 }
-.btn-filtros:hover { background: #0097a7; }
+.btn-filtros:hover {
+  background: #0097a7;
+}
 
+/* Panel de filtros */
 .panel-filtros {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
   background: #f8f9fa;
   padding: 1rem;
@@ -41,6 +48,7 @@
   font-size: 0.95rem;
 }
 
+/* Botón limpiar filtros */
 .btn-limpiar {
   background: #6c757d;
   color: #fff;
@@ -49,8 +57,11 @@
   border-radius: 4px;
   font-size: 0.95rem;
 }
-.btn-limpiar:hover { background: #5a6268; }
+.btn-limpiar:hover {
+  background: #5a6268;
+}
 
+/* Tabla de pedidos */
 .tabla-pedidos {
   border: 1px solid #e0e0e0;
   border-radius: 6px;
@@ -60,23 +71,15 @@
   overflow-y: auto;
 }
 
+/* Cabecera de tabla */
 .tabla-cabecera {
   display: grid;
-  grid-template-columns:
-    50px    /* ID */
-    1.4fr   /* Usuario */
-    90px    /* Total */
-    110px   /* Método Pago */
-    110px   /* Estado Pago */
-    130px   /* Estado Pedido */
-    160px   /* Fecha */
-    80px;   /* ACCIONES ampliado */
+  grid-template-columns: 50px 1.4fr 90px 110px 110px 130px 160px 80px;
   background: #00bcd4;
   color: #fff;
   font-weight: bold;
   font-size: 0.9rem;
 }
-
 .tabla-cabecera div {
   padding: 10px;
   text-align: center;
@@ -87,24 +90,13 @@
   border-right: none;
 }
 
-.tabla-cuerpo {
-  background: #fff;
-}
-.tabla-fila {
+/* Filas de tabla */
+.tabla-cuerpo .tabla-fila {
   display: grid;
-  grid-template-columns:
-    50px
-    1.4fr
-    90px
-    110px
-    110px
-    130px
-    160px
-    80px;   /* ACCIONES ampliado */
+  grid-template-columns: 50px 1.4fr 90px 110px 110px 130px 160px 80px;
   border-bottom: 1px solid #e0e0e0;
 }
-
-.tabla-fila div {
+.tabla-cuerpo .tabla-fila div {
   padding: 8px 6px;
   text-align: center;
   font-size: 0.9rem;
@@ -112,10 +104,11 @@
   align-items: center;
   justify-content: center;
 }
-.tabla-fila:nth-child(even) {
+.tabla-cuerpo .tabla-fila:nth-child(even) {
   background: #fbfcfd;
 }
 
+/* Badges de estado */
 .estado-badge {
   padding: 4px 8px;
   border-radius: 12px;
@@ -125,11 +118,12 @@
   display: inline-block;
 }
 .pendiente { background: #FFF3CD; color: #856404; }
-.validado  { background: #D4EDDA; color: #155724; }
-.rechazado { background: #F8D7DA; color: #721C24; }
 .pago-validado { background: #CCE5FF; color: #004085; }
 .pendiente-validación { background: #E2E3E5; color: #383D41; }
+.validado { background: #D4EDDA; color: #155724; }
+.rechazado { background: #F8D7DA; color: #721C24; }
 
+/* Celda de acciones */
 .acciones-cell {
   display: flex;
   flex-direction: column;
@@ -152,8 +146,42 @@
   font-size: 0.85rem;
 }
 
+/* Paginación */
 .pagination-wrapper {
   margin: 1rem 0;
   display: flex;
   justify-content: center;
+}
+
+/* Overlays (alerta y confirmación) cubriendo toda la pantalla */
+.modal-backdrop {
+  position: fixed;
+  inset: 0; /* equivale a top:0; right:0; bottom:0; left:0; */
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.alert-backdrop {
+  z-index: 10000;
+}
+.confirm-backdrop {
+  z-index: 10001;
+}
+
+/* Ventana modal */
+.modal {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  text-align: center;
+  max-width: 90%;
+}
+
+/* Botones dentro del modal */
+.alert-modal button,
+.confirm-modal button {
+  margin: 0 0.5rem;
 }

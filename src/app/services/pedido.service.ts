@@ -2,54 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface DetallePedido {
-  id: number;
-  idProducto: number;
-  nombreProducto: string; // nuevo
-  imagenUrl: string;      // nuevo
-  talla: string;
-  cantidad: number;
-  precio: number;
-  total: number;
-}
-
-export interface Pago {
-  idPago: number;
-  idVenta: number;
-  montoPagado: number;
-  fechaPago: string;
-  idMedioPago: number;
-  idTransaccionMP?: string;
-  estadoPago: string;
-  comprobanteUrl?: string;
-}
-
-export interface Cliente {
-  idUsuario: number;
-  nombreCompleto: string;
-  telefono: string;
-  email: string;
-}
-
-export interface DireccionEntrega {
-  idDireccion: number;
-  direccion: string;
-  referencia?: string;
-}
-
-export interface Pedido {
-  idVenta: number;
-  fecha: string;
-  total: number;
-  estado: string;
-  estadoPago: string;
-  costoEnvio: number;
-  cliente: Cliente;
-  direccionEntrega?: DireccionEntrega;
-  detalles: DetallePedido[];  // ahora vienen con nombreProducto, imagenUrl...
-  pagos: Pago[];
-}
+import { Pedido } from '../models/pedido.model';
 
 @Injectable({ providedIn: 'root' })
 export class PedidoService {
@@ -62,10 +15,12 @@ export class PedidoService {
     return this.http.get<Pedido[]>(this.apiUrl);
   }
 
+  /** Elimina un pedido por su ID */
   eliminarPedido(idVenta: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${idVenta}`);
   }
 
+  /** Cambia el estado de un pedido */
   cambiarEstado(idVenta: number, nuevoEstado: string): Observable<void> {
     return this.http.put<void>(
       `${this.apiUrl}/${idVenta}/estado`,

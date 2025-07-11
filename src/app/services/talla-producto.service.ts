@@ -20,9 +20,13 @@ export class TallaProductoService {
     return this.http.post<any>(this.apiUrl, request);
   }
 
-  // NUEVO: Obtiene las tallas asociadas a un producto (GET /api/TallaProducto/porProducto/{idProducto})
+  // Obtiene las tallas asociadas a un producto
   getTallasByProducto(idProducto: number): Observable<any[]> {
-    // Ajusta la ruta a tu backend (TallaProductoController con [HttpGet("porProducto/{idProducto}")])
     return this.http.get<any[]>(`${this.apiUrl}/porProducto/${idProducto}`);
+  }
+
+  // Elimina todas las tallas asociadas a un producto
+  deleteTallasByProducto(idProducto: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/producto/${idProducto}`);
   }
 }
