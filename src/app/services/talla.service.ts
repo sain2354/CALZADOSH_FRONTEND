@@ -11,26 +11,15 @@ export class TallaService {
 
   constructor(private http: HttpClient) {}
 
-  // Retorna TODAS las tallas (GET /api/Talla)
-  getAllTallas(): Observable<Talla[]> {
-    return this.http.get<Talla[]>(this.apiUrl);
+  /** 
+   * Devuelve todas las tallas o, si se le pasa categoría, solo las de esa categoría.
+   */
+  getTallas(categoria?: string): Observable<Talla[]> {
+    // Escapa espacios u otros caracteres especiales
+    const params = categoria
+      ? `?categoria=${encodeURIComponent(categoria.trim())}`
+      : '';
+    return this.http.get<Talla[]>(`${this.apiUrl}${params}`);
   }
-
-  // Crea una talla (POST /api/Talla)
-  createTalla(tallaRequest: { descripcion: string }): Observable<Talla> {
-    return this.http.post<Talla>(this.apiUrl, tallaRequest);
-  }
-
-  // Elimina una talla (DELETE /api/Talla/{idTalla})
-  deleteTalla(idTalla: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${idTalla}`);
-  }
-
-  /*
-  // COMENTADO/ELIMINADO: getTallasByProducto
-  // Porque en tu backend NO existe /porProducto/{idProducto}
-  getTallasByProducto(idProducto: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/porProducto/${idProducto}`);
-  }
-  */
 }
+

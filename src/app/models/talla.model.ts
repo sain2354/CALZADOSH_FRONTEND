@@ -1,5 +1,7 @@
 export interface Talla {
-    idTalla: number;
-    descripcion: string;
-  }
-  
+  idTalla: number;
+  categoria: string;
+  usa: string;
+  eur: string;
+  cm: string;
+}

@@ -1,3 +1,4 @@
+// listado-productos.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,17 +8,17 @@ import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 import { ProductoService } from '../../../services/producto.service';
 import { TallaService } from '../../../services/talla.service';
 import { TallaProductoService } from '../../../services/talla-producto.service';
-import { Producto } from '../../../models/producto.model';
+import { Producto, SizeWithStock } from '../../../models/producto.model';
 import { Talla } from '../../../models/talla.model';
 
 @Component({
   selector: 'app-listado-productos',
   standalone: true,
   imports: [
-    CommonModule,          // *ngIf, *ngFor, ngClass...
-    FormsModule,           // [(ngModel)]
-    NgxPaginationModule,   // paginate pipe/directive
-    AutocompleteLibModule  // <ng-autocomplete>
+    CommonModule,
+    FormsModule,
+    NgxPaginationModule,
+    AutocompleteLibModule
   ],
   templateUrl: './listado-productos.component.html',
   styleUrls: ['./listado-productos.component.css']
@@ -76,7 +77,7 @@ export class ListadoProductosComponent implements OnInit {
     { id: 3, nombre: 'Par' }
   ];
 
-    // Modal
+  // Modal
   modalAbierto: boolean = false;
   producto: Producto = this.nuevoProducto();
   subcategoriasFiltradas: { id: number, nombre: string }[] = [];
@@ -85,11 +86,7 @@ export class ListadoProductosComponent implements OnInit {
   tallasDisponibles: Talla[] = [];
   tallaSeleccionadaId: number = 0;
   stockTallaSeleccionada: number = 0;
-  tallasSeleccionadas: {
-    idTalla: number;
-    descripcionTalla: string;
-    stock: number;
-  }[] = [];
+  tallasSeleccionadas: SizeWithStock[] = [];
 
   // Aquí guardaremos el archivo seleccionado (en vez de usar base64)
   archivoSeleccionado: File | null = null;
@@ -105,7 +102,19 @@ export class ListadoProductosComponent implements OnInit {
     this.cargarProductos();
   }
 
-  // ============ CARGAR PRODUCTOS (FILTRADO POR cat) SIN PAGINACIÓN DEL SERVIDOR ============
+  // ============ CARGAR TALLAS ============
+  cargarTallas() {
+    this.tallaService.getTallas().subscribe({
+      next: (data) => {
+        this.tallasDisponibles = data;
+      },
+      error: (err: any) => {
+        console.error('Error al cargar tallas:', err);
+      }
+    });
+  }
+
+  // ============ CARGAR PRODUCTOS ============
   cargarProductos() {
     this.productoService.getAll(this.selectedCategory).subscribe({
       next: (lista) => {
@@ -136,6 +145,11 @@ export class ListadoProductosComponent implements OnInit {
     this.selectedCategory = cat;
     this.page = 1;
     this.cargarProductos();
+    if (this.modalAbierto) {
+      const nombreCat = this.categorias.find(c => c.id === cat)?.nombre;
+      this.cargarTallasPorCategoria(nombreCat);
+      this.tallasSeleccionadas = [];
+    }
   }
 
   onPageSizeChange(size: number) {
@@ -160,24 +174,12 @@ export class ListadoProductosComponent implements OnInit {
     this.page = newPage;
   }
 
-  // ============ TALLAS Y SUBCATEGORÍAS ============
-  cargarTallas() {
-    this.tallaService.getAllTallas().subscribe({
-      next: (data) => {
-        this.tallasDisponibles = data;
-      },
-      error: (err: any) => {
-        console.error('Error al cargar tallas:', err);
-      }
-    });
-  }
-
-  // Filtro local (texto)
+  // ============ FILTRO INTERNO ============
   aplicarFiltro() {
     const texto = this.filtro.toLowerCase();
     this.productosFiltrados = this.productos.filter(
       (p) =>
-        p.nombre?.toLowerCase().includes(texto) ||
+        p.nombre.toLowerCase().includes(texto) ||
         p.categoria?.toLowerCase().includes(texto)
     );
     this.totalRegistros = this.productosFiltrados.length;
@@ -195,28 +197,50 @@ export class ListadoProductosComponent implements OnInit {
 
   onFocused(e: any) {}
 
-  // ============ MODAL ============
-  abrirModal() {
-    this.modalAbierto = true;
-    this.subcategoriasFiltradas = [];
-    this.producto = this.nuevoProducto();
-    // Asignamos valor por defecto a shippingInfo
-    this.producto.shippingInfo = 'Envíos a nivel nacional, precio de delivery no incluido';
+  // ============ SUBCATEGORÍAS ============
+  // listado-productos.component.ts
+
+  actualizarSubcategorias() {
+  // 1) Filtras subcategorías
+  this.subcategoriasFiltradas = this.subcategorias.filter(
+    s => s.idCategoria === Number(this.producto.idCategoria)
+  );
+  this.producto.idSubCategoria = 0;
+
+  // 2) Determinas la categoría elegida
+  const cat = this.categorias.find(c => c.id === this.producto.idCategoria)?.nombre;
+  console.log('[DEBUG] actualizarSubcategorias → categoria elegida:', cat);
+
+  // 3) Lógicas de carga
+  if (cat && cat !== 'Todos') {
+    console.log('[DEBUG] Llamo a cargarTallasPorCategoria con:', cat);
+    this.cargarTallasPorCategoria(cat);
+  } else {
+    console.log('[DEBUG] Llamo a cargarTallas() (todos)');
+    this.cargarTallas();
   }
 
-  cerrarModal() {
-    this.modalAbierto = false;
-    this.producto = this.nuevoProducto();
-    this.tallasSeleccionadas = [];
-    this.tallaSeleccionadaId = 0;
-    this.stockTallaSeleccionada = 0;
-    this.archivoSeleccionado = null;
-  }
+  // 4) Limpieza UI
+  this.tallasSeleccionadas = [];
+  this.tallaSeleccionadaId = 0;
+}
 
+cargarTallasPorCategoria(categoriaNombre?: string) {
+  console.log('[DEBUG] pedir tallas al servicio con filtro:', categoriaNombre);
+  this.tallaService.getTallas(categoriaNombre).subscribe({
+    next: lista => {
+      console.log('[DEBUG] respuesta getTallas:', lista);
+      this.tallasDisponibles = lista;
+    },
+    error: err => console.error('Error al filtrar tallas:', err)
+  });
+}
+
+
+  // ============ GUARDAR PRODUCTO ============
   guardarProducto() {
     const formData = new FormData();
 
-  // Añadimos las propiedades del producto como campos
     formData.append('IdCategoria', String(this.producto.idCategoria ?? 0));
     if (this.producto.idSubCategoria) {
       formData.append('IdSubCategoria', String(this.producto.idSubCategoria));
@@ -227,18 +251,17 @@ export class ListadoProductosComponent implements OnInit {
     formData.append('StockMinimo', String(this.producto.stockMinimo ?? 0));
     formData.append('PrecioVenta', String(this.producto.precioVenta ?? 0));
 
-    // Si precioCompra es opcional
     if (this.producto.precioCompra != null) {
       formData.append('PrecioCompra', String(this.producto.precioCompra));
     }
     formData.append('IdUnidadMedida', String(this.producto.idUnidadMedida ?? 0));
     formData.append('Estado', this.producto.estado ? 'true' : 'false');
 
-    // — Nuevos campos —
+    // Campos adicionales
     if (this.producto.mpn) {
       formData.append('Mpn', this.producto.mpn);
     }
-    formData.append('ShippingInfo', this.producto.shippingInfo || '');
+    formData.append('ShippingInfo', this.producto.shippingInfo ?? '');
     if (this.producto.material) {
       formData.append('Material', this.producto.material);
     }
@@ -250,51 +273,23 @@ export class ListadoProductosComponent implements OnInit {
       formData.append('file', this.archivoSeleccionado);
     }
 
-
     this.productoService.crearProductoConArchivo(formData).subscribe({
       next: (productoCreado) => {
-        
         console.log('Producto creado con éxito:', productoCreado);
-
-        // Asociar tallas (si hay) una vez creado el producto
-        if (this.tallasSeleccionadas.length > 0 && productoCreado.idProducto) {
+        if (productoCreado.idProducto && this.tallasSeleccionadas.length) {
           this.guardarTallasProducto(productoCreado.idProducto);
         } else {
           this.cargarProductos();
           this.cerrarModal();
         }
       },
-
       error: (error: any) => {
         console.error('Error al guardar el producto:', error);
       }
     });
   }
 
-  private nuevoProducto(): Producto {
-    return {
-      idProducto: 0,
-      codigoBarra: '',
-      idCategoria: 0,
-      idSubCategoria: 0,
-      nombre: '',
-      precioCompra: 0,
-      precioVenta: 0,
-      stock: 0,
-      stockMinimo: 0,
-      idUnidadMedida: 0,
-      estado: true,
-      foto: '',
-      // inicializamos nuevos campos
-      mpn: '',
-      shippingInfo: '',
-      material: '',
-      color: ''
-    };
-  }
-
-  // ============ GUARDAR TALLAS ============
-  guardarTallasProducto(idProducto: number) {
+  private guardarTallasProducto(idProducto: number) {
     let pendientes = this.tallasSeleccionadas.length;
 
     this.tallasSeleccionadas.forEach((tallaItem) => {
@@ -324,7 +319,7 @@ export class ListadoProductosComponent implements OnInit {
     });
   }
 
-  // ============ AGREGAR TALLA ============
+  // ============ AGREGAR / ELIMINAR TALLA ============
   agregarTalla() {
     if (!this.tallaSeleccionadaId || this.tallaSeleccionadaId === 0) {
       alert('Selecciona una talla');
@@ -353,7 +348,9 @@ export class ListadoProductosComponent implements OnInit {
 
     this.tallasSeleccionadas.push({
       idTalla: tallaEncontrada.idTalla,
-      descripcionTalla: tallaEncontrada.descripcion,
+      usa: tallaEncontrada.usa,
+      eur: tallaEncontrada.eur,
+      cm: tallaEncontrada.cm,
       stock: this.stockTallaSeleccionada
     });
 
@@ -365,15 +362,30 @@ export class ListadoProductosComponent implements OnInit {
     this.tallasSeleccionadas.splice(index, 1);
   }
 
-  // ============ SUBCATEGORÍAS ============
-  actualizarSubcategorias() {
-    this.subcategoriasFiltradas = this.subcategorias.filter(
-      (s) => s.idCategoria === Number(this.producto.idCategoria)
-    );
-    this.producto.idSubCategoria = 0;
+  // ============ MODAL ============
+  abrirModal() {
+  this.modalAbierto = true;
+  this.producto = this.nuevoProducto();
+  this.tallasSeleccionadas = [];
+  this.subcategoriasFiltradas = [];
+
+  const cat = this.categorias.find(c => c.id === this.producto.idCategoria)?.nombre;
+  if (cat && cat !== 'Todos') {
+    this.cargarTallasPorCategoria(cat);
+  } else {
+    // si es "Todos" o undefined, traemos todas las tallas
+    this.cargarTallas();
+  }
+}
+  cerrarModal() {
+    this.modalAbierto = false;
+    this.producto = this.nuevoProducto();
+    this.tallasSeleccionadas = [];
+    this.tallaSeleccionadaId = 0;
+    this.stockTallaSeleccionada = 0;
+    this.archivoSeleccionado = null;
   }
 
-  // Aquí simplemente guardamos el archivo en una variable (sin usar Base64)
   manejarFoto(event: any) {
     const archivo = event.target.files[0];
     if (archivo) {
@@ -381,8 +393,30 @@ export class ListadoProductosComponent implements OnInit {
     }
   }
 
-  
-  // ============ OPCIONES (Editar, Stock, etc.) ============
+  private nuevoProducto(): Producto {
+    return {
+      idProducto: 0,
+      codigoBarra: '',
+      categoria: '',
+      nombre: '',
+      precioCompra: 0,
+      precioVenta: 0,
+      stock: 0,
+      minStock: 0,
+      estado: true,
+      idCategoria: 0,
+      idSubCategoria: 0,
+      stockMinimo: 0,
+      idUnidadMedida: 0,
+      foto: '',
+      mpn: '',
+      shippingInfo: 'precio de delivery no incluido',
+      material: '',
+      color: '',
+      sizes: []
+    };
+  }
+
   editarProducto(prod: Producto) {
     console.log('Editar producto:', prod);
   }
@@ -403,8 +437,7 @@ export class ListadoProductosComponent implements OnInit {
     }
 
     const nuevaCantidad = (prod.stock || 0) + cantNum;
-    const productoActualizado = { ...prod, stock: nuevaCantidad };
-    this.productoService.updateProducto(prod.idProducto, productoActualizado)
+    this.productoService.updateProducto(prod.idProducto, { ...prod, stock: nuevaCantidad })
       .subscribe({
         next: () => {
           prod.stock = nuevaCantidad;
@@ -437,8 +470,7 @@ export class ListadoProductosComponent implements OnInit {
       return;
     }
 
-    const productoActualizado = { ...prod, stock: nuevaCantidad };
-    this.productoService.updateProducto(prod.idProducto, productoActualizado)
+    this.productoService.updateProducto(prod.idProducto, { ...prod, stock: nuevaCantidad })
       .subscribe({
         next: () => {
           prod.stock = nuevaCantidad;
@@ -459,7 +491,7 @@ export class ListadoProductosComponent implements OnInit {
       alert('No se encontró la ID del producto.');
       return;
     }
-    if (!confirm(`¿Deseas eliminar el producto "${prod.nombre}"?`)) {
+    if (!confirm('¿Deseas eliminar el producto \"' + prod.nombre + '\"?')) {
       return;
     }
 

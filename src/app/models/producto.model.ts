@@ -1,3 +1,12 @@
+// producto.model.ts
+export interface SizeWithStock {
+  idTalla: number;
+  usa: string;
+  eur: string;
+  cm: string;
+  stock: number;
+}
+
 export interface Producto {
   idProducto?: number;
   codigoBarra?: string;
@@ -19,4 +28,7 @@ export interface Producto {
   shippingInfo?: string;
   material?: string;
   color?: string;
+
+  // — Tallas enriquecidas —
+  sizes?: SizeWithStock[];
 }

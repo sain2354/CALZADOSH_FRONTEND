@@ -1,3 +1,4 @@
+<!-- listado-productos.component.html -->
 <div class="card"> 
   <!-- Encabezado con estilo claro y elementos a derecha/izquierda -->
   <div class="card-header d-flex justify-content-between align-items-center">
@@ -41,8 +42,7 @@
         [notFoundTemplate]="notFoundTemplate"
         historyIdentifier="productos"
         style="width: 200px;"
-      >
-      </ng-autocomplete>
+      ></ng-autocomplete>
 
       <!-- Template opcional para los ítems -->
       <ng-template #itemTemplate let-item>
@@ -175,7 +175,6 @@
     <h3>{{ producto.idProducto ? 'Editar' : 'Registrar Nuevo' }} Producto</h3>
     <form (ngSubmit)="guardarProducto()">
       <div class="form-grid grid-2">
-        <!-- Campos existentes -->
         <div class="form-group">
           <label>Código de Barra:</label>
           <input
@@ -197,18 +196,20 @@
         <div class="form-group">
           <label>Categoría (Marca):</label>
           <select
-            [(ngModel)]="producto.idCategoria"
-            name="idCategoria"
-            (change)="actualizarSubcategorias()"
-            required
-          >
-            <option
-              *ngFor="let categoria of categorias"
-              [value]="categoria.id"
-            >
-              {{ categoria.nombre }}
-            </option>
-          </select>
+  [(ngModel)]="producto.idCategoria"
+  name="idCategoria"
+  (ngModelChange)="actualizarSubcategorias()"
+  required
+>
+  <option [ngValue]="0">-- Seleccionar categoría --</option>
+  <option
+    *ngFor="let categoria of categorias"
+    [ngValue]="categoria.id"
+  >
+    {{ categoria.nombre }}
+  </option>
+</select>
+
         </div>
         <div class="form-group">
           <label>Subcategoría:</label>
@@ -331,8 +332,6 @@
             readonly
           ></textarea>
         </div>
-        <!-- —— FIN CAMBIOS —— -->
-
       </div>
 
       <hr />
@@ -349,7 +348,7 @@
             *ngFor="let talla of tallasDisponibles"
             [ngValue]="talla.idTalla"
           >
-            {{ talla.descripcion }}
+            USA {{ talla.usa }} — EUR {{ talla.eur }} — CM {{ talla.cm }}
           </option>
         </select>
       </div>
@@ -375,14 +374,14 @@
       <table class="table table-bordered table-sm" style="margin-top: 10px;">
         <thead>
           <tr>
-            <th>Talla</th>
+            <th>Talla (USA–EUR–CM)</th>
             <th>Stock</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let t of tallasSeleccionadas; let i = index">
-            <td>{{ t.descripcionTalla }}</td>
+            <td>USA {{ t.usa }} — EUR {{ t.eur }} — CM {{ t.cm }}</td>
             <td>{{ t.stock }}</td>
             <td>
               <button
