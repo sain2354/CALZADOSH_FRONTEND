@@ -1,211 +1,349 @@
-/* listado-productos.component.css */
+/* --- Estilos para la Vista Principal (Centrado y Ajustes de Tamaño) --- */
 .card {
-  margin: 10px auto;
-  padding: 10px;
-  background: white;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  max-width: 1200px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px auto; /* Centra horizontalmente */
+  max-width: 1000px; /* Ajustado el ancho máximo */
+  width: 95%; /* Mantenemos un ancho responsive */
+  box-sizing: border-box; /* Asegurar que padding y border no afecten el ancho total */
+  /* Asegurarnos de que no tenga una altura fija que impida el scroll de la página */
+  /* height: auto; */ /* Asegurar que la altura sea automática según el contenido */
+  /* max-height: none; */ /* Remover cualquier restricción de altura máxima si existe */
+  overflow: visible; /* Permitir que el contenido desborde si es necesario, confiando en el scroll de la página */
 }
 
-/* Header claro, con texto oscuro */
 .card-header {
+  background-color: #00ACC1;
+  color: white;
+  padding: 10px 15px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  background: #f8f9fa;
-  color: #333;
-  border-radius: 12px 12px 0 0;
-  border-bottom: 1px solid #dee2e6;
 }
 
-.search-box {
-  margin-top: 0;
-  display: flex;
-  align-items: center;
+.card-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
 }
 
-.search-box input {
-  padding: 6px;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
+.card-body {
+  padding: 15px;
+  background-color: #fff;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
-.btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: bold;
+/* --- Estilos para el Área de Búsqueda y Botones --- */
+.card-body > .d-flex.justify-content-center.align-items-center.mb-3 {
+  margin-bottom: 8px !important;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.btn-primary {
-  background: #28a745;
-  border: none;
-  transition: background 0.3s ease;
+.card-body .mb-0.me-2 { /* Label "Buscar" */
+  font-size: 0.8rem;
 }
 
-.btn-primary:hover {
-  background: #218838;
+.card-body .ng-autocomplete { /* Autocomplete */
+  width: 350px !important;
+  font-size: 0.8rem;
 }
 
-.table {
+.card-body .btn.btn-primary.ms-3 { /* Botón "Nuevo" */
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+/* --- Estilos para el Botón de Filtros --- */
+.card-body > .btn.btn-secondary.mb-3 {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  margin-bottom: 8px !important;
+}
+
+
+/* --- Estilos para el Contenedor de Filtros --- */
+.card-body > div.d-flex.align-items-center.flex-wrap.mb-3 {
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+.card-body > div.d-flex.align-items-center.flex-wrap.mb-3 label {
+  font-size: 0.8rem;
+  margin-bottom: 0 !important;
+}
+
+.card-body > div.d-flex.align-items-center.flex-wrap.mb-3 .form-select-sm {
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  font-size: 0.8rem;
+}
+
+/* --- Estilos para el Texto "rows" al lado del select de mostrar --- */
+.card-body > div.d-flex.align-items-center.flex-wrap.mb-3 label.mb-0:last-child {
+    font-size: 0.8rem;
+}
+
+
+/* --- Estilos para la Tabla Principal (Ajustes para Caber Mejor y Tamaño) --- */
+.product-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 8px;
+  font-size: 0.75rem;
 }
 
-.table th,
-.table td {
-  border: 1px solid #dee2e6;
-  text-align: center;
+.product-table th,
+.product-table td {
+  border: 1px solid #ddd;
+  padding: 3px;
+  text-align: left;
+  vertical-align: middle;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Cabecera de la tabla */
-.table th {
-  background: #17a2b8;
-  color: white;
+.product-table th {
+  background-color: #f2f2f2;
+  color: #333;
   font-weight: bold;
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: #f8f9fa;
+.product-table tr:nth-child(even) {
+  background-color: #f9f9f9;
 }
 
-.activo {
-  color: #28a745;
-  font-weight: bold;
+.product-table tr:hover {
+  background-color: #f1f1f1;
 }
 
-.inactivo {
-  color: #dc3545;
-  font-weight: bold;
+.product-image {
+  width: 25px;
+  height: auto;
+  border-radius: 4px;
 }
 
-/* Modal */
+.acciones-column {
+  width: 70px;
+  white-space: nowrap;
+}
+
+.acciones-column .btn-group {
+  display: flex;
+  gap: 1px;
+}
+
+.acciones-column .btn {
+  padding: 0.02rem 0.08rem;
+  font-size: 0.4rem;
+}
+
+.product-table .btn-sm i {
+  font-size: 0.45rem;
+}
+
+/* --- Ajustes para el Cuerpo de la Tabla con Scroll (Scroll Interno de la Tabla) --- */
+.product-table tbody {
+  display: block;
+  max-height: 250px; /* Altura que define cuándo aparece el scroll DENTRO de la tabla */
+  overflow-y: auto; /* Activa el scroll vertical solo para el cuerpo de la tabla */
+  width: 100%;
+}
+
+.product-table thead,
+.product-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+
+/* --- Estilos de Paginación --- */
+.pagination-controls {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+
+/* --- Estilos para el Modal General --- */
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1050;
   overflow-y: auto;
-  z-index: 1000;
 }
 
 .modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  width: 600px;
-  max-width: 90%;
-  margin: auto;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  font-size: 0.70rem;
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 95%;
+  overflow-y: auto;
+  z-index: 1060;
+  position: relative;
 }
 
-/* Título del modal */
-.modal h3 {
-  margin-bottom: 15px;
-  font-size: 1.3rem;
-  text-align: center;
+
+/* Estilos para el encabezado del modal */
+.modal-content h3 {
+  margin-top: 0;
+  color: #007bff;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  font-size: 1.4rem;
 }
 
-/* Grid de 2 columnas en el formulario */
-.form-grid.grid-2 {
+
+/* --- Estilos de Formulario dentro del Modal --- */
+.form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 15px;
+  margin-bottom: 18px;
 }
 
 .form-group {
-  margin-bottom: 10px;
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 0;
 }
 
 .form-group label {
-  margin-bottom: 5px;
-  font-weight: 600;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.form-control {
   width: 100%;
-  padding: 7px;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
+.form-control:focus {
+  border-color: #007bff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+select.form-control {
+   height: calc(2rem + 2px);
+}
+
+textarea.form-control {
+  min-height: 90px;
+  resize: vertical;
+}
+
+input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+
+/* --- Estilos de Botones en el Modal Footer --- */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 8px;
+  margin-top: 18px;
 }
 
-/* Tabla más compacta */
-.table-sm th,
-.table-sm td {
-  padding: 0.20rem !important;
+.modal-actions button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.modal-actions .btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.modal-actions .btn-success:hover {
+  background-color: #218838;
+}
+
+.modal-actions .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.modal-actions .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+
+/* --- Estilos para la Tabla de Tallas dentro del Modal --- */
+.table-bordered {
+  border: 1px solid #dee2e6;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 15px;
   font-size: 0.85rem;
 }
 
-/* Estilos para el modal de código de barras */
-.modal-content .form-group {
-  margin-bottom: 15px;
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid #dee2e6;
+  padding: 6px;
+  text-align: left;
 }
 
-.modal-content .form-group label {
-  display: block;
-  margin-bottom: 5px;
+.table-bordered th {
+  background-color: #f8f9fa;
   font-weight: bold;
 }
 
-.modal-content .form-control {
+
+/* --- Otros Estilos Existentes (Mantener o ajustar si es necesario) --- */
+
+.form-inline .form-control {
+  display: inline-block;
+  width: auto;
+  vertical-align: middle;
+}
+
+.form-inline .btn {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px;
+}
+
+.table-responsive {
+  display: block;
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  border-color: #6c757d;
-}
-
-.btn-success {
-  background-color: #28a745;
-  border-color: #28a745;
-}
-
-.btn-info {
-  background-color: #17a2b8;
-  border-color: #17a2b8;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-
-.btn-warning {
-  background-color: #ffc107;
-  border-color: #ffc107;
+/* Aseguramos que el thead y tr del tbody tengan el mismo display y layout */
+.product-table thead,
+.product-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }

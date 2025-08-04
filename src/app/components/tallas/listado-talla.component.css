@@ -1,0 +1,29 @@
+.card {
+  margin: 1rem auto;
+  max-width: 600px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  background: #f1f1f1;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.table-responsive {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.table th {
+  background: #17a2b8;
+  color: #fff;
+}
+
+.table td,
+.table th {
+  padding: 0.5rem;
+  text-align: center;
+}

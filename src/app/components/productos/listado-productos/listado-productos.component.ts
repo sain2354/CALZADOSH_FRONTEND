@@ -1,16 +1,20 @@
 // listado-productos.component.ts
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 import { jsPDF } from 'jspdf';
 
+
 import { ProductoService } from '../../../services/producto.service';
 import { TallaService } from '../../../services/talla.service';
 import { TallaProductoService } from '../../../services/talla-producto.service';
-import { Producto, SizeWithStock } from '../../../models/producto.model';
+import { Producto, SizeWithStock, Promocion } from '../../../models/producto.model';
 import { Talla } from '../../../models/talla.model';
+import JsBarcode from 'jsbarcode'; // Ejemplo de importación
+import { Canvg } from 'canvg';
+
 
 @Component({
   selector: 'app-listado-productos',
@@ -18,7 +22,8 @@ import { Talla } from '../../../models/talla.model';
   imports: [
     CommonModule,
     FormsModule,
-    NgxPaginationModule,
+ NgxPaginationModule,
+    NgIf, // Import NgIf
     AutocompleteLibModule
   ],
   templateUrl: './listado-productos.component.html',
@@ -29,7 +34,13 @@ export class ListadoProductosComponent implements OnInit {
   page: number = 1;
   pageSize: number = 10;
   totalRegistros: number = 0;
-  selectedCategory: number = 0; // 0 => Todos, 1 => Hombres, 2 => Mujeres, 3 => Infantil
+  selectedCategory: number = 0; // 0 => Todos
+  selectedGenero: string = ''; // Added
+  selectedArticulo: string = ''; // Added
+  selectedEstilo: string = ''; // Added
+
+  // Added: property to control filter visibility
+  showFilters: boolean = false;
 
   // ============ AUTOCOMPLETE ============
   keyword = 'nombre';
@@ -49,6 +60,11 @@ export class ListadoProductosComponent implements OnInit {
     { id: 2, nombre: 'Mujeres' },
     { id: 3, nombre: 'Infantil' }
   ];
+
+  // Added: Lists for new filters
+  generos: string[] = ['Todos', 'Masculino', 'Femenino', 'Unisex']; // Example values, adjust as needed
+  articulos: string[] = ['Todos', 'Zapatillas', 'Sandalias', 'Botas', 'Zapatos']; // Example values, adjust as needed
+  estilos: string[] = ['Todos', 'Casual', 'Deportivo', 'Formal']; // Example values, adjust as needed
 
   // Subcategorías (ejemplo)
   subcategorias: { id: number, idCategoria: number, nombre: string }[] = [
@@ -101,6 +117,7 @@ export class ListadoProductosComponent implements OnInit {
 
   // Aquí guardaremos el archivo seleccionado (en vez de usar base64)
   archivoSeleccionado: File | null = null;
+  imagenExistenteUrl: string | null = null; // Added property
 
   constructor(
     private productoService: ProductoService,
@@ -127,7 +144,13 @@ export class ListadoProductosComponent implements OnInit {
 
   // ============ CARGAR PRODUCTOS ============
   cargarProductos() {
-    this.productoService.getAll(this.selectedCategory).subscribe({
+    // Modified to include new filters
+    this.productoService.getAll(
+      this.selectedCategory,
+      this.selectedGenero === 'Todos' ? null : this.selectedGenero,
+      this.selectedArticulo === 'Todos' ? null : this.selectedArticulo,
+      this.selectedEstilo === 'Todos' ? null : this.selectedEstilo
+    ).subscribe({
       next: (lista) => {
         this.productos = lista;
 
@@ -135,7 +158,7 @@ export class ListadoProductosComponent implements OnInit {
         this.productosAutoComplete = this.productos.map((p) => ({
           idProducto: p.idProducto,
           nombre: p.nombre,
-          categoria: p.categoria
+          categoria: p.categoria // Assuming 'categoria' is still used for display or other purposes
         }));
 
         // Filtro interno
@@ -150,6 +173,25 @@ export class ListadoProductosComponent implements OnInit {
         this.productosFiltrados = [];
       }
     });
+  }
+
+  // Added: Methods for new filter changes
+  onGeneroChange(genero: string) {
+    this.selectedGenero = genero;
+    this.page = 1;
+    this.cargarProductos();
+  }
+
+  onArticuloChange(articulo: string) {
+    this.selectedArticulo = articulo;
+    this.page = 1;
+    this.cargarProductos();
+  }
+
+  onEstiloChange(estilo: string) {
+    this.selectedEstilo = estilo;
+    this.page = 1;
+    this.cargarProductos();
   }
 
   onCategoryChange(cat: number) {
@@ -191,7 +233,10 @@ export class ListadoProductosComponent implements OnInit {
     this.productosFiltrados = this.productos.filter(
       (p) =>
         p.nombre.toLowerCase().includes(texto) ||
-        p.categoria?.toLowerCase().includes(texto)
+        p.categoria?.toLowerCase().includes(texto) ||
+        p.genero?.toLowerCase().includes(texto) || // Added
+        p.articulo?.toLowerCase().includes(texto) || // Added
+        p.estilo?.toLowerCase().includes(texto) // Added
     );
     this.totalRegistros = this.productosFiltrados.length;
   }
@@ -249,6 +294,7 @@ export class ListadoProductosComponent implements OnInit {
   guardarProducto() {
     const formData = new FormData();
 
+    // Append product data
     formData.append('IdCategoria', String(this.producto.idCategoria ?? 0));
     if (this.producto.idSubCategoria) {
       formData.append('IdSubCategoria', String(this.producto.idSubCategoria));
@@ -265,65 +311,65 @@ export class ListadoProductosComponent implements OnInit {
     formData.append('IdUnidadMedida', String(this.producto.idUnidadMedida ?? 0));
     formData.append('Estado', this.producto.estado ? 'true' : 'false');
 
-    // Campos adicionales
-   // — Campos adicionales —
-if (this.producto.mpn) {
-  formData.append('Mpn', this.producto.mpn);
-}
-formData.append('ShippingInfo', this.producto.shippingInfo || '');
-if (this.producto.material) {
-  formData.append('Material', this.producto.material);
-}
-if (this.producto.color) {
-  formData.append('Color', this.producto.color);
-}
+    // — Campos adicionales —
+    if (this.producto.mpn) {
+      formData.append('Mpn', this.producto.mpn);
+    }
+    formData.append('ShippingInfo', this.producto.shippingInfo || '');
+    if (this.producto.material) {
+      formData.append('Material', this.producto.material);
+    }
+    if (this.producto.color) {
+      formData.append('Color', this.producto.color);
+    }
+    // Added: Append new fields to formData
+    if (this.producto.genero) {
+      formData.append('Genero', this.producto.genero);
+    }
+    if (this.producto.articulo) {
+      formData.append('Articulo', this.producto.articulo);
+    }
+    if (this.producto.estilo) {
+      formData.append('Estilo', this.producto.estilo);
+    }
 
-// — Array de tallas enriquecidas —
-this.tallasSeleccionadas.forEach((talla, i) => {
-  formData.append(`Sizes[${i}].Usa`,   talla.usa.toString());
-  formData.append(`Sizes[${i}].Eur`,   talla.eur.toString());
-  formData.append(`Sizes[${i}].Cm`,    talla.cm.toString());
-  formData.append(`Sizes[${i}].Stock`, talla.stock.toString());
-});
+    // — Array de tallas enriquecidas —
+    this.tallasSeleccionadas.forEach((talla, i) => {
+      formData.append(`Sizes[${i}].Usa`,   (talla.usa ?? '').toString());
+      formData.append(`Sizes[${i}].Eur`,   (talla.eur ?? '').toString());
+      formData.append(`Sizes[${i}].Cm`,    (talla.cm ?? '').toString());
+      formData.append(`Sizes[${i}].Stock`, talla.stock.toString());
+    });
 
-// — Imagen —
-if (this.archivoSeleccionado) {
-  formData.append(
-    'imagen',
-    this.archivoSeleccionado,
-    this.archivoSeleccionado.name
-  );
-}
-
+    // — Imagen —
+    if (this.archivoSeleccionado) {
+      formData.append(
+        'imagen',
+        this.archivoSeleccionado,
+        this.archivoSeleccionado.name
+      );
+    }
 
     // Si es edición
     if (this.producto.idProducto && this.producto.idProducto > 0) {
       this.productoService.updateProducto(this.producto.idProducto, formData).subscribe({
         next: (productoActualizado) => {
           console.log('Producto actualizado con éxito:', productoActualizado);
-          if (productoActualizado.idProducto && this.tallasSeleccionadas.length) {
-            this.guardarTallasProducto(productoActualizado.idProducto);
-          } else {
-            this.cargarProductos();
-            this.cerrarModal();
-          }
+          this.cargarProductos(); // Load products after update
+          this.cerrarModal();
         },
         error: (error: any) => {
           console.error('Error al actualizar el producto:', error);
         }
       });
-    } 
+    }
     // Si es nuevo
     else {
       this.productoService.crearProductoConArchivo(formData).subscribe({
         next: (productoCreado) => {
           console.log('Producto creado con éxito:', productoCreado);
-          if (productoCreado.idProducto && this.tallasSeleccionadas.length) {
-            this.guardarTallasProducto(productoCreado.idProducto);
-          } else {
-            this.cargarProductos();
-            this.cerrarModal();
-          }
+          this.cargarProductos(); // Load products after creation
+          this.cerrarModal();
         },
         error: (error: any) => {
           console.error('Error al guardar el producto:', error);
@@ -332,40 +378,7 @@ if (this.archivoSeleccionado) {
     }
   }
 
-  private guardarTallasProducto(idProducto: number) {
-    let pendientes = this.tallasSeleccionadas.length;
-    if (pendientes === 0) {
-      this.cargarProductos();
-      this.cerrarModal();
-      return;
-    }
-
-    this.tallasSeleccionadas.forEach((tallaItem) => {
-      const request = {
-        idProducto,
-        idTalla: tallaItem.idTalla,
-        stock: tallaItem.stock
-      };
-
-      this.tallaProductoService.createTallaProducto(request).subscribe({
-        next: () => {
-          pendientes--;
-          if (pendientes === 0) {
-            this.cargarProductos();
-            this.cerrarModal();
-          }
-        },
-        error: (err: any) => {
-          console.error('Error al asociar TallaProducto:', err);
-          pendientes--;
-          if (pendientes === 0) {
-            this.cargarProductos();
-            this.cerrarModal();
-          }
-        }
-      });
-    });
-  }
+  // Removed the redundant guardarTallasProducto method as backend handles it.
 
   // ============ AGREGAR / ELIMINAR TALLA ============
   agregarTalla() {
@@ -412,7 +425,9 @@ if (this.archivoSeleccionado) {
 
   // ============ MODAL ============
   abrirModal() {
+    console.log('Abriendo modal de nuevo producto'); // Agrega esta línea
     this.modalAbierto = true;
+    console.log('Valor de modalAbierto:', this.modalAbierto); // Agrega esta línea
     this.producto = this.nuevoProducto();
     this.tallasSeleccionadas = [];
     this.subcategoriasFiltradas = [];
@@ -432,6 +447,7 @@ if (this.archivoSeleccionado) {
     this.tallaSeleccionadaId = 0;
     this.stockTallaSeleccionada = 0;
     this.archivoSeleccionado = null;
+    this.imagenExistenteUrl = null; // Reset existing image URL on modal close
   }
 
   manejarFoto(event: any) {
@@ -461,14 +477,25 @@ if (this.archivoSeleccionado) {
       shippingInfo: 'precio de delivery no incluido',
       material: '',
       color: '',
+      genero: '', // Added initialization
+      articulo: '', // Added initialization
+      estilo: '', // Added initialization
       sizes: []
     };
   }
 
   editarProducto(prod: Producto) {
+    // Store the existing image URL
+    this.imagenExistenteUrl = prod.foto ?? null;
+    // Deep copy to avoid modifying the original product in the list
     this.producto = {...prod};
     this.modalAbierto = true;
-    
+
+    // Populate new fields when editing
+    this.producto.genero = prod.genero; // Added
+    this.producto.articulo = prod.articulo; // Added
+    this.producto.estilo = prod.estilo; // Added
+
     if (prod.idProducto) {
       this.tallaProductoService.getTallasByProducto(prod.idProducto).subscribe({
         next: (tallas) => {
@@ -489,37 +516,207 @@ if (this.archivoSeleccionado) {
 
   generarCodigoBarras(prod: Producto) {
     this.productoParaCodigo = prod;
+
+    // Validar y limitar fila y columna para la interfaz
+    const maxFila = 7;
+    const maxColumna = 3;
+    let fila = this.codigoBarrasData.fila;
+    let columna = this.codigoBarrasData.columna;
+
+    if (fila > maxFila) {
+ console.warn(`El número máximo de filas recomendado es ${maxFila}. Se usará ${fila}.`);
+ // No limitamos aquí, solo advertimos
+    }
+    if (columna > maxColumna) {
+      alert(`El número máximo de columnas permitido es ${maxColumna}. Se usará ${maxColumna}.`);
+      columna = maxColumna;
+    }
+
     this.codigoBarrasData = {
       codigoProducto: prod.codigoBarra || '',
-      tallaSeleccionada: '',
-      fila: 1,
-      columna: 1
-    };
-    this.modalCodigoBarrasAbierto = true;
+      tallaSeleccionada: '', // Reset tallaSeleccionada when opening the modal
+      fila: fila, // Usar los valores validados
+ columna: columna
+ };
+
+    // *** AGREGAR ESTA LÓGICA PARA CARGAR LAS TALLAS DEL PRODUCTO ***
+    if (prod.idProducto) {
+      this.tallaProductoService.getTallasByProducto(prod.idProducto).subscribe({
+        next: (tallas) => {
+          // Mapear las tallas obtenidas al formato que esperas en tallasSeleccionadas
+          this.tallasSeleccionadas = tallas.map(t => ({
+            idTalla: t.idTalla,
+            usa: t.usa,
+            eur: t.eur,
+            cm: t.cm,
+            stock: t.stock // Asegúrate de que el servicio devuelve 'stock' si lo necesitas
+          }));
+          // Ahora que las tallas están cargadas, abrir el modal
+          this.modalCodigoBarrasAbierto = true;
+        },
+        error: (err: any) => {
+          console.error('Error al cargar tallas del producto para código de barras:', err);
+          // Opcional: Mostrar un mensaje al usuario si hay un error
+          alert('No se pudieron cargar las tallas para generar el código de barras.');
+        }
+      });
+    } else {
+      // Si el producto no tiene idProducto, no podemos cargar sus tallas
+      console.warn('Producto sin idProducto, no se pueden cargar las tallas para código de barras.');
+      alert('No se puede generar código de barras para este producto (falta ID).');
+    }
   }
 
-  generarPDFCodigoBarras() {
-    if (!this.productoParaCodigo) return;
 
-    const doc = new jsPDF();
-    
-    doc.setFontSize(12);
-    doc.text(`Código de Barras - ${this.productoParaCodigo.nombre}`, 10, 10);
-    doc.text(`Producto: ${this.productoParaCodigo.nombre}`, 10, 20);
-    doc.text(`Código: ${this.codigoBarrasData.codigoProducto}`, 10, 30);
-    
-    if (this.codigoBarrasData.tallaSeleccionada) {
-      doc.text(`Talla: ${this.codigoBarrasData.tallaSeleccionada}`, 10, 40);
+
+
+  async generarPDFCodigoBarras() { // Make the method async
+
+    // Explicitly check if a talla has been selected
+    if (!this.codigoBarrasData.tallaSeleccionada || this.codigoBarrasData.tallaSeleccionada === '') {
+      // You can set a flag here to display a message in the HTML if needed
+      return; // Stop execution if no talla is selected
     }
-    
-    doc.text('CÓDIGO DE BARRAS AQUÍ', 50, 60);
-    doc.text(`Configuración: Fila ${this.codigoBarrasData.fila}, Columna ${this.codigoBarrasData.columna}`, 10, 80);
-    
-    doc.save(`codigo_barras_${this.productoParaCodigo.nombre}.pdf`);
+
+    // Find the complete talla details based on the selected USA size
+    const tallaSeleccionadaCompleta = this.tallasSeleccionadas.find(
+      t => t.usa === this.codigoBarrasData.tallaSeleccionada
+    );
+
+ // Usar milímetros como unidad
+    // Usar milímetros como unidad
+    const doc = new jsPDF('p', 'mm', 'a4'); // Default portrait, mm, A4
+
+    // Fixed dimensions in millimeters, based on A4 label sheet layout (adjust as needed)
+ const labelWidth = 58.2; // Ancho de cada celda/etiqueta (aprox. 220px)
+    const labelHeight = 31.75; // Alto de cada celda/etiqueta (aprox. 120px)
+    const barcodeWidth = 50; // Ancho del código de barras visual
+    const barcodeHeight = 20; // Alto del código de barras visual
+    const margin = 2; // Margen entre etiquetas en milímetros (ajusta si es necesario)
+
+    // Calcular el número total de etiquetas (usando los valores potentially limitados de fila y columna)
+    const totalLabels = this.codigoBarrasData.fila * this.codigoBarrasData.columna;
+
+    // Ensure we have the complete talla details, otherwise fall back to an empty string
+    // This will be used for drawing the talla text on each label
+    // Asegurarse de tener la talla seleccionada para mostrar los detalles completos
+    const tallaDisplay = tallaSeleccionadaCompleta
+        ? `USA ${tallaSeleccionadaCompleta.usa} — EUR ${tallaSeleccionadaCompleta.eur} — CM ${tallaSeleccionadaCompleta.cm}`
+        : '';
+
+    // Propiedades del producto
+    // Add null checks for productoParaCodigo
+    const productName = this.productoParaCodigo ? this.productoParaCodigo.nombre || '' : '';
+    const productPrice = this.productoParaCodigo ? this.productoParaCodigo.precioVenta?.toFixed(2) || '0.00' : '0.00'; // Formatear precio
+
+    // Check if productoParaCodigo is null before proceeding
+    if (!this.productoParaCodigo) {
+      return; // Exit if product data is not available
+    }
+
+
+    // Iterate to generate each label
+    for (let i = 0; i < totalLabels; i++) {
+        // Calculate the current row and column for this label (0-based index)
+        const row = Math.floor(i / this.codigoBarrasData.columna);
+        const col = i % this.codigoBarrasData.columna;
+
+        // Calculate the position of the top-left corner of the current cell on the current page
+        // The `y` coordinate needs to be calculated relative to the *top* of the *current page*,
+ // considering the height of previous rows and margins.
+
+        // Calculate the vertical position of the row start
+ const rowStartY = row * (labelHeight + margin) + margin; // Add margin at the top of each row
+
+        // Calculate the absolute position (x, y) of the current label on the page
+        const x = col * (labelWidth + margin) + margin; // Add margin at the start of each column
+ const y = rowStartY; // Y position is the start of the row
+
+        // Ensure adding a new page if there's no space for the next label
+        if (y + labelHeight > doc.internal.pageSize.height - margin && i > 0) {
+          doc.addPage();
+          // La lógica de posicionamiento dentro del bucle ya maneja la continuación
+          // en la nueva página a través de los cálculos de 'row' y 'col'.
+          // No necesitamos ajustar x e y aquí dentro del if.
+        }
+        // ** Dibujar el recuadro alrededor de toda la etiqueta **
+        doc.rect(x, y, labelWidth, labelHeight);
+        
+        // --- Posicionar el contenido dentro de la celda (usando offsets desde la esquina superior izquierda de la celda) ---
+ const innerPaddingX = 1; // Small horizontal padding
+ const innerPaddingY = 1; // Small vertical padding
+
+        // Posición del Nombre del Producto (arriba)
+        doc.setFontSize(7); // Font size for the name
+        const productNameTextWidth = doc.getTextWidth(productName);
+ const productNameX = x + innerPaddingX + (labelWidth - (innerPaddingX * 2) - productNameTextWidth) / 2; // Centered horizontally within padding
+ doc.text(productName, productNameX, y + innerPaddingY + 2.5); // Adjust Y offset from the top of the label boundary (y)
+
+        // Posición del Precio (arriba, a la derecha)
+ doc.setFontSize(7); // Font size for the price
+        const priceTextWidth = doc.getTextWidth(`S/ ${productPrice}`);
+        const priceX = x + labelWidth - margin - priceTextWidth; // Alinear a la derecha con margen
+        doc.text(`S/ ${productPrice}`, priceX, y + 3.5); // Adjust Y offset from the top of the label
+
+        // Posición del Código de Barras (en el centro)
+        // Ajustar este offset para dejar espacio para el nombre, el precio y la talla
+        const barcodeAreaYOffset = 6; // Espacio desde el borde superior de la etiqueta hasta el área del código de barras
+        const barcodeAreaY = y + barcodeAreaYOffset;
+
+        // Generar el código de barras como un elemento SVG temporal
+        const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        JsBarcode(svgElement, this.codigoBarrasData.codigoProducto || 'N/A', {
+            format: "CODE128", // Asegúrate de que este formato sea correcto (ej: "EAN13", "UPCA")
+            width: 2, // Ajusta el grosor de las barras según necesites
+            height: barcodeHeight, // Usamos la altura definida (20mm)
+            displayValue: false // No mostrar el número debajo del código de barras
+        });
+
+        // Convertir el SVG a una imagen (canvas) para jsPDF (requiere canvg)
+        const canvas = document.createElement('canvas');
+        const svgString = new XMLSerializer().serializeToString(svgElement);
+        const ctx = canvas.getContext('2d')!;
+        const v = await Canvg.from(ctx, svgString);
+        await v.render();
+
+        // Agregar la imagen del código de barras al PDF
+        const barcodeDataURL = canvas.toDataURL('image/png');
+
+        // Calcular la posición X para centrar la imagen del código de barras dentro del área de la etiqueta
+        const barcodeImageX = x + innerPaddingX + (labelWidth - (innerPaddingX * 2) - barcodeWidth) / 2; // Centered horizontally within inner padding
+
+        // Agregar la imagen al PDF en la posición calculada
+        doc.addImage(barcodeDataURL, 'PNG', barcodeImageX, barcodeAreaY, barcodeWidth, barcodeHeight);
+
+        // Posición del Número del Código de Barras (debajo de la imagen, centrados)
+        doc.setFontSize(7); // Font size for the barcode number
+        const barcodeNumberText = this.codigoBarrasData.codigoProducto || 'N/A';
+ const barcodeNumberTextWidth = doc.getTextWidth(barcodeNumberText);
+        const barcodeNumberTextX = x + innerPaddingX + (labelWidth - (innerPaddingX * 2) - barcodeNumberTextWidth) / 2; // Center horizontally
+        // Calculate Y position relative to the bottom of the barcode image
+ const barcodeNumberTextY = barcodeAreaY + barcodeHeight + 1; // Calculate Y relative to the label's top (y), then add to y below
+        doc.text(barcodeNumberText, barcodeNumberTextX, barcodeNumberTextY);
+
+        // Posición de la Talla (debajo del número del código de barras), ajustando el offset Y
+        doc.setFontSize(6); // Font size for size
+        // Calculate Y position relative to the bottom of the barcode number text
+ const tallaTextY = barcodeNumberTextY + 2.5; // Calculate Y relative to the label's top (y), then add to y below
+ const tallaTextWidth = doc.getTextWidth(tallaDisplay);
+        // Center the size text horizontally within the label area
+        const tallaTextX = x + innerPaddingX + (labelWidth - (innerPaddingX * 2) - tallaTextWidth) / 2;
+ doc.text(tallaDisplay, tallaTextX, tallaTextY); // Adjusted position
+    }
+
+    // Add null check before accessing productoParaCodigo.nombre in save filename
+    const filename = this.productoParaCodigo ? `codigos_barras_${this.productoParaCodigo.nombre}.pdf` : 'codigos_barras.pdf';
+    doc.save(filename);
+
     this.cerrarModalCodigoBarras();
   }
 
-  cerrarModalCodigoBarras() {
+
+
+  cerrarModalCodigoBarras(form?: any) { // Accept optional form argument
     this.modalCodigoBarrasAbierto = false;
     this.productoParaCodigo = null;
     this.codigoBarrasData = {
@@ -528,6 +725,8 @@ if (this.archivoSeleccionado) {
       fila: 1,
       columna: 1
     };
+    // Reset the form if it was passed
+    if (form) { form.resetForm(); }
   }
 
   eliminarProducto(prod: Producto) {
@@ -535,7 +734,7 @@ if (this.archivoSeleccionado) {
       alert('No se encontró la ID del producto.');
       return;
     }
-    if (!confirm('¿Deseas eliminar el producto \"' + prod.nombre + '\"?')) {
+    if (!confirm('¿Deseas eliminar el producto "' + prod.nombre + '"?')) {
       return;
     }
 
@@ -551,5 +750,10 @@ if (this.archivoSeleccionado) {
           alert('Ocurrió un error al eliminar el producto.');
         }
       });
+  }
+
+  // Added: method to toggle filter visibility
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
   }
 }

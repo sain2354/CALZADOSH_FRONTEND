@@ -1,0 +1,77 @@
+<div class="boleta" *ngIf="venta">
+  <!-- Encabezado -->
+  <div class="header">
+    <div class="icon-container">
+      <svg class="icon" viewBox="0 0 64 64">
+        <path d="M8 32 L56 32 L56 40 L8 40 Z M48 32 L52 24 L12 24 L16 32 Z" fill="#000"/>
+      </svg>
+    </div>
+    <h1>CALZADOS HUANCAYO</h1>
+    <small>Ciudad Blanca Parte Alta 2</small><br>
+    <small>R.U.C 10467291241</small><br>
+    <small>Cel. 922804671</small>
+  </div>
+
+  <hr>
+
+  <!-- Título y número -->
+  <h2>BOLETA DE VENTA</h2>
+  <p class="serie">{{ venta?.serie }}-{{ venta?.numeroComprobante }}</p>
+
+  <hr>
+
+  <!-- Datos del cliente -->
+  <div class="datos">
+    <p><strong>Fecha:</strong> {{ venta?.fecha | date:'dd/MM/yyyy' }}</p>
+    <p><strong>Cliente:</strong> {{ venta?.clienteNombre }}</p>
+    <p><strong>Ruc/Dni:</strong> {{ venta?.clienteDocumento }}</p>
+    <p *ngIf="venta?.direccion"><strong>Dirección:</strong> {{ venta?.direccion }}</p>
+    <p><strong>Moneda:</strong> {{ venta?.moneda }}</p>
+  </div>
+
+  <hr>
+
+  <!-- Tabla de items -->
+  <table class="items">
+    <thead>
+      <tr>
+        <th>Cant.</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+        <th>Desc.</th>
+        <th>Importe</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of venta?.detalles">
+        <td>{{ d.cantidad }}</td>
+        <td>{{ d.descripcion }}</td>
+        <td>{{ d.precio | number:'1.2-2' }}</td>
+        <td>{{ d.descuento | number:'1.2-2' }}</td>
+        <td>{{ d.total | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <!-- Totales -->
+  <div class="totales">
+    <p><span>GRAVADAS:</span> {{ venta?.moneda }} {{ gravadas | number:'1.2-2' }}</p>
+    <p><span>I.G.V (18%):</span> {{ venta?.moneda }} {{ totalIgv | number:'1.2-2' }}</p>
+    <p><span>DESC.:</span> {{ venta?.moneda }} {{ totalDesc | number:'1.2-2' }}</p>
+    <p class="total"><span>TOTAL:</span> {{ venta?.moneda }} {{ total | number:'1.2-2' }}</p>
+  </div>
+
+  <hr>
+
+  <!-- Monto en letras -->
+  <p class="letras">SON: {{ toLetras(total).toUpperCase() }}</p>
+
+  <!-- Código QR -->
+  <div class="qr">
+    <img src="assets/qr-placeholder.png" alt="QR" />
+  </div>
+
+  <p class="gracias">**MUCHAS GRACIAS POR SU COMPRA**</p>
+</div>

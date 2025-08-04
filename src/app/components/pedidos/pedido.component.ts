@@ -6,6 +6,7 @@ import { NgxPaginationModule }      from 'ngx-pagination';
 import { PedidoService }            from '../../services/pedido.service';
 import { Pedido }                   from '../../models/pedido.model';
 import { DetallePedidoComponent }   from './detalles_pedidos/detalle-pedido.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 type EstadoPedido =
   | 'Pendiente Validación'
@@ -71,14 +72,18 @@ export class PedidoComponent implements OnInit {
   }
 
   verDetalle(p: Pedido) {
-    this.pedidoSvc.getDetallePedido(p.idVenta).subscribe({
-      next: detalle => {
-        this.pedidoSeleccionado = detalle;
-        this.mostrarDetalle = true;
-      },
-      error: err => console.error('Error trayendo detalle', err)
-    });
-  }
+  this.pedidoSvc.getDetallePedido(p.idVenta).subscribe({
+    next: detalle => {
+      this.pedidoSeleccionado = detalle;
+      this.mostrarDetalle = true;
+    },
+    error: (err: HttpErrorResponse) => {
+      console.error('Status:', err.status);
+      console.error('Body:', err.error);       // <— Aquí verás el mensaje real del 500
+      console.error('Complete error:', err);   // <— Y todo el objeto para más contexto
+    }
+  });
+}
 
   cerrarDetalle() {
     this.mostrarDetalle = false;

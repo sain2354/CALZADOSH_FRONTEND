@@ -1,260 +1,174 @@
-<!-- Contenedor principal gris que centra el contenido -->
-<div class="punto-venta-wrapper">
-  <div class="punto-venta-container">
-    
-    <!-- Columna Izquierda -->
-    <div class="venta-left">
-      <div class="venta-top-bar">
-        
-        <!-- Campo de búsqueda con ng-autocomplete -->
-        <div class="venta-search">
-          <label>Productos</label>
-          <ng-autocomplete
-            [data]="productosAutoComplete"
-            [searchKeyword]="keyword"
-            [(ngModel)]="productoBuscado"
-            (selected)="selectEvent($event)"
-            (inputChanged)="onChangeSearch($event)"
-            (inputFocused)="onFocused($event)"
-            [itemTemplate]="itemTemplate"
-            [notFoundTemplate]="notFoundTemplate"
-            placeholder="Ingrese el código o nombre del producto"
-            name="productoBuscado"
-          >
-          </ng-autocomplete>
+<!-- punto-venta.component.html -->
 
-          <!-- Template para mostrar cada ítem -->
-          <ng-template #itemTemplate let-item>
-            <div>{{ item.nombre }} - {{ item.codigo }}</div>
-          </ng-template>
+<!-- Modal de confirmación -->
+<div *ngIf="mostrarConfirmacion" class="modal-backdrop" (click)="cancelarComprobante()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h4 class="text-success">✔ Venta registrada correctamente</h4>
+    <div class="mt-4 text-end">
+      <button class="btn btn-primary me-2" (click)="imprimirComprobante()">Imprimir Comprobante</button>
+      <button class="btn btn-secondary" (click)="cancelarComprobante()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-          <!-- Template para cuando no hay resultados -->
-          <ng-template #notFoundTemplate let-notFound>
-            <div>{{ notFound }}</div>
-          </ng-template>
+<form #ventaForm="ngForm" (ngSubmit)="realizarVenta(ventaForm)" novalidate>
+  <div class="punto-venta-wrapper">
+    <div class="punto-venta-container">
+
+      <!-- IZQUIERDA: Búsqueda & Tabla -->
+      <div class="venta-left">
+        <div class="venta-top-bar">
+
+          <!-- Autocomplete -->
+          <div class="venta-search">
+            <label>Productos</label>
+            <ng-autocomplete
+              [data]="productosAutoComplete"
+              [searchKeyword]="keyword"
+              [(ngModel)]="productoBuscado"
+              name="productoBuscado"
+              (selected)="selectEvent($event)"
+              (inputChanged)="onChangeSearch($event)"
+              (inputFocused)="onFocused($event)"
+              [itemTemplate]="itemTemplate"
+              [notFoundTemplate]="notFoundTemplate"
+              placeholder="Ingrese código o nombre">
+            </ng-autocomplete>
+            <ng-template #itemTemplate let-item>
+              <div>{{ item.nombre }} - {{ item.codigo }}</div>
+            </ng-template>
+            <ng-template #notFoundTemplate let-notFound>
+              <div>{{ notFound }}</div>
+            </ng-template>
+          </div>
+
+          <!-- Total -->
+          <div class="venta-amount">
+            <h3>Gs/ {{ total.toFixed(2) }}</h3>
+          </div>
+
+          <!-- Botones -->
+          <div class="venta-buttons">
+            <button type="submit" class="btn btn-primary">Realizar Venta</button>
+            <button type="button" class="btn btn-danger" (click)="vaciarListado()">Vaciar Listado</button>
+          </div>
         </div>
 
-        <!-- Total grande -->
-        <div class="venta-amount">
-          <h3>Gs/ {{ total.toFixed(2) }}</h3>
-        </div>
+        <!-- Tabla Ítems -->
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Item</th><th>Código</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>Opc.</th><th>Talla</th><th>Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let it of ventaItems; let i = index">
+              <td>{{ it.item }}</td>
+              <td>{{ it.codigo }}</td>
+              <td>{{ it.nombre }}</td>
+              <td>
+                <input type="number" min="1" [(ngModel)]="it.cantidad" name="cant{{i}}"
+                       (change)="cambiarCantidad(i, it.cantidad)" style="width:50px" />
+              </td>
+              <td>Gs/ {{ it.precio.toFixed(2) }}</td>
+              <td>Gs/ {{ (it.cantidad * it.precio).toFixed(2) }}</td>
+              <td><button class="btn btn-sm btn-danger" (click)="eliminarItem(i)">Quitar</button></td>
+              <td><span class="talla-link" (click)="mostrarTallas(it, i)">{{ it.talla || '---' }}</span></td>
+              <td>{{ it.stock }}</td>
+            </tr>
+            <tr *ngIf="ventaItems.length === 0">
+              <td colspan="9" class="text-center">No hay datos</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <!-- Botones principales -->
-        <div class="venta-buttons">
-          <button class="btn btn-primary" (click)="realizarVenta()">Realizar Venta</button>
-          <button class="btn btn-danger" (click)="vaciarListado()">Vaciar Listado</button>
-        </div>
-
-        <!-- Extras: Ver y Buscar (no implementado) -->
-        <div class="venta-extra">
-          <label for="verSelect">Ver:</label>
-          <select id="verSelect" class="form-select form-select-sm">
-            <option>10</option>
-            <option>25</option>
-            <option>50</option>
+      <!-- DERECHA: Cabecera Venta -->
+      <div class="venta-right">
+        <div class="venta-right-group">
+          <label>Documento *</label>
+          <select class="form-select" [(ngModel)]="documentoSeleccionado" name="doc" (ngModelChange)="onDocumentoChange()" required>
+            <option value="">Seleccione</option>
+            <option>Boleta</option>
+            <option>Factura</option>
           </select>
-          <label for="buscarInput">Buscar:</label>
-          <input
-            id="buscarInput"
-            type="text"
-            class="form-control form-control-sm"
-            style="width: 80px;"
-          />
+        </div>
+        <div class="venta-right-group">
+          <label>Cliente *</label>
+          <div style="display:flex; gap:5px">
+            <select class="form-select" [(ngModel)]="clienteSeleccionado" name="cli" required>
+              <option value="">Seleccione</option>
+              <option *ngFor="let c of personas">{{ c.numeroDocumento }} - {{ c.nombre }}</option>
+            </select>
+            <button type="button" class="btn btn-success btn-sm" (click)="abrirModalCliente()">+</button>
+          </div>
+        </div>
+        <div class="venta-right-group">
+          <label>Medio Pago *</label>
+          <select class="form-select" [(ngModel)]="tipoPagoSeleccionado" name="mp" required>
+            <option value="">Seleccione</option>
+            <option *ngFor="let m of mediosPago">{{ m }}</option>
+          </select>
+        </div>
+        <div class="venta-right-group">
+          <label>Serie *</label>
+          <input class="form-control" [(ngModel)]="serie" name="ser" readonly />
+        </div>
+        <div class="venta-right-group">
+          <label>Correlativo *</label>
+          <input class="form-control" [(ngModel)]="correlativo" name="cor" readonly />
+        </div>
+        <div class="venta-right-group">
+          <label>Efectivo Recibido *</label>
+          <input type="number" min="0" class="form-control" [(ngModel)]="montoEfectivo" name="ef" required />
+        </div>
+        <div class="venta-right-group">
+          <p class="text-danger">Recibido: Gs/ {{ montoEfectivo.toFixed(2) }}</p>
+          <p class="text-danger">Vuelto: Gs/ {{ vuelto.toFixed(2) }}</p>
+        </div>
+        <div class="venta-right-group">
+          <p>SUBTOTAL: Gs/ {{ subTotal.toFixed(2) }}</p>
+          <p>IGV (18%): Gs/ {{ iva.toFixed(2) }}</p>
+          <p>DESCUENTO: Gs/ {{ descuento.toFixed(2) }}</p>
+          <p class="fw-bold">TOTAL: Gs/ {{ total.toFixed(2) }}</p>
         </div>
       </div>
-
-      <!-- Tabla de productos agregados a la venta -->
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Código</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio</th>
-            <th>Total</th>
-            <th>Opciones</th>
-            <th>Talla</th>
-            <th>Stock</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of ventaItems; let i = index">
-            <td>{{ item.item }}</td>
-            <td>{{ item.codigo }}</td>
-            <td>{{ item.nombre }}</td>
-            <td>
-              <input
-                type="number"
-                min="1"
-                [(ngModel)]="item.cantidad"
-                (change)="cambiarCantidad(i, item.cantidad)"
-                style="width: 50px;"
-              />
-            </td>
-            <td>Gs/ {{ item.precio.toFixed(2) }}</td>
-            <td>Gs/ {{ (item.cantidad * item.precio).toFixed(2) }}</td>
-            <td>
-              <button class="btn btn-sm btn-danger" (click)="eliminarItem(i)">Quitar</button>
-            </td>
-            <!-- Columna Talla clickeable -->
-            <td>
-              <span class="talla-link" (click)="mostrarTallas(item)">
-                {{ item.talla ? item.talla : '---' }}
-              </span>
-            </td>
-            <td>{{ item.stock }}</td>
-          </tr>
-          <tr *ngIf="ventaItems.length === 0">
-            <td colspan="9" class="text-center">No hay información en esta tabla</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="registro-info">
-        <p>Registros del 0 al {{ ventaItems.length }} total {{ ventaItems.length }} registros</p>
-      </div>
     </div>
-
-    <!-- Columna Derecha: Documento, Cliente, etc. -->
-    <div class="venta-right">
-
-      <!-- Documento -->
-      <div class="venta-right-group">
-        <label>Documento <span class="text-danger">*</span></label>
-        <select class="form-select" [(ngModel)]="documentoSeleccionado">
-          <option>seleccione</option>
-          <option>Boleta</option>
-          <option>Factura</option>
-        </select>
-      </div>
-
-      <!-- Botón + en la sección Cliente -->
-<!-- ... la parte superior e intermedia es igual ... -->
-
-<!-- Botón + en la sección Cliente -->
-<div class="venta-right-group">
-  <label>Cliente <span class="text-danger">*</span></label>
-  <div style="display: flex; gap: 5px;">
-    <select class="form-select" [(ngModel)]="clienteSeleccionado" style="flex: 1;">
-      <option>000000 - Clientes Varios</option>
-      <option>Cliente 1</option>
-      <option>Cliente 2</option>
-      <!-- O itera this.clientes -->
-    </select>
-    <button class="btn btn-success btn-sm" (click)="abrirModalCliente()">+</button>
   </div>
-</div>
+</form>
 
-<!-- ... resto de la columna derecha ... -->
-
-<!-- MODAL Tallas -->
+<!-- Modal Tallas -->
 <div class="modal-backdrop" *ngIf="mostrarModalTallas" (click)="cerrarModalTallas()"></div>
 <div class="modal-content" *ngIf="mostrarModalTallas" (click)="$event.stopPropagation()">
-  <!-- ... tabla tallas ... -->
+  <h4>Elige una Talla</h4>
+  <hr />
+  <table class="table table-bordered table-sm">
+    <thead>
+      <tr><th>USA/EUR/CM</th><th>Stock</th><th>Acción</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of tallasProducto">
+        <td>{{ t.usa }}/{{ t.eur }}/{{ t.cm }}</td>
+        <td>{{ t.stock }}</td>
+        <td><button class="btn btn-sm btn-primary" (click)="seleccionarTalla(t)">Seleccionar</button></td>
+      </tr>
+      <tr *ngIf="tallasProducto.length === 0"><td colspan="3">No hay tallas</td></tr>
+    </tbody>
+  </table>
+  <div class="text-end"><button class="btn btn-secondary" (click)="cerrarModalTallas()">Cerrar</button></div>
 </div>
 
-<!-- ... resto del template ... -->
-
-<!-- MODAL Persona (Cliente/Proveedor) -->
+<!-- Modal Cliente -->
 <div class="modal-backdrop" *ngIf="mostrarModalCliente" (click)="cerrarModalCliente()"></div>
-<div class="modal-content" *ngIf="mostrarModalCliente" (click)="$event.stopPropagation()" style="width: 500px;">
-  <app-persona-form
-    (onCancelar)="cerrarModalCliente()"
-    (onGuardar)="manejarPersonaCreada($event)"
-  ></app-persona-form>
+<div class="modal-content" *ngIf="mostrarModalCliente" (click)="$event.stopPropagation()" style="width:500px">
+  <app-persona-form (onCancelar)="cerrarModalCliente()" (onGuardar)="manejarPersonaCreada($event)"></app-persona-form>
 </div>
 
-<!-- ... resto del template ... -->
-
-
-
-      <!-- Tipo Pago -->
-      <div class="venta-right-group">
-        <label>Tipo Pago <span class="text-danger">*</span></label>
-        <select class="form-select" [(ngModel)]="tipoPagoSeleccionado">
-          <option>seleccione Tipo Pago</option>
-          <option>Efectivo</option>
-          <option>Tarjeta</option>
-        </select>
-      </div>
-
-      <!-- Serie y Correlativo -->
-      <div class="venta-right-group">
-        <label>Serie</label>
-        <input type="text" class="form-control" [(ngModel)]="serie" placeholder="B001" />
-      </div>
-      <div class="venta-right-group">
-        <label>Correlativo</label>
-        <input type="text" class="form-control" [(ngModel)]="correlativo" placeholder="00000126" />
-      </div>
-
-      <!-- Efectivo recibido -->
-      <div class="venta-right-group">
-        <label>Efectivo recibido</label>
-        <input type="text" class="form-control" [(ngModel)]="montoEfectivo" placeholder="Cantidad de efectivo recibida" />
-      </div>
-
-      <div class="venta-right-group form-check">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="efectivoExacto"
-          [(ngModel)]="efectivoExacto"
-        />
-        <label for="efectivoExacto" class="form-check-label">Efectivo Exacto</label>
-      </div>
-
-      <!-- Monto Efectivo y Vuelto -->
-      <div class="venta-right-group">
-        <p class="text-danger fw-bold">Monto Efectivo: Gs/ {{ montoEfectivo.toFixed(2) }}</p>
-        <p class="text-danger fw-bold">Vuelto: Gs/ {{ vuelto.toFixed(2) }}</p>
-      </div>
-
-      <!-- SubTotal, IVA, Descuento, Total -->
-      <div class="venta-right-group">
-        <p class="text-secondary">SUBTOTAL: Gs/ {{ subTotal.toFixed(2) }}</p>
-        <p class="text-secondary">IGV (18%): Gs/ {{ iva.toFixed(2) }}</p>
-        <p class="text-secondary">DESCUENTO: Gs/ {{ descuento.toFixed(2) }}</p>
-        <p class="fw-bold">TOTAL: Gs/ {{ total.toFixed(2) }}</p>
-      </div>
-    </div>
-    
-  </div>
+<!-- Bloque oculto para impresión -->
+<div style="display:none" #reporteBoletaContainer>
+  <app-boleta-venta
+    *ngIf="boleta"
+    [venta]="boleta">
+  </app-boleta-venta>
 </div>
 
-<!-- MODAL Tallas -->
-<div class="modal-backdrop" *ngIf="mostrarModalTallas" (click)="cerrarModalTallas()"></div>
-<div class="modal-content" *ngIf="mostrarModalTallas" (click)="$event.stopPropagation()">
-  <h4>Tallas por Artículo</h4>
-  <hr>
-  <div class="table-responsive">
-    <table class="table table-bordered table-sm">
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Talla</th>
-          <th>Stock</th>
-          <th>Opciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Itera las tallas que vinieron de TallaProductoService -->
-        <tr *ngFor="let t of tallasProducto">
-          <td>{{ t.idTalla }}</td>
-          <td>{{ t.descripcion }}</td>
-          <td>{{ t.stock }}</td>
-          <td>
-            <button class="btn btn-sm btn-primary" (click)="sumarStock(t)">+</button>
-          </td>
-        </tr>
-        <tr *ngIf="tallasProducto.length === 0">
-          <td colspan="4" class="text-center">No hay tallas registradas</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div style="text-align: right;">
-    <button class="btn btn-secondary" (click)="cerrarModalTallas()">Cerrar</button>
-  </div>
-</div>

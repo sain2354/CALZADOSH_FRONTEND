@@ -1,21 +1,17 @@
-// src/app/components/ventas/punto-venta/punto-venta.component.ts 
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+// punto-venta.component.ts
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { FormsModule, NgForm } from '@angular/forms';
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 import { NgxPaginationModule } from 'ngx-pagination';
 
 import { ProductoService } from '../../../services/producto.service';
-import { Producto } from '../../../models/producto.model';
 import { VentaService } from '../../../services/venta.service';
-import { Venta, DetalleVenta } from '../../../models/venta.model';
-import { TallaService } from '../../../services/talla.service';
 import { TallaProductoService } from '../../../services/talla-producto.service';
-
-// Importamos el componente Persona
-// Nota: el selector definido en PersonaComponent es 'app-persona-form'
+import { PersonaService } from '../../../services/persona.service';
 import { PersonaComponent } from '../../persona/nuevo-persona/persona.component';
 import { Persona } from '../../../models/persona.model';
+import { BoletaVentaComponent } from '../../../boleta-venta/boleta-venta.component';
 
 @Component({
   selector: 'app-punto-venta',
@@ -25,20 +21,22 @@ import { Persona } from '../../../models/persona.model';
     FormsModule,
     NgxPaginationModule,
     AutocompleteLibModule,
-    PersonaComponent  // Se importa para poder usar <app-persona-form> en el HTML
+    PersonaComponent,
+    BoletaVentaComponent,
+    DatePipe,
+    DecimalPipe
   ],
   templateUrl: './punto-venta.component.html',
   styleUrls: ['./punto-venta.component.css']
 })
 export class PuntoVentaComponent implements OnInit {
-
   // AUTOCOMPLETE
-  keyword = 'nombre';  
+  keyword = 'nombre';
   allProducts: any[] = [];
   productosAutoComplete: any[] = [];
-  productoBuscado: string = '';
+  productoBuscado = '';
 
-  // LISTA DE ITEMS
+  // ITEMS
   ventaItems: Array<{
     item: number;
     idProducto: number;
@@ -48,11 +46,18 @@ export class PuntoVentaComponent implements OnInit {
     precio: number;
     talla?: string;
     stock?: number;
+    idUnidadMedida?: number;      // <-- nuevo campo
   }> = [];
+  currentItemIndex: number | null = null;
 
-  // MODAL TALLAS
+  // MODALES
   mostrarModalTallas = false;
   tallasProducto: any[] = [];
+  mostrarModalCliente = false;
+
+  // CONFIRMACIÓN
+  mostrarConfirmacion = false;
+  ventaCreadaResponse: any = null;
 
   // TOTALES
   subTotal = 0;
@@ -60,40 +65,61 @@ export class PuntoVentaComponent implements OnInit {
   descuento = 0;
   total = 0;
 
-  // DATOS DE VENTA
-  documentoSeleccionado = 'seleccione';
-  clientes = [
-    { nombre: '000000 - Clientes Varios', idPersona: 1 },
-    { nombre: 'Cliente 1', idPersona: 2 },
-    { nombre: 'Cliente 2', idPersona: 3 }
-  ];
-  clienteSeleccionado = '000000 - Clientes Varios';
-  tipoPagoSeleccionado = 'Seleccione Tipo Pago';
+  // DATOS VENTA
+  documentoSeleccionado = '';
+  personas: Persona[] = [];
+  clienteSeleccionado = '';
+  mediosPago = ['Yape', 'Plin', 'Transferencia Bancaria'];
+  tipoPagoSeleccionado = '';
   serie = '';
-  correlativo = '';
-  efectivoExacto = false;
-  montoEfectivo = 0;
-  vuelto = 0;
+  correlativo = '00000001';
 
-  // MODAL Persona
-  mostrarModalCliente = false;
+  montoEfectivo = 0;
+  get vuelto() {
+    return +(this.montoEfectivo - this.total).toFixed(2);
+  }
+
+  // Getter para el componente de boleta
+  get boleta() {
+    if (!this.ventaCreadaResponse) return null;
+    const vr = this.ventaCreadaResponse;
+    return {
+      serie: vr.serie,
+      numeroComprobante: vr.numeroComprobante,
+      fecha: vr.fecha,
+      clienteNombre: vr.clienteNombre,
+      clienteDocumento: vr.clienteDocumento,
+      direccion: vr.direccion,
+      moneda: 'Gs/',
+      detalles: (vr.detalles ?? []).map((d: any) => ({
+        cantidad: d.cantidad,
+        descripcion: d.descripcion,
+        precio: d.precio,
+        descuento: d.descuento,
+        total: d.total
+      }))
+    };
+  }
+
+  @ViewChild('reporteBoletaContainer', { static: false, read: ElementRef })
+  reporteBoletaContainer!: ElementRef;
 
   constructor(
     private productoService: ProductoService,
     private ventaService: VentaService,
-    private tallaService: TallaService,
-    private tallaProductoService: TallaProductoService
+    private tallaProductoService: TallaProductoService,
+    private personaService: PersonaService
   ) {}
 
   ngOnInit(): void {
     this.cargarProductos();
+    this.cargarPersonas();
   }
 
-  // Cargar productos
-  cargarProductos() {
+  private cargarProductos() {
     this.productoService.getAll().subscribe({
-      next: (data: Producto[]) => {
-        this.allProducts = data.map((p) => ({
+      next: data => {
+        this.allProducts = data.map(p => ({
           idProducto: p.idProducto,
           codigo: p.codigoBarra,
           nombre: p.nombre,
@@ -101,137 +127,135 @@ export class PuntoVentaComponent implements OnInit {
           stock: p.stock
         }));
         this.productosAutoComplete = [...this.allProducts];
+        // sincroniza stock en items actuales
+        this.ventaItems.forEach(it => {
+          const prod = this.allProducts.find(p => p.idProducto === it.idProducto);
+          if (prod) it.stock = prod.stock;
+        });
       },
-      error: (err: any) => {
-        console.error('Error al cargar productos:', err);
-      }
+      error: err => console.error(err)
     });
   }
 
-  // Búsqueda manual en el autocomplete
+  private cargarPersonas() {
+    this.personaService.getAllPersonas().subscribe({
+      next: p => (this.personas = p),
+      error: err => console.error(err)
+    });
+  }
+
   onChangeSearch(search: string) {
     this.productoBuscado = search;
-    if (!search) {
-      this.productosAutoComplete = [...this.allProducts];
-    } else {
-      this.productosAutoComplete = this.allProducts.filter(prod =>
-        prod.nombre.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+    this.productosAutoComplete = search
+      ? this.allProducts.filter(p => p.nombre.toLowerCase().includes(search.toLowerCase()))
+      : [...this.allProducts];
   }
-  onFocused(e: any) {}
+  onFocused(_: any) {}
 
-  // Al seleccionar un producto del dropdown
   selectEvent(item: any) {
-    const nuevoItem = {
+    this.ventaItems.push({
       item: this.ventaItems.length + 1,
       idProducto: item.idProducto,
-      codigo: item.codigo || '',
-      nombre: item.nombre || '',
+      codigo: item.codigo,
+      nombre: item.nombre,
       cantidad: 1,
-      precio: item.precio || 0,
-      stock: item.stock || 0
-    };
-    this.ventaItems.push(nuevoItem);
+      precio: item.precio,
+      stock: item.stock
+    });
     this.productoBuscado = '';
     this.calcularTotal();
   }
 
-  // Manejo de items
-  cambiarCantidad(index: number, nuevaCantidad: number) {
-    if (nuevaCantidad <= 0) return;
-    this.ventaItems[index].cantidad = nuevaCantidad;
-    this.calcularTotal();
+  cambiarCantidad(i: number, q: number) {
+    if (q > 0) {
+      this.ventaItems[i].cantidad = q;
+      this.calcularTotal();
+    }
   }
 
-  eliminarItem(index: number) {
-    this.ventaItems.splice(index, 1);
-    this.ventaItems.forEach((it, i) => it.item = i + 1);
+  eliminarItem(i: number) {
+    this.ventaItems.splice(i, 1);
+    this.ventaItems.forEach((it, idx) => (it.item = idx + 1));
     this.calcularTotal();
   }
 
   vaciarListado() {
     this.ventaItems = [];
-    this.subTotal = 0;
-    this.iva = 0;
-    this.descuento = 0;
-    this.total = 0;
+    this.subTotal = this.iva = this.descuento = this.total = 0;
   }
 
-  // Calcular totales
-  calcularTotal() {
-    let totalParcial = 0;
-    this.ventaItems.forEach(item => {
-      totalParcial += (item.cantidad * item.precio);
-    });
-    this.subTotal = parseFloat(totalParcial.toFixed(2));
-    this.iva = parseFloat((this.subTotal * 0.18).toFixed(2));
-    this.total = parseFloat((this.subTotal + this.iva - this.descuento).toFixed(2));
+  private calcularTotal() {
+    const sum = this.ventaItems.reduce((acc, it) => acc + it.cantidad * it.precio, 0);
+    this.subTotal = +sum.toFixed(2);
+    this.iva = +(this.subTotal * 0.18).toFixed(2);
+    this.total = +(this.subTotal + this.iva - this.descuento).toFixed(2);
   }
 
-  // Mostrar Tallas
-  mostrarTallas(item: any) {
+  onDocumentoChange() {
+    if (this.documentoSeleccionado === 'Boleta') this.serie = 'B001';
+    else if (this.documentoSeleccionado === 'Factura') this.serie = 'F001';
+    else this.serie = '';
+    this.correlativo = '00000001';
+  }
+
+  mostrarTallas(item: any, idx: number) {
+    this.currentItemIndex = idx;
     this.tallaProductoService.getTallasByProducto(item.idProducto).subscribe({
-      next: (data: any[]) => {
-        this.tallasProducto = data;
+      next: t => {
+        this.tallasProducto = t;
         this.mostrarModalTallas = true;
       },
-      error: (err: any) => {
-        console.error('Error al obtener tallas:', err);
-        alert('No se pudieron cargar las tallas');
-      }
+      error: () => alert('Error cargando tallas')
     });
   }
+
   cerrarModalTallas() {
     this.mostrarModalTallas = false;
-  }
-  sumarStock(t: any) {
-    alert(`Sumar stock a la talla: ${t.descripcion}. Implementa tu lógica aquí.`);
+    this.currentItemIndex = null;
   }
 
-  // Abrir/cerrar modal persona
-  abrirModalCliente() {
-    this.mostrarModalCliente = true;
-  }
-  cerrarModalCliente() {
-    this.mostrarModalCliente = false;
+  seleccionarTalla(t: any) {
+    if (this.currentItemIndex !== null) {
+      // guardamos descripción y también el ID real de la talla
+      this.ventaItems[this.currentItemIndex].talla = `${t.usa}/${t.eur}/${t.cm}`;
+      this.ventaItems[this.currentItemIndex].idUnidadMedida = t.idUnidadMedida;  // <-- aquí
+    }
+    this.cerrarModalTallas();
   }
 
-  // Manejar persona creada (recibe objeto de tipo Persona)
-  manejarPersonaCreada(persona: Persona) {
-    const nuevoNombre = `${persona.numeroDocumento} - ${persona.nombre}`;
-    this.clientes.push({
-      nombre: nuevoNombre,
-      idPersona: persona.idPersona || 999
-    });
-    this.clienteSeleccionado = nuevoNombre;
-    // Cierra el modal después de crear
+  abrirModalCliente() { this.mostrarModalCliente = true; }
+  cerrarModalCliente() { this.mostrarModalCliente = false; }
+  manejarPersonaCreada(p: Persona) {
+    this.personas.push(p);
+    this.clienteSeleccionado = `${p.numeroDocumento} - ${p.nombre}`;
     this.cerrarModalCliente();
   }
 
-  // Registrar la venta
-  realizarVenta() {
-    let idPersona = 1;
-    const clienteEncontrado = this.clientes.find(c => c.nombre === this.clienteSeleccionado);
-    if (clienteEncontrado) {
-      idPersona = clienteEncontrado.idPersona;
+  realizarVenta(form: NgForm) {
+    if (form.invalid || this.ventaItems.length === 0) return;
+
+    // Validación de efectivo exacto
+    if (this.montoEfectivo !== this.total) {
+      alert('El monto recibido debe ser exactamente igual al total de la venta.');
+      return;
     }
 
-    const detalle: DetalleVenta[] = this.ventaItems.map(item => {
-      const totalItem = parseFloat((item.cantidad * item.precio).toFixed(2));
-      const ivaItem = parseFloat((totalItem * 0.18).toFixed(2));
+    const detalles = this.ventaItems.map(it => {
+      const base = +(it.cantidad * it.precio).toFixed(2);
       return {
-        idProducto: item.idProducto,
-        cantidad: item.cantidad,
-        precio: item.precio,
+        idProducto: it.idProducto,
+        idUnidadMedida: it.idUnidadMedida,     // <-- incluido
+        descripcion: it.nombre,
+        cantidad: it.cantidad,
+        precio: it.precio,
         descuento: 0,
-        total: totalItem,
-        igv: ivaItem
+        total: base,
+        igv: +(base * 0.18).toFixed(2)
       };
     });
 
-    const nuevaVenta: Venta = {
-      idPersona,
+    const payload: any = {
+      idUsuario: 22,
       tipoComprobante: this.documentoSeleccionado,
       fecha: new Date().toISOString(),
       total: this.total,
@@ -239,25 +263,35 @@ export class PuntoVentaComponent implements OnInit {
       serie: this.serie,
       numeroComprobante: this.correlativo,
       totalIgv: this.iva,
-      detalleVenta: detalle
+      detalles
     };
 
-    this.ventaService.createVenta(nuevaVenta).subscribe({
-      next: (ventaCreada) => {
-        console.log('Venta registrada con éxito:', ventaCreada);
-        alert('¡Venta realizada exitosamente!');
-        // Reset
-        this.vaciarListado();
-        this.serie = '';
-        this.correlativo = '';
-        this.documentoSeleccionado = 'seleccione';
-        this.clienteSeleccionado = '000000 - Clientes Varios';
-        this.tipoPagoSeleccionado = 'Seleccione Tipo Pago';
+    this.ventaService.createVenta(payload).subscribe({
+      next: resp => {
+        this.ventaCreadaResponse = resp;
+        this.mostrarConfirmacion = true;
+        this.cargarProductos(); // refresca stock
       },
-      error: (err: any) => {
-        console.error('Error al registrar la venta:', err);
-        alert('Ocurrió un error al registrar la venta.');
+      error: err => {
+        console.error(err);
+        alert('Error interno al crear la venta.');
       }
     });
+  }
+
+  imprimirComprobante() {
+    const html = this.reporteBoletaContainer.nativeElement.innerHTML;
+    const popup = window.open('', '_blank', 'width=400,height=600');
+    popup!.document.write(`
+      <html><head><title>Comprobante</title>
+      <style>body{font-family:'Courier New'} .boleta{width:100%}</style>
+      </head><body>${html}</body></html>`);
+    popup!.document.close();
+    popup!.print();
+    popup!.close();
+  }
+
+  cancelarComprobante() {
+    this.mostrarConfirmacion = false;
   }
 }

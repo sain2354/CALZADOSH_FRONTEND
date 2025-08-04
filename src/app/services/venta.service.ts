@@ -2,30 +2,29 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Venta } from '../models/venta.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VentaService {
-  private apiUrl = 'http://www.chbackend.somee.com/api/Venta'; // Ajusta a tu URL real
+  private apiUrl = 'http://www.chbackend.somee.com/api/Venta';
 
   constructor(private http: HttpClient) {}
 
-  getVentas(): Observable<Venta[]> {
-    return this.http.get<Venta[]>(this.apiUrl);
+  getVentas(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
   }
 
-  getVentaById(id: number): Observable<Venta> {
-    return this.http.get<Venta>(`${this.apiUrl}/${id}`);
+  getVentaById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
-  createVenta(venta: Venta): Observable<Venta> {
-    return this.http.post<Venta>(this.apiUrl, venta);
+  createVenta(venta: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, venta);
   }
 
-  updateVenta(id: number, venta: Venta): Observable<Venta> {
-    return this.http.put<Venta>(`${this.apiUrl}/${id}`, venta);
+  updateVenta(id: number, venta: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, venta);
   }
 
   deleteVenta(id: number): Observable<any> {
