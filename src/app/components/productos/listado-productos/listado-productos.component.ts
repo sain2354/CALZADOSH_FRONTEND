@@ -55,16 +55,15 @@ export class ListadoProductosComponent implements OnInit {
 
   // Listas para combos
   categorias: { id: number, nombre: string }[] = [
-    { id: 0, nombre: 'Todos' },
     { id: 1, nombre: 'Hombres' },
     { id: 2, nombre: 'Mujeres' },
     { id: 3, nombre: 'Infantil' }
   ];
 
   // Added: Lists for new filters
-  generos: string[] = ['Todos', 'Masculino', 'Femenino', 'Unisex']; // Example values, adjust as needed
-  articulos: string[] = ['Todos', 'Zapatillas', 'Sandalias', 'Botas', 'Zapatos']; // Example values, adjust as needed
-  estilos: string[] = ['Todos', 'Casual', 'Deportivo', 'Formal']; // Example values, adjust as needed
+  generos: string[] = ['Masculino', 'Femenino', 'Unisex']; // Example values, adjust as needed
+  articulos: string[] = ['Zapatillas', 'Sandalias', 'Botas', 'Zapatos']; // Example values, adjust as needed
+  estilos: string[] = ['Casual', 'Urbano', 'Deportivo', 'Fiesta']; // Example values, adjust as needed
 
   // Subcategorías (ejemplo)
   subcategorias: { id: number, idCategoria: number, nombre: string }[] = [
