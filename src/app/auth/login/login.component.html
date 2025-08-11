@@ -1,29 +1,47 @@
-<div class="login-background">
-  <form class="login-box" (ngSubmit)="login()">
-    <h2>Iniciar sesión</h2>
+<div class="login-wrapper">
+  <!-- Lado izquierdo -->
+  <div class="login-left">
+    <img src="https://sistropa.gustavomasiasdev.com/vistas/assets/login/img/s1.svg" alt="Illustration" />
+  </div>
 
-    <input
-      type="text"
-      name="username"
-      [(ngModel)]="username"
-      placeholder="Usuario"
-    />
+  <!-- Lado derecho -->
+  <div class="login-right">
+    <div class="login-box">
+      <img src="https://getdrawings.com/free-icon/person-icon-png-65.png" alt="User" class="user-icon" />
+      <h2>BIENVENIDO</h2>
 
-    <div class="password-container">
-      <input
-        [type]="showPassword ? 'text' : 'password'"
-        name="password"
-        [(ngModel)]="password"
-        placeholder="Contraseña"
-      />
-      <i
-        class="fa"
-        [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
-        (click)="togglePasswordVisibility()"
-      ></i>
+      <form (ngSubmit)="login()">
+        <!-- Usuario -->
+        <div class="input-group">
+          <i class="fa fa-user"></i>
+          <input
+            type="text"
+            name="username"
+            [(ngModel)]="username"
+            placeholder="Usuario"
+            required
+          />
+        </div>
+
+        <!-- Contraseña -->
+        <div class="input-group">
+          <i class="fa fa-lock"></i>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="password"
+            placeholder="Contraseña"
+            required
+          />
+          <i
+            class="fa"
+            [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+            (click)="togglePasswordVisibility()"
+          ></i>
+        </div>
+
+        <button type="submit" class="login-btn">INICIAR SESIÓN</button>
+      </form>
     </div>
-
-    <button type="submit">Ingresar</button>
-  </form>
+  </div>
 </div>
-
