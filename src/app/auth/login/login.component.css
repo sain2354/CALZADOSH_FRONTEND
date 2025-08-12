@@ -24,7 +24,7 @@
   height: 100%;
   background-color: #0095ff;
   /* Curva más pronunciada y ancha */
-  clip-path: path("M0,0 C0,1000 900,300 900,900 L0, 12000 Z");
+  clip-path: path("M0,0 C0,1000 1000,100 800,1000 L0 1000 Z");
   z-index: 0;
 }
 
