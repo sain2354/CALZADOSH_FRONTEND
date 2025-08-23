@@ -66,7 +66,11 @@ export class PedidoComponent implements OnInit {
 
   cargarPedidos() {
     this.pedidoSvc.getPedidos().subscribe({
-      next: data => this.pedidos = data,
+      next: data => {
+        // Filtrar los datos para mostrar solo pedidos móviles
+        // Criterio: TipoComprobante es '01'
+        this.pedidos = data.filter(pedido => pedido.tipoComprobante === '01');
+      },
       error: err => console.error('Error cargando pedidos', err)
     });
   }
@@ -79,8 +83,8 @@ export class PedidoComponent implements OnInit {
     },
     error: (err: HttpErrorResponse) => {
       console.error('Status:', err.status);
-      console.error('Body:', err.error);       // <— Aquí verás el mensaje real del 500
-      console.error('Complete error:', err);   // <— Y todo el objeto para más contexto
+      console.error('Body:', err.error);
+      console.error('Complete error:', err);
     }
   });
 }

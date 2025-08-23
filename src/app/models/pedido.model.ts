@@ -45,4 +45,5 @@ export interface Pedido {
   direccionEntrega?: DireccionEntrega;
   detalles: DetallePedido[];
   pagos: Pago[];
+  tipoComprobante?: string;
 }

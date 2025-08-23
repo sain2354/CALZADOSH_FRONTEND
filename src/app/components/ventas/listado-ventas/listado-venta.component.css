@@ -117,10 +117,14 @@ tbody td.text-muted {
   font-size: 0.9rem;
 }
 
-/* Badges de estado (aunque no se vean sin datos) */
+/* Badges de estado */
 .badge {
   font-size: 0.8rem;
   padding: 4px 6px;
+  /* *** CAMBIO: Asegurar texto negro para los badges *** */
+  color: #212529 !important; /* Color del texto oscuro de Bootstrap */
+  font-weight: normal; /* Peso normal para que no compita con el encabezado */
+  /* ************************************************** */
 }
 
 /* Opciones (botoncitos) */
@@ -132,11 +136,33 @@ tbody td.text-muted {
   justify-content: center;
   border: none;
   background-color: transparent;
+  padding: 0; /* Asegurar padding 0 para mejor alineación */
 }
 
 .opciones-columna .btn i {
   font-size: 0.9rem;
+  /* *** CAMBIO: Colores para los iconos *** */
+  color: #6c757d; /* Gris por defecto */
 }
+
+/* Colores específicos para iconos de acción */
+.opciones-columna .btn-info i { /* Ojo */
+    color: #0dcaf0; /* Azul claro de Bootstrap */
+}
+
+.opciones-columna .btn-danger i { /* Anular */
+    color: #dc3545; /* Rojo de Bootstrap */
+}
+
+.opciones-columna .btn-secondary i { /* Imprimir PDF */
+     color: #6c757d; /* Gris de Bootstrap */
+}
+
+/* Estilo al pasar el ratón sobre los botones de opción */
+.opciones-columna .btn:hover i {
+    opacity: 0.8;
+}
+
 
 /* ====== Paginación ====== */
 .paginacion-contenedor {
@@ -153,19 +179,20 @@ tbody td.text-muted {
   color: #00aca8;
   font-size: 0.85rem;
   padding: 4px 8px;
+  border-radius: 4px; /* Bordes más suaves */
+  margin: 0 1px; /* Espacio entre elementos */
 }
 
 .pagination-sm .page-item.active .page-link {
   background-color: #00aca8;
   border-color: #00aca8;
   color: #fff;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 3px;
+  border-radius: 4px; /* Mantener bordes suaves */
+  width: auto; /* Ancho automático para números de página */
+  height: auto; /* Altura automática */
+  display: inline-block; /* Display inline-block */
+  padding: 4px 8px; /* Padding ajustado */
+  margin: 0 1px; /* Espacio entre elementos */
 }
 
 .pagination-sm .page-item.disabled .page-link {
@@ -173,7 +200,89 @@ tbody td.text-muted {
   pointer-events: none;
 }
 
-.pagination-sm .page-item .page-link:hover {
+.pagination-sm .page-item .page-link:hover:not(.disabled) {
   background-color: rgba(0, 172, 168, 0.1);
-  border-radius: 50%;
+  color: #00aca8;
+  border-color: #00aca8;
+  border-radius: 4px;
+}
+
+
+/* ====== Modal de Detalle de Venta ====== */
+.modal-content {
+    border-radius: 8px;
+}
+
+.modal-header {
+    background-color: #00aca8; /* Mismo color que el header de la tabla */
+    color: #fff;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 12px 20px; /* Padding ajustado */
+}
+
+.modal-header .modal-title {
+    font-size: 1.1rem; /* Tamaño de fuente un poco más grande */
+    font-weight: 500;
+}
+
+.modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%); /* Icono de cerrar blanco */
+}
+
+.modal-body {
+    padding: 20px; /* Padding interno */
+}
+
+.modal-body .form-label {
+    font-weight: 500;
+    font-size: 0.95rem; /* Tamaño de fuente para labels del modal */
+    margin-bottom: 4px;
+}
+
+.modal-body .form-control {
+     font-size: 0.9rem; /* Tamaño de fuente para inputs del modal */
+     height: 36px; /* Altura ajustada */
+     background-color: #e9ecef; /* Color de fondo suave para inputs de solo lectura */
+     border: 1px solid #ced4da;
+}
+
+.modal-body h6 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    border-bottom: 1px solid #eee; /* Línea separadora sutil */
+    padding-bottom: 5px;
+}
+
+.modal-body .table {
+     margin-bottom: 1rem; /* Espacio debajo de la tabla de detalles */
+}
+
+.modal-body .table th {
+     font-size: 0.9rem;
+     font-weight: 500;
+     background-color: #e9ecef; /* Fondo para el encabezado de la tabla de detalles */
+     color: #333;
+     padding: 8px;
+}
+
+.modal-body .table td {
+     font-size: 0.85rem;
+     padding: 8px;
+}
+
+/* Totales en el modal */
+.modal-body .row.justify-content-end .col-md-4 {
+    padding-right: 15px; /* Espacio a la derecha para alinear con los totales */
+    padding-left: 15px; /* Espacio a la izquierda */
+}
+
+.modal-footer {
+    padding: 12px 20px; /* Padding ajustado */
+    border-top: 1px solid #dee2e6;
+}
+
+.modal-footer .btn-secondary {
+    font-size: 0.95rem;
 }

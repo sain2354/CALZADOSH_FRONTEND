@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http'; // Importar HttpParams
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Producto } from '../models/producto.model';
+import { catchError, tap } from 'rxjs/operators'; // Importar operadores tap y catchError
 
 @Injectable({
   providedIn: 'root'
@@ -72,5 +73,28 @@ export class ProductoService {
    */
   deleteProducto(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`);
+  }
+
+  /**
+   * Busca productos por término (nombre o código).
+   * @param termino El término de búsqueda.
+   * @returns Un Observable con un array de productos coincidentes.
+   */
+  buscarProductos(termino: string): Observable<Producto[]> {
+    if (!termino.trim()) {
+      // Si el término está vacío, retornar un observable vacío
+      return of([]);
+    }
+    // **AJUSTA LA URL DEL ENDPOINT DE BÚSQUEDA SEGÚN TU BACKEND**
+    const url = `${this.baseUrl}/buscar?termino=${termino}`;
+    return this.http.get<Producto[]>(url).pipe(
+      tap(x => x.length ?
+        console.log(`found products matching "${termino}"`) :
+        console.log(`no products matching "${termino}"`)),
+      catchError(error => {
+        console.error(`Error searching products: ${error.message}`);
+        return of([]); // Retorna un arreglo vacío en caso de error
+      })
+    );
   }
 }

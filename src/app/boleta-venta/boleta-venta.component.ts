@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import numeroALetras from 'numero-a-letras';
+import * as numeroALetras from 'numero-a-letras';
 
 @Component({
   selector: 'app-boleta-venta',
@@ -33,12 +33,24 @@ export class BoletaVentaComponent {
   }
 
   toLetras(n: number): string {
-    // Llamamos directamente a la función importada
-    return numeroALetras(n, {
-      plural: 'SOLES',
-      singular: 'SOL',
-      centPlural: 'CENTIMOS',
-      centSingular: 'CENTIMO'
-    });
+    // Intentar llamar a la función de diferentes maneras
+    if (typeof (numeroALetras as any).default === 'function') {
+      return (numeroALetras as any).default(n, {
+        plural: 'SOLES',
+        singular: 'SOL',
+        centPlural: 'CENTIMOS',
+        centSingular: 'CENTIMO'
+      });
+    } else if (typeof numeroALetras === 'function') {
+      return (numeroALetras as any)(n, {
+        plural: 'SOLES',
+        singular: 'SOL',
+        centPlural: 'CENTIMOS',
+        centSingular: 'CENTIMO'
+      });
+    } else {
+      console.error("numeroALetras function not found on imported module");
+      return n.toFixed(2); // Fallback: return the number as a string
+    }
   }
 }

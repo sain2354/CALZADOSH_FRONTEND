@@ -1,4 +1,4 @@
-<div class="container-fluid mt-2"> 
+<div class="container-fluid mt-2">
   <div class="row">
 
     <!-- PANEL IZQUIERDO -->
@@ -9,23 +9,38 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
             <strong>Productos</strong>
+            <!-- El botón "+" aquí podría usarse para abrir un modal de búsqueda avanzada si es necesario -->
             <button class="btn btn-link p-0 ml-2" title="Agregar producto">
               <i class="fas fa-plus text-primary"></i>
             </button>
           </div>
-          <input type="text" class="form-control w-50" placeholder="Ingrese el código o nombre del producto">
-        </div>
-
-        <!-- Total y botones -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <input type="text" class="form-control total-display" readonly [value]="'Gs/ ' + (compra.total | number:'1.2-2')">
-          <div class="ml-3">
-            <button class="btn btn-primary mr-2"><i class="fas fa-shopping-cart"></i> Realizar Compra</button>
-            <button class="btn btn-danger"><i class="fas fa-trash"></i> Vaciar Listado</button>
+          <!-- Input de búsqueda de productos -->
+          <div class="w-50">
+            <input type="text" class="form-control" placeholder="Ingrese código de barras o el nombre del producto"
+                   (input)="buscarProductos($event)"
+                   [(ngModel)]="nombreProductoNuevoItem" #searchBox>
+            <!-- Lista de resultados de autocompletado -->
+            <ul *ngIf="(productosEncontrados$ | async) as productos" class="list-group position-absolute w-50" style="z-index: 1000;">
+              <li *ngFor="let producto of productos" class="list-group-item list-group-item-action"
+                  (click)="seleccionarProducto(producto)">
+                {{ producto.nombre }} - {{ producto.codigoBarra }}
+              </li>
+            </ul>
           </div>
         </div>
 
-        <!-- Controles tabla -->
+         <!-- Display del total -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <input type="text" class="form-control total-display" readonly [value]="'S/ ' + (compra.total | number:'1.2-2')">
+          <div class="ml-3">
+            <!-- Botones de acción -->
+            <!-- Deshabilitar el botón hasta que los datos estén cargados -->
+            <button class="btn btn-primary mr-2" (click)="realizarCompra()" [disabled]="!datosCargados"><i class="fas fa-shopping-cart"></i> Realizar Compra</button>
+            <button class="btn btn-danger" (click)="vaciarListado()"><i class="fas fa-trash"></i> Vaciar Listado</button>
+          </div>
+        </div>
+
+        <!-- Controles tabla (se mantienen, funcionalidad si es necesaria) -->
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div>
             <label for="rows">Ver</label>
@@ -43,7 +58,7 @@
           </div>
         </div>
 
-        <!-- Tabla -->
+        <!-- Tabla de ítems de la compra -->
         <div class="table-responsive">
           <table class="table table-bordered table-sm text-center">
             <thead class="thead-custom text-white">
@@ -52,7 +67,7 @@
                 <th class="bg-celeste">Código</th>
                 <th class="bg-celeste">Producto</th>
                 <th class="bg-celeste">Cantidad</th>
-                <th class="col-precio bg-celeste">Precio</th>
+                <th class="col-precio bg-celeste">Precio Unit.</th>
                 <th class="bg-celeste">Total</th>
                 <th class="bg-celeste">Opciones</th>
                 <th class="bg-celeste">Talla</th>
@@ -60,7 +75,38 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr *ngFor="let item of compra.items; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ item.codigoBarra || 'N/A' }}</td>
+                <td>{{ item.nombreProducto || 'N/A' }}</td>
+                <td>
+                  <input type="number" class="form-control form-control-sm text-center"
+                         [(ngModel)]="item.cantidad" min="1" (change)="calcularTotales()">
+                </td>
+                <td>
+                   <input type="number" class="form-control form-control-sm text-center"
+                         [(ngModel)]="item.precioUnitario" min="0" (change)="calcularTotales()">
+                </td>
+                <td>{{ (item.cantidad * item.precioUnitario) | number:'1.2-2' }}</td>
+                <td>
+                  <button class="btn btn-danger btn-sm" (click)="removerItem(i)"><i class="fas fa-trash"></i></button>
+                </td>
+                <!-- Celda de Talla - Ahora un botón o div que abre el modal -->
+                <td>
+                    <!-- Validamos si el producto tiene tallas antes de mostrar el botón -->
+                    <button *ngIf="getTallasForItem(item).length > 0" class="btn btn-link btn-sm p-0" (click)="abrirModalTallas(item)">
+                        {{ item.nombreTalla || 'Seleccione Talla' }} <i class="fas fa-chevron-down ml-1"></i>
+                    </button>
+                     <!-- Si el producto no tiene tallas, mostramos solo el nombre de la talla o N/A -->
+                     <span *ngIf="getTallasForItem(item).length === 0">
+                       {{ item.nombreTalla || 'N/A' }}
+                     </span>
+                </td>
+                 <!-- Mostrar stock por talla -->
+                <td>{{ item.stock || 'N/A' }}</td>
+              </tr>
+               <!-- Mostrar "No hay información" solo si la lista de ítems está vacía -->
+               <tr *ngIf="compra.items.length === 0">
                 <td colspan="9">No hay información en esta tabla</td>
               </tr>
             </tbody>
@@ -70,70 +116,125 @@
       </div>
     </div>
 
-    <!-- PANEL DERECHO -->
+    <!-- PANEL DERECHO (Se mantiene igual) -->
     <div class="col-md-3">
       <div class="card shadow-sm p-3 h-100">
+          <!-- ... Contenido del panel derecho ... -->
 
-        <div class="form-group mb-2">
-          <label>Fecha <span class="text-danger">*</span></label>
-          <input type="date" class="form-control" [(ngModel)]="compra.fecha">
-        </div>
+          <div class="form-group mb-2">
+              <label>Fecha <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" [(ngModel)]="compra.fecha" name="fechaCompra">
+            </div>
 
-        <div class="form-group mb-2">
-          <label>Documento <span class="text-danger">*</span></label>
-          <select class="form-control" [(ngModel)]="compra.tipoDoc">
-            <option>Boleta</option>
-            <option>Factura</option>
-          </select>
-        </div>
+            <div class="form-group mb-2">
+              <label>Documento <span class="text-danger">*</span></label>
+              <select class="form-control" [(ngModel)]="compra.tipoDocumento" name="tipoDocumentoCompra">
+                <option value="Boleta">Boleta</option>
+                <option value="Factura">Factura</option>
+              </select>
+            </div>
 
-        <div class="form-group mb-2">
-          <label>Proveedor <span class="text-danger">*</span>
-            <button class="btn btn-sm btn-success ml-1 py-0 px-2"><i class="fas fa-plus"></i></button>
-          </label>
-          <select class="form-control" [(ngModel)]="compra.proveedor">
-            <option value="">Seleccione..</option>
-          </select>
-        </div>
+            <div class="form-group mb-2">
+              <label>Proveedor <span class="text-danger">*</span>
+                <button class="btn btn-sm btn-success ml-1 py-0 px-2"><i class="fas fa-plus"></i></button>
+              </label>
+              <!-- Deshabilitar el select hasta que los datos estén cargados -->
+              <select class="form-control" [(ngModel)]="compra.idProveedor" name="idProveedorCompra" [disabled]="!datosCargados">
+                <option value="0">Seleccione Proveedor</option>
+                <option *ngFor="let proveedor of proveedores" [value]="proveedor.idPersona">
+                  {{ proveedor.nombre }}
+                </option>
+              </select>
+            </div>
 
-        <div class="form-group mb-2">
-          <label>Forma de pago <span class="text-danger">*</span></label>
-          <select class="form-control" [(ngModel)]="compra.formaPago">
-            <option>Efectivo</option>
-            <option>Tarjeta</option>
-          </select>
-        </div>
+            <div class="form-group mb-2">
+              <label>Forma de pago <span class="text-danger">*</span></label>
+              <!-- Deshabilitar el select hasta que los datos estén cargados -->
+               <select class="form-control" [(ngModel)]="compra.idFormaPago" name="idFormaPagoCompra" [disabled]="!datosCargados">
+                 <option value="0">Seleccione Forma de Pago</option>
+                 <option *ngFor="let formaPago of formasPago" [value]="formaPago.idMedioPago">
+                   {{ formaPago.descripcion }}
+                 </option>
+               </select>
+            </div>
 
-        <div class="form-row mb-2">
-          <div class="col">
-            <label>Serie</label>
-            <input type="text" class="form-control" [(ngModel)]="compra.serie" readonly>
-          </div>
-          <div class="col">
-            <label>Nro. Doc.</label>
-            <input type="text" class="form-control" [(ngModel)]="compra.nroDoc" readonly>
-          </div>
-        </div>
+            <div class="form-row mb-2">
+              <div class="col">
+                <label>Serie</label>
+                <input type="text" class="form-control" [(ngModel)]="compra.serie" name="serieCompra">
+              </div>
+              <div class="col">
+                <label>Nro. Doc.</label>
+                <input type="text" class="form-control" [(ngModel)]="compra.numeroDocumento" name="numeroDocumentoCompra">
+              </div>
+            </div>
 
-        <hr>
+            <hr>
 
-        <div>
-          <div class="d-flex justify-content-between mb-1">
-            <strong>SUBTOTAL</strong>
-            <span>Gs/ {{ compra.subtotal | number:'1.0-0' }}</span>
-          </div>
-          <div class="d-flex justify-content-between mb-1">
-            <strong>IGV (18%)</strong>
-            <span>Gs/ {{ compra.igv | number:'1.0-0' }}</span>
-          </div>
-          <div class="d-flex justify-content-between h5">
-            <strong>TOTAL</strong>
-            <strong>Gs/ {{ compra.total | number:'1.0-0' }}</strong>
-          </div>
-        </div>
+            <div>
+              <div class="d-flex justify-content-between mb-1">
+                <strong>SUBTOTAL</strong>
+                <span>S/ {{ compra.subtotal | number:'1.2-2' }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <strong>IGV (18%)</strong>
+                <span>S/ {{ compra.igv | number:'1.2-2' }}</span>
+              </div>
+              <div class="d-flex justify-content-between h5">
+                <strong>TOTAL</strong>
+                <strong>S/ {{ compra.total | number:'1.2-2' }}</strong>
+              </div>
+            </div>
 
       </div>
     </div>
 
   </div>
+
+   <!-- Modal para seleccionar Talla -->
+  <div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display': modalTallaAbierto ? 'block' : 'none'}">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Elige una Talla</h5>
+          <button type="button" class="close" aria-label="Close" (click)="cerrarModalTallas()">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+              <thead class="table-info">
+                <tr>
+                  <th>USA/EUR/CM</th>
+                  <th>Stock</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                 <!-- Iterar sobre las tallas disponibles del ítem seleccionado -->
+                <tr *ngFor="let talla of getTallasForEditingItem()">
+                  <!-- Combinamos las tres medidas de talla -->
+                  <td>{{ (talla.usa ? talla.usa + '/' : '') + (talla.eur ? talla.eur + '/' : '') + (talla.cm || '') }}</td>
+                  <td>{{ talla.stock }}</td>
+                  <td>
+                    <button class="btn btn-primary btn-sm" (click)="seleccionarTallaModal(talla)">Seleccionar</button>
+                  </td>
+                </tr>
+                 <tr *ngIf="getTallasForEditingItem().length === 0">
+                   <td colspan="3">No hay tallas disponibles para este producto.</td>
+                 </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="cerrarModalTallas()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Fondo oscuro del modal -->
+  <div class="modal-backdrop fade show" *ngIf="modalTallaAbierto"></div>
+
 </div>

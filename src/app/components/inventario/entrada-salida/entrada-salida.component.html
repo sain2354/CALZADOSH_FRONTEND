@@ -1,14 +1,14 @@
 <div class="contenedor">
-  <h3>Listado de Entradas y Salidas</h3>
-
+ <h3>Listado de Entradas y Salidas</h3>
+ 
   <div class="barra-superior">
-    <button class="btn-exportar">📄</button>
+ <button class="btn-exportar">📄 Exportar</button>
     <select #selectRPP (change)="actualizarRegistros(selectRPP.value)">
-      <option value="5">Show 5 rows</option>
-      <option value="10" selected>Show 10 rows</option>
-      <option value="15">Show 15 rows</option>
+ <option value="5">Mostrar 5 filas</option>
+ <option value="10" selected>Mostrar 10 filas</option>
+      <option value="15">Mostrar 15 filas</option>
     </select>
-    <input type="text" placeholder="Buscar..." #buscarInput (input)="actualizarBusqueda(buscarInput.value)" />
+    <input type="text" placeholder="Buscar por ID Producto o Tipo..." #buscarInput (input)="actualizarBusqueda(buscarInput.value)" />
   </div>
 
   <table>
@@ -23,25 +23,28 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let producto of productosPaginados">
+      <tr *ngFor="let producto of inventarioPaginado">
         <td>{{ producto.codigo }}</td>
         <td>{{ producto.descripcion }}</td>
         <td>{{ producto.ingresos }}</td>
         <td>{{ producto.salidas }}</td>
         <td>{{ producto.stock }}</td>
         <td>
-          <button title="Ver" class="btn-ver">👁️</button>
-          <button title="Imprimir" class="btn-print">🖨️</button>
+          <button title="Ver Detalles" class="btn-ver">👁️</button>
+          <!-- Puedes agregar un botón para eliminar o editar si implementas esa funcionalidad -->
         </td>
       </tr>
+      <tr *ngIf="inventarioPaginado.length === 0">
+        <td colspan="7">No hay movimientos de inventario para mostrar.</td>
+ </tr>
     </tbody>
   </table>
 
-  <div class="paginacion">
+  <div class="paginacion" *ngIf="totalPaginas() > 1">
     <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
     <button *ngFor="let pag of [].constructor(totalPaginas()); let i = index"
             [class.activo]="paginaActual === (i + 1)"
-            (click)="cambiarPagina(i + 1)">
+ (click)="cambiarPagina(i + 1)">
       {{ i + 1 }}
     </button>
     <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas()">Siguiente</button>

@@ -42,8 +42,11 @@ export interface DetalleVenta {
   /** (Opcional) Se asigna al crear la venta */
   idVenta?: number;
 
-  /** Referencia al producto */
+  /** Referencia al producto (parte de la clave compuesta en Talla_Producto) */
   idProducto: number;
+
+  /** Referencia a la talla USA (parte de la clave compuesta en Talla_Producto) */
+  Usa?: number; // Cambiado de IdTallaProducto a Usa
 
   /** Cantidad vendida */
   cantidad: number;
