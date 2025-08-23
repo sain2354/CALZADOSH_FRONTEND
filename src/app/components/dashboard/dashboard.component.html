@@ -1,59 +1,31 @@
 <div class="dashboard-container">
-  <h2>¡Bienvenido al Panel de Control!</h2>
-  <p>Aquí tienes una visión general del estado actual de tu negocio.</p>
+  <h2>Tablero Principal</h2>
 
+  <!-- Tarjetas superiores -->
   <div class="cards">
-    <div class="card">
-      <div class="card-content">
-        <div class="card-title-number">
-          <p class="card-title">Visitas a la página</p>
-          <div class="card-number">1K</div>
-        </div>
-        <span class="ver-link" (click)="verDetalle('traffic')">Ver</span>
-      </div>
-      <div class="progress-bar yellow"></div>
+    <div class="card blue">
+      <h3>12</h3>
+      <p>Productos</p>
     </div>
-
-    <div class="card">
-      <div class="card-content">
-        <div class="card-title-number">
-          <p class="card-title">Productos vendidos</p>
-          <div class="card-number">5</div>
-        </div>
-        <span class="ver-link" (click)="verDetalle('products')">Ver</span>
-      </div>
-      <div class="progress-bar green"></div>
+    <div class="card yellow">
+      <h3>S/ 226,715.00</h3>
+      <p>Total Ventas Mes</p>
     </div>
-
-    <div class="card">
-      <div class="card-content">
-        <div class="card-title-number">
-          <p class="card-title">Capacidad del servidor</p>
-          <div class="card-number">14%</div>
-        </div>
-        <span class="ver-link" (click)="verDetalle('server')">Ver</span>
-      </div>
-      <div class="progress-bar blue"></div>
+    <div class="card red">
+      <h3>S/ 27,699.00</h3>
+      <p>Total Ganancias</p>
     </div>
   </div>
 
+  <!-- Gráficos -->
   <div class="charts">
     <div class="chart">
-      <h4>Tráfico</h4>
-      <canvas id="trafficChart"></canvas>
+      <h4 class="ventas">VENTAS DEL MES: S/ 226,715.00</h4>
+      <canvas id="ventasChart"></canvas>
     </div>
     <div class="chart">
-      <h4>Vistas de productos</h4>
-      <canvas id="donutChart"></canvas>
+      <h4 class="compras">COMPRAS DEL MES: S/ 0.00</h4>
+      <canvas id="comprasChart"></canvas>
     </div>
-  </div>
-</div>
-
-<!-- Modal -->
-<div class="modal-overlay" *ngIf="showModal">
-  <div class="modal-content">
-    <h3>{{ modalTitle }}</h3>
-    <canvas id="modalChart"></canvas>
-    <span class="close-link" (click)="cerrarModal()">Cerrar</span>
   </div>
 </div>

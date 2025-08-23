@@ -1,85 +1,108 @@
-/* Fondo degradado oscuro (azul negro) */
-.login-background {
-  height: 100vh;
+.login-wrapper {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #0b0c10, #1f2833);
+  height: 100vh;
   font-family: 'Poppins', sans-serif;
 }
 
-/* Caja visible del login que resalta */
-.login-box {
-  background-color: rgba(0, 0, 0, 0.85); /* negro sólido translúcido */
-  padding: 60px 50px;
-  border-radius: 14px;
-  width: 100%;
-  max-width: 480px;
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+/* Lado izquierdo con curva */
+.login-left {
+  flex: 1;
+  position: relative;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Fondo curvo más grande, ocupando mitad de la página */
+.login-left::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #0095ff;
+  /* Curva más pronunciada y ancha */
+  clip-path: path("M0,0 C0,1000 1000,100 800,1000 L0 1000 Z");
+  z-index: 0;
+}
+
+/* Imagen sobre la curva */
+.login-left img {
+  position: relative;
+  z-index: 2;
+  width: 95%;
+  max-width: 650px; /* un poco más grande */
+}
+
+/* Lado derecho */
+.login-right {
+  flex: 1;
+  background-color: white;
+  display: flex;
+  justify-content: center;
   align-items: center;
 }
 
-/* Título */
+/* Caja de login */
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  transform: scale(1.15);
+}
+
+.user-icon {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 15px;
+}
+
 .login-box h2 {
-  color: white;
-  margin-bottom: 35px;
-  font-size: 36px;
-  font-weight: 700; /* <- Negrita */
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 40px;
 }
 
 /* Inputs */
-.login-box input {
-  width: 100%;
-  padding: 16px;
+.input-group {
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid #ccc;
   margin-bottom: 25px;
+  padding: 10px 0;
+}
+
+.input-group i {
+  color: gray;
+  margin: 0 12px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.input-group input {
+  flex: 1;
   border: none;
-  border-radius: 6px;
-  background-color: #1a1a1a;
-  color: white;
+  outline: none;
   font-size: 16px;
 }
 
-.login-box input::placeholder {
-  color: #aaa;
-}
-
-/* Botón más grande y estilizado */
-.login-box button {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(to bottom, #63a4ff, #1a75ff);
+/* Botón */
+.login-btn {
+  background-color: #0095ff;
   border: none;
   color: white;
   font-weight: bold;
-  border-radius: 6px;
-  font-size: 17px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.login-box button:hover {
-  background: linear-gradient(to bottom, #5c9eff, #1565c0);
-}
-
-/* Contenedor del input de contraseña con ícono */
-.password-container {
-  position: relative;
   width: 100%;
-}
-
-.password-container input {
-  padding-right: 40px;
-}
-
-.password-container i {
-  position: absolute;
-  top: 35%;
-  right: 14px;
-  transform: translateY(-50%);
-  color: #ccc;
+  padding: 14px;
+  border-radius: 30px;
+  font-size: 16px;
   cursor: pointer;
-  font-size: 20px;
+  margin-top: 15px;
+  transition: background-color 0.3s ease;
 }
 
+.login-btn:hover {
+  background-color: #007acc;
+}
