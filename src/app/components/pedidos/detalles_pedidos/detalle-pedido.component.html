@@ -5,9 +5,7 @@
       <i class="fas fa-times"></i>
     </button>
   </div>
-
   <div class="cuerpo-detalle">
-
     <!-- Información del Cliente -->
     <section class="informacion-cliente">
       <h4>Información del Cliente</h4>
@@ -23,31 +21,24 @@
     </section>
 
     <!-- Detalles del Pedido -->
-<section class="informacion-pedido">
-  <h4>Detalles del Pedido</h4>
-
-  <div class="lista-productos">
-    <div class="producto-card" *ngFor="let d of pedido.detalles">
-      <div class="producto-info">
-        <p class="prod-nombre"><strong>{{ d.nombreProducto }}</strong></p>
-        <p><strong>Talla:</strong> {{ d.talla }}</p>
-        <p><strong>Cantidad:</strong> {{ d.cantidad }}</p>
-        <p><strong>Precio U.:</strong> S/ {{ d.precio.toFixed(2) }}</p>
+    <section class="informacion-pedido">
+      <h4>Detalles del Pedido</h4>
+      <div class="lista-productos">
+        <div class="producto-card" *ngFor="let d of pedido.detalles">
+          <div class="producto-info">
+            <p class="prod-nombre"><strong>{{ d.nombreProducto }}</strong></p>
+            <p><strong>Talla:</strong> {{ d.talla }}</p>
+            <p><strong>Cantidad:</strong> {{ d.cantidad }}</p>
+            <p><strong>Precio U.:</strong> S/ {{ d.precio.toFixed(2) }}</p>
+          </div>
+          <img *ngIf="d.imagenUrl" [src]="d.imagenUrl" [alt]="d.nombreProducto" class="producto-imagen" />
+        </div>
       </div>
-      <img
-        *ngIf="d.imagenUrl"
-        [src]="d.imagenUrl"
-        [alt]="d.nombreProducto"
-        class="producto-imagen"
-      />
-    </div>
-  </div>
-
-  <div class="resumen-pedido">
-    <p><strong>Costo envío:</strong> S/ {{ pedido.costoEnvio.toFixed(2) }}</p>
-    <p><strong>Total pedido:</strong> S/ {{ pedido.total.toFixed(2) }}</p>
-  </div>
-</section>
+      <div class="resumen-pedido">
+        <p><strong>Costo envío:</strong> S/ {{ pedido.costoEnvio.toFixed(2) }}</p>
+        <p><strong>Total pedido:</strong> S/ {{ pedido.total.toFixed(2) }}</p>
+      </div>
+    </section>
 
     <!-- Información de Pago -->
     <section class="informacion-pago">
@@ -66,21 +57,15 @@
           </p>
           <p><strong>Fecha Validación:</strong> {{ formatearFechaIso(p.fechaPago) }}</p>
           <div class="validacion-pago">
-            <button
-              class="btn-validar success"
-              (click)="validarPago(p)"
-              [disabled]="p.estadoPago !== 'Pendiente'"
-            >Validar pago</button>
-            <button
-              class="btn-validar danger"
-              (click)="rechazarPago(p)"
-              [disabled]="p.estadoPago !== 'Pendiente'"
-            >Rechazar pago</button>
-            <button
-              class="btn-comprobante"
-              *ngIf="p.comprobanteUrl"
-              (click)="abrirComprobante(p)"
-            >Ver comprobante</button>
+            <button class="btn-validar success" (click)="validarPago(p)" [disabled]="p.estadoPago !== 'Pendiente'">
+              Validar pago
+            </button>
+            <button class="btn-validar danger" (click)="rechazarPago(p)" [disabled]="p.estadoPago !== 'Pendiente'">
+              Rechazar pago
+            </button>
+            <button class="btn-comprobante" *ngIf="p.comprobanteUrl" (click)="abrirComprobante(p)">
+              Ver comprobante
+            </button>
           </div>
         </div>
       </ng-container>
@@ -88,13 +73,8 @@
         <p><em>No hay información de pago disponible.</em></p>
       </ng-template>
     </section>
-
   </div>
 
-  <app-comprobante-pago
-    *ngIf="mostrarComprobante"
-    [comprobante]="comprobanteUrl!"
-    [metodo]="metodoPago!"
-    (cerrar)="mostrarComprobante = false"
-  ></app-comprobante-pago>
+  <app-comprobante-pago *ngIf="mostrarComprobante" [comprobante]="comprobanteUrl!" [metodo]="metodoPago!" (cerrar)="mostrarComprobante = false">
+  </app-comprobante-pago>
 </div>

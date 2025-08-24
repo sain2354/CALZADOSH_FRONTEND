@@ -1,14 +1,4 @@
-<div class="contenedor-pedidos"> 
-
-  <button class="btn-filtros" (click)="mostrarFiltros = !mostrarFiltros">
-    {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
-  </button>
-
-  <div *ngIf="mostrarFiltros" class="panel-filtros">
-    <!-- filtros idénticos a antes -->
-    <!-- ... -->
-  </div>
-
+<div class="contenedor-pedidos">
   <div class="tabla-pedidos">
     <div class="tabla-cabecera">
       <div>ID</div>
@@ -20,49 +10,39 @@
       <div>Fecha</div>
       <div class="acciones-header">Acciones</div>
     </div>
-
     <div class="tabla-cuerpo">
-      <div *ngFor="let p of pedidosFiltrados | paginate:{ itemsPerPage: pageSize, currentPage: page }"
-           class="tabla-fila">
-
+      <div *ngFor="let p of pedidos | paginate:{ itemsPerPage: pageSize, currentPage: page }" class="tabla-fila">
         <!-- ID -->
         <div>{{ p.idVenta }}</div>
-
+        
         <!-- Cliente (si no existe, muestra '—') -->
         <div>{{ p.cliente?.nombreCompleto || '—' }}</div>
-
+        
         <!-- Total -->
         <div>S/ {{ p.total.toFixed(2) }}</div>
-
+        
         <!-- Método Pago -->
         <div>
-          {{
-            (p.pagos?.length ?? 0) > 0
-              ? (p.pagos![0].comprobanteUrl
-                  ? 'Yape/Plin'
-                  : 'Pendiente')
-              : 'N/A'
-          }}
+          {{ (p.pagos?.length ?? 0) > 0 ? (p.pagos![0].comprobanteUrl ? 'Yape/Plin' : 'Pendiente') : 'N/A' }}
         </div>
-
+        
         <!-- Estado Pago -->
         <div>
           <span class="estado-badge" [ngClass]="p.estadoPago.toLowerCase()">
             {{ p.estadoPago }}
           </span>
         </div>
-
+        
         <!-- Estado Pedido -->
         <div>
-          <span class="estado-badge"
-                [ngClass]="p.estado.toLowerCase().replace(' ', '-')">
+          <span class="estado-badge" [ngClass]="p.estado.toLowerCase().replace(' ', '-')">
             {{ p.estado }}
           </span>
         </div>
-
+        
         <!-- Fecha -->
         <div>{{ formatearFecha(p.fecha) }}</div>
-
+        
         <!-- Acciones -->
         <div class="acciones-cell">
           <button class="btn-accion" (click)="verDetalle(p)">
@@ -71,27 +51,17 @@
           <button class="btn-accion" (click)="eliminarPedido(p)">
             <i class="fas fa-trash"></i>
           </button>
-          <select class="select-estado"
-                  [value]="p.estado"
-                  (change)="cambiarEstadoPedido(p, $event)">
+          <select class="select-estado" [value]="p.estado" (change)="cambiarEstadoPedido(p, $event)">
             <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
           </select>
         </div>
-
       </div>
     </div>
   </div>
-
-  <pagination-controls
-    (pageChange)="page = $event"
-    [maxSize]="5"
-    [autoHide]="true"
-    class="pagination-wrapper">
+  
+  <pagination-controls (pageChange)="page = $event" [maxSize]="5" [autoHide]="true" class="pagination-wrapper">
   </pagination-controls>
-
-  <app-detalle-pedido
-    *ngIf="mostrarDetalle && pedidoSeleccionado"
-    [pedido]="pedidoSeleccionado"
-    (cerrar)="cerrarDetalle()">
+  
+  <app-detalle-pedido *ngIf="mostrarDetalle && pedidoSeleccionado" [pedido]="pedidoSeleccionado" (cerrar)="cerrarDetalle()">
   </app-detalle-pedido>
 </div>

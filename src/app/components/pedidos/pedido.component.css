@@ -1,64 +1,11 @@
 /* src/app/components/pedido/pedido.component.css */
-
 /* Contenedor principal */
 .contenedor-pedidos {
   max-width: 1200px;
   margin: 1rem auto;
   padding: 1rem;
   font-family: 'Segoe UI', sans-serif;
-}
-
-/* Botón de filtros */
-.btn-filtros {
-  background: #00bcd4;
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-}
-.btn-filtros:hover {
-  background: #0097a7;
-}
-
-/* Panel de filtros */
-.panel-filtros {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-}
-.filtro-grupo label {
-  font-weight: bold;
-  margin-bottom: 0.3rem;
-  display: block;
-  font-size: 0.95rem;
-}
-.filtro-grupo input,
-.filtro-grupo select {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.95rem;
-}
-
-/* Botón limpiar filtros */
-.btn-limpiar {
-  background: #6c757d;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.95rem;
-}
-.btn-limpiar:hover {
-  background: #5a6268;
+  position: relative;
 }
 
 /* Tabla de pedidos */
@@ -69,6 +16,8 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   max-height: calc(7 * 56px + 2rem);
   overflow-y: auto;
+  position: relative;
+  z-index: 1;
 }
 
 /* Cabecera de tabla */
@@ -80,11 +29,13 @@
   font-weight: bold;
   font-size: 0.9rem;
 }
+
 .tabla-cabecera div {
   padding: 10px;
   text-align: center;
   border-right: 1px solid rgba(255,255,255,0.3);
 }
+
 .tabla-cabecera div:last-child {
   background: #00838f;
   border-right: none;
@@ -96,6 +47,7 @@
   grid-template-columns: 50px 1.4fr 90px 110px 110px 130px 160px 80px;
   border-bottom: 1px solid #e0e0e0;
 }
+
 .tabla-cuerpo .tabla-fila div {
   padding: 8px 6px;
   text-align: center;
@@ -104,6 +56,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .tabla-cuerpo .tabla-fila:nth-child(even) {
   background: #fbfcfd;
 }
@@ -117,11 +70,31 @@
   text-transform: uppercase;
   display: inline-block;
 }
-.pendiente { background: #FFF3CD; color: #856404; }
-.pago-validado { background: #CCE5FF; color: #004085; }
-.pendiente-validación { background: #E2E3E5; color: #383D41; }
-.validado { background: #D4EDDA; color: #155724; }
-.rechazado { background: #F8D7DA; color: #721C24; }
+
+.pendiente {
+  background: #FFF3CD;
+  color: #856404;
+}
+
+.pago-validado {
+  background: #CCE5FF;
+  color: #004085;
+}
+
+.pendiente-validación {
+  background: #E2E3E5;
+  color: #383D41;
+}
+
+.validado {
+  background: #D4EDDA;
+  color: #155724;
+}
+
+.rechazado {
+  background: #F8D7DA;
+  color: #721C24;
+}
 
 /* Celda de acciones */
 .acciones-cell {
@@ -129,6 +102,7 @@
   flex-direction: column;
   gap: 0.4rem;
 }
+
 .btn-accion {
   background: none;
   border: none;
@@ -136,9 +110,11 @@
   font-size: 1rem;
   color: #495057;
 }
+
 .btn-accion:hover {
   color: #212529;
 }
+
 .select-estado {
   padding: 0.3rem 0.5rem;
   border-radius: 4px;
@@ -151,23 +127,30 @@
   margin: 1rem 0;
   display: flex;
   justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 /* Overlays (alerta y confirmación) cubriendo toda la pantalla */
 .modal-backdrop {
   position: fixed;
-  inset: 0; /* equivale a top:0; right:0; bottom:0; left:0; */
-  background: rgba(0,0,0,0.5);
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-}
-.alert-backdrop {
   z-index: 10000;
 }
-.confirm-backdrop {
+
+.alert-backdrop {
   z-index: 10001;
+}
+
+.confirm-backdrop {
+  z-index: 10002;
 }
 
 /* Ventana modal */
@@ -175,13 +158,77 @@
   background: #fff;
   padding: 1.5rem;
   border-radius: 0.5rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   text-align: center;
-  max-width: 90%;
+  max-width: 400px;
+  width: 90%;
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.modal p {
+  margin: 1rem 0;
+  color: #555;
+  line-height: 1.5;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
 /* Botones dentro del modal */
-.alert-modal button,
-.confirm-modal button {
-  margin: 0 0.5rem;
+.btn-modal {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  min-width: 80px;
+  transition: all 0.2s ease;
+}
+
+.btn-aceptar {
+  background: #28a745;
+  color: white;
+}
+
+.btn-aceptar:hover {
+  background: #218838;
+}
+
+.btn-cancelar {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background: #5a6268;
+}
+
+.btn-cerrar {
+  background: #00bcd4;
+  color: white;
+}
+
+.btn-cerrar:hover {
+  background: #0097a7;
 }
