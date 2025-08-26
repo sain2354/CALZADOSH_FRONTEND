@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class TallaProductoService {
-  private apiUrl = 'http://www.chbackend.somee.com/api/TallaProducto';
+  private apiUrl = 'https://www.chbackend.somee.com/api/TallaProducto';
 
   constructor(private http: HttpClient) {}
 

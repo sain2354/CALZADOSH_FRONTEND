@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class VentaService {
-  private apiUrl = 'http://www.chbackend.somee.com/api/Venta';
+  private apiUrl = 'https://www.chbackend.somee.com/api/Venta';
 
   constructor(private http: HttpClient) {}
 

@@ -9,7 +9,7 @@ import { InventarioResumenResponse } from '../models/inventario-resumen-response
   providedIn: 'root'
 })
 export class InventarioService {
-  private apiUrl = 'http://www.chbackend.somee.com/api/Inventario'; // **AJUSTA ESTA URL SI ES NECESARIO**
+  private apiUrl = 'https://www.chbackend.somee.com/api/Inventario'; // **AJUSTA ESTA URL SI ES NECESARIO**
 
   constructor(private http: HttpClient) { }
 

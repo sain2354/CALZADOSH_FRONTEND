@@ -19,7 +19,7 @@ interface ApiResponse<T> {
 })
 export class MedioPagoService {
   // **VERIFICA Y AJUSTA ESTA URL A LA DE TU ENDPOINT DE MEDIOS DE PAGO EN EL BACKEND**
-  private apiUrl = 'http://www.chbackend.somee.com/api/MedioPago';
+  private apiUrl = 'https://www.chbackend.somee.com/api/MedioPago';
 
   constructor(private http: HttpClient) { }
 

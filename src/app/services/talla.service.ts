@@ -7,7 +7,7 @@ import { Talla } from '../models/talla.model';
   providedIn: 'root'
 })
 export class TallaService {
-  private apiUrl = 'http://www.chbackend.somee.com/api/Talla';
+  private apiUrl = 'https://www.chbackend.somee.com/api/Talla';
 
   constructor(private http: HttpClient) {}
 

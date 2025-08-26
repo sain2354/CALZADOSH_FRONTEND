@@ -6,7 +6,7 @@ import { Pedido } from '../models/pedido.model';
 
 @Injectable({ providedIn: 'root' })
 export class PedidoService {
-  private apiUrl = 'http://www.chbackend.somee.com/api/Venta';
+  private apiUrl = 'https://www.chbackend.somee.com/api/Venta';
 
   constructor(private http: HttpClient) {}
 

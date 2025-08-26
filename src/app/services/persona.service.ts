@@ -16,7 +16,7 @@ interface ApiResponse<T> {
 })
 export class PersonaService {
   // Usar HTTPS
-  private apiUrl = 'http://www.chbackend.somee.com/api/Persona';
+  private apiUrl = 'https://www.chbackend.somee.com/api/Persona';
 
   constructor(private http: HttpClient) {}
 

@@ -11,7 +11,7 @@ import { CompraRequest, Compra, CompraResponse, CompraDetalleResponse } from '..
   providedIn: 'root'
 })
 export class CompraService {
-  private baseUrl = 'http://www.chbackend.somee.com/api/Compras'; // Asegúrate de que esta URL sea correcta
+  private baseUrl = 'https://www.chbackend.somee.com/api/Compras'; // Asegúrate de que esta URL sea correcta
 
   constructor(private http: HttpClient) { }
 

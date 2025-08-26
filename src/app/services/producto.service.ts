@@ -12,7 +12,7 @@ export class ProductoService {
    * Ajusta esto a la URL real de tu API.
    * Ya incluye /api/Producto al final, así que no lo repitas.
    */
-  private baseUrl = 'http://www.chbackend.somee.com/api/Producto';
+  private baseUrl = 'https://www.chbackend.somee.com/api/Producto';
 
   constructor(private http: HttpClient) {}
 
