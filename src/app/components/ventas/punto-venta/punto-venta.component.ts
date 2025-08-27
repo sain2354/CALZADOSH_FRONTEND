@@ -36,6 +36,10 @@ export class PuntoVentaComponent implements OnInit {
   productosAutoComplete: any[] = [];
   productoBuscado = '';
 
+  // PAGINACIÓN
+  p: number = 1; // página actual
+  itemsPerPage: number = 5; // cantidad inicial de registros por página
+
   // ITEMS
   ventaItems: Array<{
     item: number;
@@ -46,7 +50,7 @@ export class PuntoVentaComponent implements OnInit {
     precio: number;
     talla?: string;
     stock?: number;
-    idUnidadMedida?: number;      // <-- ahora contiene el valor de 'usa'
+    idUnidadMedida?: number;
   }> = [];
   currentItemIndex: number | null = null;
 
@@ -127,7 +131,6 @@ export class PuntoVentaComponent implements OnInit {
           stock: p.stock
         }));
         this.productosAutoComplete = [...this.allProducts];
-        // sincroniza stock en items actuales
         this.ventaItems.forEach(it => {
           const prod = this.allProducts.find(p => p.idProducto === it.idProducto);
           if (prod) it.stock = prod.stock;
@@ -164,6 +167,10 @@ export class PuntoVentaComponent implements OnInit {
     });
     this.productoBuscado = '';
     this.calcularTotal();
+  }
+
+  buscarProductos() {
+    this.onChangeSearch(this.productoBuscado);
   }
 
   cambiarCantidad(i: number, q: number) {
@@ -203,7 +210,6 @@ export class PuntoVentaComponent implements OnInit {
     this.tallaProductoService.getTallasByProducto(item.idProducto).subscribe({
       next: t => {
         this.tallasProducto = t;
-         console.log('Respuesta de getTallasByProducto:', t); // Para depuración
         this.mostrarModalTallas = true;
       },
       error: () => alert('Error cargando tallas')
@@ -217,9 +223,8 @@ export class PuntoVentaComponent implements OnInit {
 
   seleccionarTalla(t: any) {
     if (this.currentItemIndex !== null) {
-      // guardamos descripción y también el ID real de la talla (que es el Usa de TallaProductoResponse)
       this.ventaItems[this.currentItemIndex].talla = `${t.usa}/${t.eur}/${t.cm}`;
-      this.ventaItems[this.currentItemIndex].idUnidadMedida = t.usa;  // *** CORREGIDO: Usamos 'usa' de TallaProductoResponse ***
+      this.ventaItems[this.currentItemIndex].idUnidadMedida = t.usa;
     }
     this.cerrarModalTallas();
   }
@@ -233,34 +238,29 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   realizarVenta(form: NgForm) {
-    if (form.invalid || this.ventaItems.length === 0) {
-       console.log("DEBUG (Frontend): Formulario inválido o no hay items en la venta.");
-       return;
-    }
+    if (form.invalid || this.ventaItems.length === 0) return;
 
-    // Validación de efectivo exacto
     if (this.montoEfectivo !== this.total) {
       alert('El monto recibido debe ser exactamente igual al total de la venta.');
-      console.log("DEBUG (Frontend): Monto recibido no es exacto.");
       return;
     }
 
     const detalles = this.ventaItems.map(it => {
       const base = +(it.cantidad * it.precio).toFixed(2);
       return {
-        idProducto: it.idProducto, // Parte de la clave compuesta
-        IdTallaUsa: it.idUnidadMedida, // *** CORREGIDO: Cambiado a "IdTallaUsa" para coincidir con DetalleVentaRequest ***
-        descripcion: it.nombre, // Puedes añadir descripción si la necesitas en el backend
+        idProducto: it.idProducto,
+        IdTallaUsa: it.idUnidadMedida,
+        descripcion: it.nombre,
         cantidad: it.cantidad,
         precio: it.precio,
-        descuento: 0, // Asumiendo que no hay descuento por item en este momento
+        descuento: 0,
         total: base,
-        igv: +(base * 0.18).toFixed(2) // Calcula el IGV por item si es necesario en el backend
+        igv: +(base * 0.18).toFixed(2)
       };
     });
 
-    const payload: any = { // Mantenemos 'any' por simplicidad, idealmente usar una interfaz para el payload
-      idUsuario: 22, // Asegúrate de que este ID de usuario sea correcto
+    const payload: any = {
+      idUsuario: 22,
       tipoComprobante: this.documentoSeleccionado,
       fecha: new Date().toISOString(),
       total: this.total,
@@ -268,42 +268,29 @@ export class PuntoVentaComponent implements OnInit {
       serie: this.serie,
       numeroComprobante: this.correlativo,
       totalIgv: this.iva,
-      detalles: detalles // *** CORREGIDO: Cambiado a "detalles" (minúscula) para coincidir con VentaRequest ***
+      detalles: detalles
     };
-
-    // *** Añadido para depuración en el frontend ***
-    console.log("DEBUG (Frontend): Objeto payload antes de enviar:", payload);
-    console.log("DEBUG (Frontend): Contenido de detalles:", detalles);
-    // **********************************************
-
 
     this.ventaService.createVenta(payload).subscribe({
       next: resp => {
         this.ventaCreadaResponse = resp;
         this.mostrarConfirmacion = true;
-        this.cargarProductos(); // refresca stock
-        // Aquí podrías necesitar resetear el formulario y la lista de items de venta también
-         this.vaciarListado(); // Vacía la lista de items después de una venta exitosa
-         this.resetearFormularioVenta(); // Implementa esta función para resetear otros campos
-         console.log("DEBUG (Frontend): Venta creada exitosamente.");
+        this.cargarProductos();
+        this.vaciarListado();
+        this.resetearFormularioVenta();
       },
-      error: err => {
-        console.error("ERROR (Frontend): Error al crear la venta:", err);
-        alert('Error interno al crear la venta.');
-      }
+      error: () => alert('Error interno al crear la venta.')
     });
   }
 
-  // Función para resetear otros campos del formulario de venta
-   resetearFormularioVenta(): void {
-       this.documentoSeleccionado = '';
-       this.clienteSeleccionado = '';
-       this.tipoPagoSeleccionado = '';
-       this.serie = '';
-       this.correlativo = '00000001';
-       this.montoEfectivo = 0;
-   }
-
+  resetearFormularioVenta(): void {
+    this.documentoSeleccionado = '';
+    this.clienteSeleccionado = '';
+    this.tipoPagoSeleccionado = '';
+    this.serie = '';
+    this.correlativo = '00000001';
+    this.montoEfectivo = 0;
+  }
 
   imprimirComprobante() {
     const html = this.reporteBoletaContainer.nativeElement.innerHTML;

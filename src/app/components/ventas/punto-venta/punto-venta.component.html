@@ -44,7 +44,7 @@
 
           <!-- Total -->
           <div class="venta-amount">
-            <h3>Gs/ {{ total.toFixed(2) }}</h3>
+            <h3>S/ {{ total.toFixed(2) }}</h3>
           </div>
 
           <!-- Botones -->
@@ -123,14 +123,14 @@
           <input type="number" min="0" class="form-control" [(ngModel)]="montoEfectivo" name="ef" required />
         </div>
         <div class="venta-right-group">
-          <p class="text-danger">Recibido: Gs/ {{ montoEfectivo.toFixed(2) }}</p>
-          <p class="text-danger">Vuelto: Gs/ {{ vuelto.toFixed(2) }}</p>
+          <p class="text-danger">Recibido: S/ {{ montoEfectivo.toFixed(2) }}</p>
+          <p class="text-danger">Vuelto: S/ {{ vuelto.toFixed(2) }}</p>
         </div>
         <div class="venta-right-group">
-          <p>SUBTOTAL: Gs/ {{ subTotal.toFixed(2) }}</p>
-          <p>IGV (18%): Gs/ {{ iva.toFixed(2) }}</p>
-          <p>DESCUENTO: Gs/ {{ descuento.toFixed(2) }}</p>
-          <p class="fw-bold">TOTAL: Gs/ {{ total.toFixed(2) }}</p>
+          <p>SUBTOTAL: S/ {{ subTotal.toFixed(2) }}</p>
+          <p>IGV (18%): S/ {{ iva.toFixed(2) }}</p>
+          <p>DESCUENTO: S/ {{ descuento.toFixed(2) }}</p>
+          <p class="fw-bold">TOTAL: S/ {{ total.toFixed(2) }}</p>
         </div>
       </div>
     </div>
