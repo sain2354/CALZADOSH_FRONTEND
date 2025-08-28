@@ -1,15 +1,13 @@
-import { Component } from '@angular/core';
+// lista-usuario.component.ts
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Usuario {
-  id: number;
-  nombre: string;
-  email: string;
-  password: string;
-  rol: string;
-  activo: boolean;
-}
+import { UsuarioService } from '../../../services/usuario.service';
+import { RolService } from '../../../services/rol.service';
+import { UsuarioWebResponse } from '../../../models/usuario-web-response.model';
+import { UsuarioWebRequest } from '../../../models/usuario-web-request.model';
+import { Rol } from '../../../models/rol.model';
+import { AuthService } from '../../../services/auth.service'; // Import AuthService
 
 @Component({
   selector: 'app-lista-usuario',
@@ -18,24 +16,66 @@ interface Usuario {
   templateUrl: './lista-usuario.component.html',
   styleUrls: ['./lista-usuario.component.css']
 })
-export class ListaUsuarioComponent {
-  usuarios: Usuario[] = [
-    { id: 1, nombre: 'Admin Principal', email: 'admin@tienda.com', password: 'admin123', rol: 'Administrador', activo: true },
-    { id: 2, nombre: 'Almacén Manager', email: 'almacen@tienda.com', password: 'almacen123', rol: 'Almacenero', activo: true },
-    { id: 3, nombre: 'Vendedor 1', email: 'vendedor1@tienda.com', password: 'vendedor123', rol: 'Vendedor', activo: true },
-    { id: 4, nombre: 'Vendedor 2', email: 'vendedor2@tienda.com', password: 'vendedor123', rol: 'Vendedor', activo: false }
-  ];
-
-  usuariosFiltrados: Usuario[] = [...this.usuarios];
+export class ListaUsuarioComponent implements OnInit {
+  usuarios: UsuarioWebResponse[] = [];
+  usuariosFiltrados: UsuarioWebResponse[] = [];
   filtro = '';
   mostrarModal = false;
   mostrarPassword = false;
-  usuarioSeleccionado: Usuario = this.limpiarUsuario();
+  usuarioSeleccionado: UsuarioWebRequest = this.limpiarUsuario();
+  roles: Rol[] = [];
 
-  constructor() {}
+  // Inject AuthService
+  constructor(
+    private usuarioService: UsuarioService,
+    private rolService: RolService,
+    private authService: AuthService // Inject AuthService
+  ) {}
 
-  contarUsuariosPorRol(rol: string): number {
-    return this.usuarios.filter(u => u.rol === rol).length;
+  ngOnInit(): void {
+    this.cargarUsuarios();
+    this.cargarRoles();
+  }
+
+  // AGREGADO: Helper method to check if current user is Administrator (for UI control)
+  isAdministrator(): boolean {
+      return this.authService.hasRole('Administrador');
+  }
+
+  // AGREGADO: Helper method to check if current user has any of the specified roles (for UI control)
+  hasAnyRole(roles: string[]): boolean {
+      return this.authService.hasAnyRole(roles);
+  }
+
+
+  cargarUsuarios(): void {
+    this.usuarioService.obtenerUsuariosWeb().subscribe({
+      next: (data) => {
+        this.usuarios = data;
+        this.filtrarUsuarios();
+      },
+      error: (error) => {
+        console.error('Error al cargar usuarios:', error);
+        alert('Error al cargar usuarios. Inténtalo de nuevo.');
+      }
+    });
+  }
+
+  cargarRoles(): void {
+    this.rolService.obtenerRoles().subscribe({
+      next: (data) => {
+        this.roles = data;
+        console.log('Roles cargados:', this.roles);
+      },
+      error: (error) => {
+        console.error('Error al cargar roles:', error);
+        alert('Error al cargar roles. Inténtalo de nuevo.');
+      }
+    });
+  }
+
+  contarUsuariosPorRol(nombreRol: string): number {
+    return this.usuarios.filter(u => u.nombreRol === nombreRol).length;
   }
 
   filtrarUsuarios(): void {
@@ -43,92 +83,186 @@ export class ListaUsuarioComponent {
       this.usuariosFiltrados = [...this.usuarios];
       return;
     }
-    
+
     const f = this.filtro.toLowerCase();
     this.usuariosFiltrados = this.usuarios.filter(u =>
-      u.nombre.toLowerCase().includes(f) ||
+      u.nombreCompleto.toLowerCase().includes(f) ||
       u.email.toLowerCase().includes(f) ||
-      u.rol.toLowerCase().includes(f)
+      u.nombreRol.toLowerCase().includes(f)
     );
   }
 
   abrirModalNuevo(): void {
+     // Only allow if user has Administrator role (Frontend UI control)
+     if (!this.isAdministrator()) {
+         alert('No tienes permisos para crear usuarios.');
+         return; // Stop the operation
+     }
     this.usuarioSeleccionado = this.limpiarUsuario();
     this.mostrarModal = true;
-    this.mostrarPassword = false;
+    this.mostrarPassword = true;
   }
 
-  verUsuario(usuario: Usuario): void {
-    this.usuarioSeleccionado = { ...usuario };
+  verUsuario(usuario: UsuarioWebResponse): void {
+     // No role restriction on viewing, but you could add one if needed
+    this.usuarioSeleccionado = {
+         idUsuario: usuario.idUsuario,
+         username: usuario.username,
+         nombreCompleto: usuario.nombreCompleto,
+         email: usuario.email,
+         telefono: usuario.telefono,
+         fechaRegistro: usuario.fechaRegistro,
+         password: '',
+         idRol: usuario.idRol
+     };
     this.mostrarModal = true;
     this.mostrarPassword = false;
   }
 
-  editarUsuario(usuario: Usuario): void {
-    this.usuarioSeleccionado = { ...usuario, password: '' }; // No mostrar password actual
+  editarUsuario(usuario: UsuarioWebResponse): void {
+     // Only allow if user has Administrator role (Frontend UI control)
+     if (!this.isAdministrator()) {
+          alert('No tienes permisos para editar usuarios.');
+          return; // Stop the operation
+      }
+    this.usuarioSeleccionado = {
+        idUsuario: usuario.idUsuario,
+        username: usuario.username,
+        nombreCompleto: usuario.nombreCompleto,
+        email: usuario.email,
+        telefono: usuario.telefono,
+        fechaRegistro: usuario.fechaRegistro,
+        password: '',
+        idRol: usuario.idRol
+    };
     this.mostrarModal = true;
-    this.mostrarPassword = false;
+    this.mostrarPassword = true;
   }
 
   guardarUsuario(): void {
+     // Basic validation
     if (!this.validarUsuario()) {
       return;
     }
 
-    if (this.usuarioSeleccionado.id) {
-      // Editar usuario existente
-      const index = this.usuarios.findIndex(u => u.id === this.usuarioSeleccionado.id);
-      if (index !== -1) {
-        // Si no cambió la contraseña, mantener la anterior
-        if (!this.usuarioSeleccionado.password && this.usuarios[index].password) {
-          this.usuarioSeleccionado.password = this.usuarios[index].password;
+     // Frontend UI control: Check role before saving
+     if (!this.isAdministrator()) {
+         alert('No tienes permisos para guardar cambios de usuario.');
+         return; // Stop the operation
+     }
+
+
+    const usuarioData: UsuarioWebRequest = {
+         username: this.usuarioSeleccionado.username,
+         nombreCompleto: this.usuarioSeleccionado.nombreCompleto,
+         email: this.usuarioSeleccionado.email,
+         telefono: this.usuarioSeleccionado.telefono,
+         password: this.usuarioSeleccionado.password,
+         idRol: this.usuarioSeleccionado.idRol
+    };
+
+    if (this.usuarioSeleccionado.idUsuario && this.usuarioSeleccionado.idUsuario > 0) {
+      // Actualizar usuario
+      this.usuarioService.actualizarUsuarioWeb(this.usuarioSeleccionado.idUsuario, usuarioData).subscribe({
+        next: (usuarioActualizado) => {
+          console.log('Usuario actualizado con éxito:', usuarioActualizado);
+          this.cargarUsuarios();
+          this.cerrarModal();
+        },
+        error: (error) => {
+          console.error('Error al actualizar usuario:', error);
+           alert(error.message || 'Error al actualizar usuario. Inténtalo de nuevo.'); // Display backend error message
         }
-        this.usuarios[index] = { ...this.usuarioSeleccionado };
-      }
+      });
     } else {
-      // Nuevo usuario
-      this.usuarioSeleccionado.id = this.obtenerNuevoId();
-      this.usuarioSeleccionado.activo = true;
-      this.usuarios.push({ ...this.usuarioSeleccionado });
+      // Crear nuevo usuario
+       if (!usuarioData.idRol || usuarioData.idRol <= 0) {
+           alert('Selecciona un rol para el nuevo usuario.');
+           return;
+       }
+
+      this.usuarioService.crearUsuarioWeb(usuarioData).subscribe({
+        next: (usuarioCreado) => {
+          console.log('Usuario creado con éxito:', usuarioCreado);
+          this.cargarUsuarios();
+          this.cerrarModal();
+        },
+        error: (error) => {
+          console.error('Error al crear usuario:', error);
+          alert(error.message || 'Error al crear usuario. Inténtalo de nuevo.'); // Display backend error message
+        }
+      });
     }
-    
-    this.filtrarUsuarios();
-    this.cerrarModal();
   }
 
-  cambiarEstadoUsuario(usuario: Usuario): void {
-    const accion = usuario.activo ? 'desactivar' : 'activar';
-    if (confirm(`¿Estás seguro de ${accion} al usuario ${usuario.nombre}?`)) {
-      usuario.activo = !usuario.activo;
-      this.filtrarUsuarios();
-    }
-  }
+   // MODIFICADO: cambiarEstadoUsuario - Frontend UI control
+   cambiarEstadoUsuario(usuario: UsuarioWebResponse): void {
+       // Only allow if user has Administrator role (Frontend UI control)
+        if (!this.isAdministrator()) {
+           alert('No tienes permisos para cambiar el estado de los usuarios.');
+           return; // Stop the operation
+       }
 
-  private limpiarUsuario(): Usuario {
+       const accion = usuario.estado === 'Activo' ? 'desactivar' : 'activar';
+       if (confirm(`¿Estás seguro de ${accion} al usuario ${usuario.nombreCompleto}?`)) {
+
+            // TODO: Implement backend endpoint/logic to change user state
+            // Currently, your backend update method doesn't seem to handle 'estado'.
+            // This part requires backend support for the 'Estado' field in PUT request or a dedicated endpoint.
+            alert('Funcionalidad de cambiar estado no implementada en backend.'); // Placeholder message
+       }
+   }
+
+
+   // AGREGADO: eliminarUsuario - Frontend UI control
+   eliminarUsuario(usuario: UsuarioWebResponse): void {
+        // Only allow if user has Administrator role (Frontend UI control)
+        if (!this.isAdministrator()) {
+           alert('No tienes permisos para eliminar usuarios.');
+           return; // Stop the operation
+        }
+
+       if (confirm(`¿Estás seguro de eliminar al usuario ${usuario.nombreCompleto}? Esta acción es irreversible.`)) {
+           this.usuarioService.eliminarUsuario(usuario.idUsuario).subscribe({
+               next: () => {
+                   console.log('Usuario eliminado con éxito:', usuario.nombreCompleto);
+                   this.cargarUsuarios();
+                   alert('Usuario eliminado con éxito.');
+               },
+               error: (error) => {
+                   console.error('Error al eliminar usuario:', error);
+                    alert(error.message || 'Error al eliminar usuario. Inténtalo de nuevo.'); // Display backend error message
+               }
+           });
+       }
+   }
+
+
+  private limpiarUsuario(): UsuarioWebRequest {
     return {
-      id: 0,
-      nombre: '',
+      idUsuario: 0,
+      username: '',
+      nombreCompleto: '',
       email: '',
+      telefono: '',
       password: '',
-      rol: 'Vendedor',
-      activo: true
+      idRol: 0, // Default placeholder role ID
+      fechaRegistro: new Date()
     };
   }
 
-  private obtenerNuevoId(): number {
-    return this.usuarios.length > 0 ? Math.max(...this.usuarios.map(u => u.id)) + 1 : 1;
-  }
-
   private validarUsuario(): boolean {
-    if (!this.usuarioSeleccionado.nombre || !this.usuarioSeleccionado.email) {
-      alert('Nombre y email son campos obligatorios');
+    if (!this.usuarioSeleccionado.nombreCompleto || !this.usuarioSeleccionado.email || !this.usuarioSeleccionado.username) {
+      alert('Nombre completo, email y username son campos obligatorios');
       return false;
     }
 
-    if (!this.usuarioSeleccionado.id && !this.usuarioSeleccionado.password) {
-      alert('La contraseña es obligatoria para nuevos usuarios');
-      return false;
+    if (!this.usuarioSeleccionado.idUsuario && !this.usuarioSeleccionado.password) {
+        alert('La contraseña es obligatoria para nuevos usuarios');
+        return false;
     }
+
+    // You might want to add frontend validation for email format, etc.
 
     return true;
   }
@@ -136,5 +270,10 @@ export class ListaUsuarioComponent {
   cerrarModal(): void {
     this.mostrarModal = false;
     this.usuarioSeleccionado = this.limpiarUsuario();
+  }
+
+  getNombreRolSeleccionado(): string {
+      const selectedRole = this.roles.find(r => r.idRol === this.usuarioSeleccionado.idRol);
+      return selectedRole ? selectedRole.nombre : 'Seleccione Rol';
   }
 }

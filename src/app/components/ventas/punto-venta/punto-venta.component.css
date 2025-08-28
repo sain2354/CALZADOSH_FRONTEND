@@ -163,4 +163,8 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 
 /* modal backdrop y content (mantengo) */
 .modal-backdrop { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.45); z-index:999; }
+
 .modal-content { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; z-index:1000; padding:18px; border-radius:8px; width:420px; max-width:92%; box-shadow:0 6px 20px rgba(0,0,0,0.2); }
+
+.modal-content { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; z-index:1000; padding:18px; border-radius:8px; width:420px; max-width:92%; box-shadow:0 6px 20px rgba(0,0,0,0.2); }
+

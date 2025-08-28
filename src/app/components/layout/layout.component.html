@@ -1,3 +1,4 @@
+<!-- layout.component.html -->
 <div class="layout-container">
   <!-- Barra lateral -->
   <nav class="sidebar" [class.hidden]="sidebarHidden">
@@ -94,8 +95,8 @@
         </ul>
       </li>
 
-      <!-- Mantenimiento -->
-      <li (click)="toggleMantenimientoMenu($event)" class="menu-item">
+      <!-- Mantenimiento - Visible only if user is Administrator -->
+      <li (click)="toggleMantenimientoMenu($event)" class="menu-item" *ngIf="authService.hasRole('Administrador')">
         <a class="menu-title" [class.active]="mantenimientoMenuAbierto">
           Mantenimiento
           <span *ngIf="!mantenimientoMenuAbierto">▼</span>
@@ -111,13 +112,38 @@
         </ul>
       </li>
     </ul>
+
+     <!-- Remove the standalone logout button from here -->
+     <!-- The logout functionality will be in the dropdown -->
+     <!-- <button class="logout-btn" *ngIf="authService.isLoggedIn()" (click)="authService.logout()">
+         Cerrar Sesión
+     </button> -->
+
   </nav>
 
   <!-- Contenido principal -->
   <div class="main-content">
     <header class="top-bar">
       <button class="menu-btn" (click)="toggleSidebar()">☰</button>
-      <div class="user-info"><span class="username">prueba</span></div>
+       <!-- User info and dropdown menu (visible if logged in) -->
+       <!-- Apply *ngIf="authService.isLoggedIn()" to the container div -->
+      <div class="user-dropdown-container" *ngIf="authService.isLoggedIn()">
+         <!-- User info with clickable area -->
+        <div class="user-info" (click)="toggleUsuarioMenu()">
+            <span class="username">{{ loggedInUsername }}</span>
+            <i class="fas fa-caret-down"></i> <!-- Dropdown arrow icon -->
+        </div>
+         <!-- Dropdown menu -->
+        <div class="user-dropdown-menu" [class.show]="usuarioMenuAbierto">
+            <ul>
+                <!-- Logout option -->
+                <li (click)="logout()">
+                    <i class="fas fa-sign-out-alt"></i> <!-- Logout icon -->
+                    Cerrar Sesión
+                </li>
+            </ul>
+        </div>
+      </div>
     </header>
     <div class="content-area">
       <router-outlet></router-outlet>

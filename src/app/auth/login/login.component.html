@@ -1,3 +1,4 @@
+<!-- login.component.html -->
 <div class="login-wrapper">
   <!-- Lado izquierdo -->
   <div class="login-left">
@@ -10,6 +11,12 @@
       <img src="https://cdn-icons-png.flaticon.com/512/17/17004.png" alt="User" class="user-icon" />
       <h2>BIENVENIDO</h2>
 
+      <!-- Add a div to display error message -->
+      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Form calls the modified login() function -->
       <form (ngSubmit)="login()">
         <!-- Usuario -->
         <div class="input-group">
