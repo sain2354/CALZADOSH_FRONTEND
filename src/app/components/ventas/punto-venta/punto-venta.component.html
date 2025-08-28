@@ -12,140 +12,174 @@
 </div>
 
 <form #ventaForm="ngForm" (ngSubmit)="realizarVenta(ventaForm)" novalidate>
-  <div class="punto-venta-wrapper">
-    <div class="punto-venta-container">
+  <div class="pv-wrapper">
 
-      <!-- IZQUIERDA: Búsqueda & Tabla -->
-      <div class="venta-left">
-        <div class="venta-top-bar">
+    <!-- Contenedor principal con left + right -->
+    <div class="pv-container">
 
-          <!-- Autocomplete -->
-          <div class="venta-search">
-            <label>Productos</label>
-            <ng-autocomplete
-              [data]="productosAutoComplete"
-              [searchKeyword]="keyword"
-              [(ngModel)]="productoBuscado"
-              name="productoBuscado"
-              (selected)="selectEvent($event)"
-              (inputChanged)="onChangeSearch($event)"
-              (inputFocused)="onFocused($event)"
-              [itemTemplate]="itemTemplate"
-              [notFoundTemplate]="notFoundTemplate"
-              placeholder="Ingrese código o nombre">
-            </ng-autocomplete>
-            <ng-template #itemTemplate let-item>
-              <div>{{ item.nombre }} - {{ item.codigo }}</div>
-            </ng-template>
-            <ng-template #notFoundTemplate let-notFound>
-              <div>{{ notFound }}</div>
-            </ng-template>
+      <!-- PANEL IZQUIERDO -->
+      <div class="pv-left">
+        <!-- Barra superior: buscador full width -->
+        <div class="search-row">
+          <label class="label-small">Productos</label>
+          <ng-autocomplete
+            [data]="productosAutoComplete"
+            [searchKeyword]="keyword"
+            [(ngModel)]="productoBuscado"
+            name="productoBuscado"
+            (selected)="selectEvent($event)"
+            (inputChanged)="onChangeSearch($event)"
+            (inputFocused)="onFocused($event)"
+            [itemTemplate]="itemTemplate"
+            [notFoundTemplate]="notFoundTemplate"
+            placeholder="Ingrese el código de barras o el nombre del producto">
+          </ng-autocomplete>
+
+          <ng-template #itemTemplate let-item>
+            <div>{{ item.nombre }} - {{ item.codigo }}</div>
+          </ng-template>
+          <ng-template #notFoundTemplate let-notFound>
+            <div>{{ notFound }}</div>
+          </ng-template>
+        </div>
+
+        <!-- fila del monto grande y botones al lado -->
+        <div class="top-panel">
+          <div class="big-amount-box">
+            <span class="moneda">S/</span>
+            <span class="monto">{{ total.toFixed(2) }}</span>
           </div>
 
-          <!-- Total -->
-          <div class="venta-amount">
-            <h3>Gs/ {{ total.toFixed(2) }}</h3>
-          </div>
-
-          <!-- Botones -->
-          <div class="venta-buttons">
-            <button type="submit" class="btn btn-primary">Realizar Venta</button>
-            <button type="button" class="btn btn-danger" (click)="vaciarListado()">Vaciar Listado</button>
+          <div class="action-buttons">
+            <button type="submit" class="btn btn-primary btn-action"><i class="bi bi-cart3"></i> Realizar Venta</button>
+            <button type="button" class="btn btn-danger btn-action" (click)="vaciarListado()"><i class="bi bi-trash"></i> Vaciar Listado</button>
           </div>
         </div>
 
-        <!-- Tabla Ítems -->
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Item</th><th>Código</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Total</th><th>Opc.</th><th>Talla</th><th>Stock</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let it of ventaItems; let i = index">
-              <td>{{ it.item }}</td>
-              <td>{{ it.codigo }}</td>
-              <td>{{ it.nombre }}</td>
-              <td>
-                <input type="number" min="1" [(ngModel)]="it.cantidad" name="cant{{i}}"
-                       (change)="cambiarCantidad(i, it.cantidad)" style="width:50px" />
-              </td>
-              <td>Gs/ {{ it.precio.toFixed(2) }}</td>
-              <td>Gs/ {{ (it.cantidad * it.precio).toFixed(2) }}</td>
-              <td><button class="btn btn-sm btn-danger" (click)="eliminarItem(i)">Quitar</button></td>
-              <td><span class="talla-link" (click)="mostrarTallas(it, i)">{{ it.talla || '---' }}</span></td>
-              <td>{{ it.stock }}</td>
-            </tr>
-            <tr *ngIf="ventaItems.length === 0">
-              <td colspan="9" class="text-center">No hay datos</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- DERECHA: Cabecera Venta -->
-      <div class="venta-right">
-        <div class="venta-right-group">
-          <label>Documento *</label>
-          <select class="form-select" [(ngModel)]="documentoSeleccionado" name="doc" (ngModelChange)="onDocumentoChange()" required>
-            <option value="">Seleccione</option>
-            <option>Boleta</option>
-            <option>Factura</option>
-          </select>
-        </div>
-        <div class="venta-right-group">
-          <label>Cliente *</label>
-          <div style="display:flex; gap:5px">
-            <select class="form-select" [(ngModel)]="clienteSeleccionado" name="cli" required>
-              <option value="">Seleccione</option>
-              <option *ngFor="let c of personas">{{ c.numeroDocumento }} - {{ c.nombre }}</option>
+        <!-- Controles Ver/Buscar (debajo) -->
+        <div class="controls-row">
+          <div class="ver">
+            <label>Ver</label>
+            <select class="form-select select-compact" [(ngModel)]="itemsPerPage" name="itemsPerPage">
+              <option *ngFor="let opt of itemsPerPageOptions" [value]="opt">{{ opt }}</option>
             </select>
-            <button type="button" class="btn btn-success btn-sm" (click)="abrirModalCliente()">+</button>
+          </div>
+          <div class="buscar">
+            <label class="label-invisible"></label>
+            <div class="buscar-inline">
+              <span class="buscar-label">Buscar:</span>
+              <input type="text" class="form-control input-search" placeholder="" [(ngModel)]="searchTerm" name="searchTerm" />
+            </div>
           </div>
         </div>
-        <div class="venta-right-group">
-          <label>Medio Pago *</label>
-          <select class="form-select" [(ngModel)]="tipoPagoSeleccionado" name="mp" required>
-            <option value="">Seleccione</option>
-            <option *ngFor="let m of mediosPago">{{ m }}</option>
-          </select>
-        </div>
-        <div class="venta-right-group">
-          <label>Serie *</label>
-          <input class="form-control" [(ngModel)]="serie" name="ser" readonly />
-        </div>
-        <div class="venta-right-group">
-          <label>Correlativo *</label>
-          <input class="form-control" [(ngModel)]="correlativo" name="cor" readonly />
-        </div>
-        <div class="venta-right-group">
-  <label>Efectivo Recibido *</label>
-  <input type="number" min="0" class="form-control" [(ngModel)]="montoEfectivo" name="ef" required />
-</div>
 
-<!-- NUEVO: Checkbox de Efectivo Exacto -->
-<div class="venta-right-group">
-  <div class="form-check">
-    <input class="form-check-input" type="checkbox" id="efectivoExacto" 
-           [(ngModel)]="efectivoExacto" name="efectivoExacto"
-           (change)="onEfectivoExactoChange()">
-    <label class="form-check-label" for="efectivoExacto">
-      Efectivo exacto
-    </label>
-  </div>
-</div>
+        <!-- Tabla -->
+        <div class="table-card">
+          <table class="table custom-table">
+            <thead>
+              <tr>
+                <th>Item</th><th>Codigo</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>Opc.</th><th>Talla</th><th>Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of filteredVentaItems | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage } ; let i = index">
+                <td>{{ it.item }}</td>
+                <td>{{ it.codigo }}</td>
+                <td>{{ it.nombre }}</td>
+                <td>
+                  <input type="number" min="1" [(ngModel)]="it.cantidad" name="cant{{it.item}}"
+                         (change)="cambiarCantidad(getGlobalIndex(i), it.cantidad)" class="input-cant" />
+                </td>
+                <td>S/ {{ it.precio.toFixed(2) }}</td>
+                <td>S/ {{ (it.cantidad * it.precio).toFixed(2) }}</td>
+                <td><button class="btn btn-sm btn-danger" (click)="eliminarItem(getGlobalIndex(i))">Quitar</button></td>
+                <td><span class="talla-link" (click)="mostrarTallas(it, getGlobalIndex(i))">{{ it.talla || '---' }}</span></td>
+                <td>{{ it.stock }}</td>
+              </tr>
 
-<div class="venta-right-group">
-  <p class="text-danger">Recibido: Gs/ {{ montoEfectivo.toFixed(2) }}</p>
-  <p class="text-danger">Vuelto: Gs/ {{ vuelto.toFixed(2) }}</p>
-</div>
-        <div class="venta-right-group">
-  <p>SUBTOTAL (Base Imponible): Gs/ {{ subTotal.toFixed(2) }}</p>
-  <p>IGV (18%): Gs/ {{ iva.toFixed(2) }}</p>
-  <p>DESCUENTO: Gs/ {{ descuento.toFixed(2) }}</p>
-  <p class="fw-bold">TOTAL (Incluye IGV): Gs/ {{ total.toFixed(2) }}</p>
-</div>
+              <tr *ngIf="filteredVentaItems.length === 0">
+                <td colspan="9" class="text-center">No hay información en esta tabla</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Pie: ahora solo paginador (el texto de registros fue eliminado) -->
+          <div class="table-footer">
+            <div class="paginador-only">
+              <pagination-controls (pageChange)="pageChanged($event)" [maxSize]="5" [directionLinks]="true" [autoHide]="false"
+                                   previousLabel="Anterior" nextLabel="Siguiente">
+              </pagination-controls>
+            </div>
+            <div class="empty-placeholder"></div>
+          </div>
+        </div>
       </div>
+
+      <!-- PANEL DERECHO (tarjeta fija similar a captura) -->
+      <div class="pv-right">
+        <div class="right-card">
+          <div class="form-group">
+            <label>Documento*</label>
+            <select class="form-select" [(ngModel)]="documentoSeleccionado" name="doc" (ngModelChange)="onDocumentoChange()" required>
+              <option value="">Seleccione</option>
+              <option>Boleta</option>
+              <option>Factura</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Cliente*</label>
+            <div class="cliente-row">
+              <select class="form-select" [(ngModel)]="clienteSeleccionado" name="cli" required>
+                <option value="">Seleccione</option>
+                <option *ngFor="let c of personas">{{ c.numeroDocumento }} - {{ c.nombre }}</option>
+              </select>
+              <button type="button" class="btn btn-add" (click)="abrirModalCliente()">+</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tipo Pago*</label>
+            <select class="form-select" [(ngModel)]="tipoPagoSeleccionado" name="mp" required>
+              <option value="">Seleccione Tipo Pago</option>
+              <option *ngFor="let m of mediosPago">{{ m }}</option>
+            </select>
+          </div>
+
+          <div class="serie-correlativo">
+            <div>
+              <label>Serie</label>
+              <input class="form-control input-read" [(ngModel)]="serie" name="ser" readonly />
+            </div>
+            <div>
+              <label>Correlativo</label>
+              <input class="form-control input-read" [(ngModel)]="correlativo" name="cor" readonly />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Efectivo recibido</label>
+            <input type="number" min="0" class="form-control" [(ngModel)]="montoEfectivo" name="ef" />
+          </div>
+
+          <div class="checkbox-row">
+            <label><input type="checkbox" />  Efectivo Exacto</label>
+          </div>
+
+          <div class="amounts">
+            <p class="monto-efect">Monto Efectivo: S/ {{ montoEfectivo.toFixed(2) }}</p>
+            <p class="vuelto">Vuelto: S/ {{ vuelto.toFixed(2) }}</p>
+          </div>
+
+          <div class="totales-right">
+            <div class="line"><span>SUBTOTAL</span><span>S/ {{ subTotal.toFixed(2) }}</span></div>
+            <div class="line"><span>IGV (18%)</span><span>S/ {{ iva.toFixed(2) }}</span></div>
+            <div class="line"><span>DESCUENTO</span><span>S/ {{ descuento.toFixed(2) }}</span></div>
+            <div class="line total"><span>TOTAL</span><span>S/ {{ total.toFixed(2) }}</span></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </form>
@@ -184,4 +218,3 @@
     [venta]="boleta">
   </app-boleta-venta>
 </div>
-

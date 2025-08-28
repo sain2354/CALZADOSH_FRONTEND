@@ -1,6 +1,6 @@
 // punto-venta.component.ts
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 import { NgxPaginationModule } from 'ngx-pagination';
@@ -22,9 +22,7 @@ import { BoletaVentaComponent } from '../../../boleta-venta/boleta-venta.compone
     NgxPaginationModule,
     AutocompleteLibModule,
     PersonaComponent,
-    BoletaVentaComponent,
-    DatePipe,
-    DecimalPipe
+    BoletaVentaComponent
   ],
   templateUrl: './punto-venta.component.html',
   styleUrls: ['./punto-venta.component.css']
@@ -75,11 +73,15 @@ export class PuntoVentaComponent implements OnInit {
   correlativo = '00000001';
 
   montoEfectivo = 0;
-  efectivoExacto = false; // Nueva propiedad para el checkbox
-
   get vuelto() {
     return +(this.montoEfectivo - this.total).toFixed(2);
   }
+
+  // PAGINACIÓN Y FILTRO
+  currentPage: number = 1;
+  itemsPerPageOptions: number[] = [5, 10, 25, 50];
+  itemsPerPage: number = 10;
+  searchTerm: string = '';
 
   // Getter para el componente de boleta
   get boleta() {
@@ -116,8 +118,6 @@ export class PuntoVentaComponent implements OnInit {
   ngOnInit(): void {
     this.cargarProductos();
     this.cargarPersonas();
-    // Inicializa el correlativo si hay un documento seleccionado por defecto
-    this.actualizarCorrelativoDesdeStorage();
   }
 
   private cargarProductos() {
@@ -131,6 +131,7 @@ export class PuntoVentaComponent implements OnInit {
           stock: p.stock
         }));
         this.productosAutoComplete = [...this.allProducts];
+        // sincroniza stock en items actuales
         this.ventaItems.forEach(it => {
           const prod = this.allProducts.find(p => p.idProducto === it.idProducto);
           if (prod) it.stock = prod.stock;
@@ -188,72 +189,17 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   private calcularTotal() {
-    this.total = +this.ventaItems.reduce((acc, it) => acc + it.cantidad * it.precio, 0).toFixed(2);
-    this.subTotal = +(this.total / 1.18).toFixed(2);
+    const sum = this.ventaItems.reduce((acc, it) => acc + it.cantidad * it.precio, 0);
+    this.subTotal = +sum.toFixed(2);
     this.iva = +(this.subTotal * 0.18).toFixed(2);
-    this.total = +(this.total - this.descuento).toFixed(2);
-    
-    // Si el checkbox está marcado, actualizar el monto de efectivo
-    if (this.efectivoExacto) {
-      this.montoEfectivo = this.total;
-    }
+    this.total = +(this.subTotal + this.iva - this.descuento).toFixed(2);
   }
 
   onDocumentoChange() {
-    if (this.documentoSeleccionado === 'Boleta') {
-      this.serie = 'B001';
-    } else if (this.documentoSeleccionado === 'Factura') {
-      this.serie = 'F001';
-    } else {
-      this.serie = '';
-      this.correlativo = '00000001';
-      return;
-    }
-    // Actualiza el correlativo basado en el tipo de documento seleccionado
-    this.actualizarCorrelativoDesdeStorage();
-  }
-
-  /**
-   * Obtiene el siguiente correlativo para la serie actual desde localStorage
-   */
-  private actualizarCorrelativoDesdeStorage(): void {
-    if (!this.serie) {
-      this.correlativo = '00000001';
-      return;
-    }
-
-    const storageKey = `ultimoCorrelativo_${this.serie}`;
-    const ultimoCorrelativoGuardado = localStorage.getItem(storageKey);
-
-    if (ultimoCorrelativoGuardado) {
-      // Convierte a número, incrementa y formatea a 8 dígitos
-      const siguienteNumero = parseInt(ultimoCorrelativoGuardado, 10) + 1;
-      this.correlativo = siguienteNumero.toString().padStart(8, '0');
-    } else {
-      // Primera venta para esta serie
-      this.correlativo = '00000001';
-    }
-  }
-
-  /**
-   * Guarda el correlativo usado en localStorage
-   */
-  private guardarCorrelativoEnStorage(): void {
-    if (!this.serie) return;
-
-    const storageKey = `ultimoCorrelativo_${this.serie}`;
-    localStorage.setItem(storageKey, this.correlativo);
-  }
-
-  /**
-   * Maneja el cambio en el checkbox de efectivo exacto
-   */
-  onEfectivoExactoChange(): void {
-    if (this.efectivoExacto) {
-      this.montoEfectivo = this.total;
-    } else {
-      this.montoEfectivo = 0;
-    }
+    if (this.documentoSeleccionado === 'Boleta') this.serie = 'B001';
+    else if (this.documentoSeleccionado === 'Factura') this.serie = 'F001';
+    else this.serie = '';
+    this.correlativo = '00000001';
   }
 
   mostrarTallas(item: any, idx: number) {
@@ -261,6 +207,7 @@ export class PuntoVentaComponent implements OnInit {
     this.tallaProductoService.getTallasByProducto(item.idProducto).subscribe({
       next: t => {
         this.tallasProducto = t;
+        console.log('Respuesta de getTallasByProducto:', t);
         this.mostrarModalTallas = true;
       },
       error: () => alert('Error cargando tallas')
@@ -274,6 +221,7 @@ export class PuntoVentaComponent implements OnInit {
 
   seleccionarTalla(t: any) {
     if (this.currentItemIndex !== null) {
+      // CORREGIDO: Template string con backticks
       this.ventaItems[this.currentItemIndex].talla = `${t.usa}/${t.eur}/${t.cm}`;
       this.ventaItems[this.currentItemIndex].idUnidadMedida = t.usa;
     }
@@ -284,25 +232,26 @@ export class PuntoVentaComponent implements OnInit {
   cerrarModalCliente() { this.mostrarModalCliente = false; }
   manejarPersonaCreada(p: Persona) {
     this.personas.push(p);
+    // CORREGIDO: Template string con backticks
     this.clienteSeleccionado = `${p.numeroDocumento} - ${p.nombre}`;
     this.cerrarModalCliente();
   }
 
   realizarVenta(form: NgForm) {
     if (form.invalid || this.ventaItems.length === 0) {
-      return;
+       console.log("DEBUG (Frontend): Formulario inválido o no hay items en la venta.");
+       return;
     }
 
+    // Validación de efectivo exacto
     if (this.montoEfectivo !== this.total) {
       alert('El monto recibido debe ser exactamente igual al total de la venta.');
+      console.log("DEBUG (Frontend): Monto recibido no es exacto.");
       return;
     }
 
     const detalles = this.ventaItems.map(it => {
-      const totalItem = +(it.cantidad * it.precio).toFixed(2);
-      const baseImponibleItem = +(totalItem / 1.18).toFixed(2);
-      const igvItem = +(baseImponibleItem * 0.18).toFixed(2);
-
+      const base = +(it.cantidad * it.precio).toFixed(2);
       return {
         idProducto: it.idProducto,
         IdTallaUsa: it.idUnidadMedida,
@@ -310,8 +259,8 @@ export class PuntoVentaComponent implements OnInit {
         cantidad: it.cantidad,
         precio: it.precio,
         descuento: 0,
-        total: totalItem,
-        igv: igvItem
+        total: base,
+        igv: +(base * 0.18).toFixed(2)
       };
     });
 
@@ -327,47 +276,89 @@ export class PuntoVentaComponent implements OnInit {
       detalles: detalles
     };
 
+    console.log("DEBUG (Frontend): Objeto payload antes de enviar:", payload);
+    console.log("DEBUG (Frontend): Contenido de detalles:", detalles);
+
     this.ventaService.createVenta(payload).subscribe({
       next: resp => {
         this.ventaCreadaResponse = resp;
         this.mostrarConfirmacion = true;
         this.cargarProductos();
-        // GUARDAR EL CORRELATIVO USADO ANTES DE RESETEAR
-        this.guardarCorrelativoEnStorage();
         this.vaciarListado();
         this.resetearFormularioVenta();
+        console.log("DEBUG (Frontend): Venta creada exitosamente.");
       },
       error: err => {
-        console.error("Error al crear la venta:", err);
+        console.error("ERROR (Frontend): Error al crear la venta:", err);
         alert('Error interno al crear la venta.');
       }
     });
   }
 
-  resetearFormularioVenta(): void {
-    this.documentoSeleccionado = '';
-    this.clienteSeleccionado = '';
-    this.tipoPagoSeleccionado = '';
-    this.montoEfectivo = 0;
-    this.efectivoExacto = false; // Resetear el checkbox
-    // NO resetear serie y correlativo, mantenerlos para la próxima venta
-    // En su lugar, actualizar el correlativo para la próxima venta
-    this.actualizarCorrelativoDesdeStorage();
-  }
+  // Función para resetear otros campos del formulario de venta
+   resetearFormularioVenta(): void {
+       this.documentoSeleccionado = '';
+       this.clienteSeleccionado = '';
+       this.tipoPagoSeleccionado = '';
+       this.serie = '';
+       this.correlativo = '00000001';
+       this.montoEfectivo = 0;
+   }
 
   imprimirComprobante() {
     const html = this.reporteBoletaContainer.nativeElement.innerHTML;
     const popup = window.open('', '_blank', 'width=400,height=600');
-    popup!.document.write(`
-      <html><head><title>Comprobante</title>
-      <style>body{font-family:'Courier New'} .boleta{width:100%}</style>
-      </head><body>${html}</body></html>`);
-    popup!.document.close();
-    popup!.print();
-    popup!.close();
+    if (popup) {
+      popup.document.write(`
+        <html><head><title>Comprobante</title>
+        <style>body{font-family:'Courier New'} .boleta{width:100%}</style>
+        </head><body>${html}</body></html>`);
+      popup.document.close();
+      popup.print();
+      popup.close();
+    }
   }
 
   cancelarComprobante() {
     this.mostrarConfirmacion = false;
+  }
+
+  // -------------- PAGINACIÓN / FILTRO ----------------
+
+  // getter que devuelve la lista filtrada (sin paginar)
+  get filteredVentaItems() {
+    if (!this.searchTerm) return this.ventaItems;
+    const term = this.searchTerm.toLowerCase();
+    return this.ventaItems.filter(it =>
+      (it.nombre || '').toLowerCase().includes(term) ||
+      (it.codigo || '').toLowerCase().includes(term)
+    );
+  }
+
+  // para mostrar rangos en el pie: displayedFrom / displayedTo (basado en currentPage & itemsPerPage)
+  get displayedFrom(): number {
+    const total = this.filteredVentaItems.length;
+    if (total === 0) return 0;
+    return (this.currentPage - 1) * this.itemsPerPage + 1;
+  }
+
+  get displayedTo(): number {
+    const total = this.filteredVentaItems.length;
+    const to = this.currentPage * this.itemsPerPage;
+    return to > total ? total : to;
+  }
+
+  // función auxiliar: dado el index en la página (0..n) devuelve el índice global en ventaItems
+  getGlobalIndex(indexOnPage: number): number {
+    const pageItems = this.filteredVentaItems.slice((this.currentPage - 1) * this.itemsPerPage, this.currentPage * this.itemsPerPage);
+    const item = pageItems[indexOnPage];
+    if (!item) return indexOnPage;
+    const realIndex = this.ventaItems.findIndex(it => it === item);
+    return realIndex >= 0 ? realIndex : indexOnPage;
+  }
+
+  // manejador de cambio de página desde pagination-controls
+  pageChanged(newPage: number) {
+    this.currentPage = newPage;
   }
 }
