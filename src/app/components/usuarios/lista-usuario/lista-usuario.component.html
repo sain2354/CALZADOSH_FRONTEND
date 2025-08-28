@@ -1,3 +1,4 @@
+<!-- lista-usuario.component.html -->
 <div class="usuario-container">
   <h2><i class="fas fa-users"></i> Gestión de Usuarios</h2>
   <p>Administra los usuarios del sistema y sus permisos.</p>
@@ -12,7 +13,7 @@
         <p>Administrador(es)</p>
       </div>
     </div>
-    
+
     <div class="summary-card">
       <div class="card-icon bg-info">
         <i class="fas fa-boxes"></i>
@@ -22,7 +23,7 @@
         <p>Almacenero(s)</p>
       </div>
     </div>
-    
+
     <div class="summary-card">
       <div class="card-icon bg-success">
         <i class="fas fa-cash-register"></i>
@@ -35,7 +36,8 @@
   </div>
 
   <div class="actions">
-    <button class="btn btn-primary" (click)="abrirModalNuevo()">
+    <!-- Show "Nuevo Usuario" button only if user is Administrator -->
+    <button class="btn btn-primary" (click)="abrirModalNuevo()" *ngIf="isAdministrator()">
       <i class="fas fa-plus"></i> Nuevo Usuario
     </button>
     <div class="input-group search-box">
@@ -51,7 +53,8 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Nombre</th>
+          <th>Username</th>
+          <th>Nombre Completo</th>
           <th>Email</th>
           <th>Rol</th>
           <th>Estado</th>
@@ -60,26 +63,35 @@
       </thead>
       <tbody>
         <tr *ngFor="let usuario of usuariosFiltrados">
-          <td>{{ usuario.id }}</td>
-          <td>{{ usuario.nombre }}</td>
+          <td>{{ usuario.idUsuario }}</td>
+          <td>{{ usuario.username }}</td>
+          <td>{{ usuario.nombreCompleto }}</td>
           <td>{{ usuario.email }}</td>
-          <td>{{ usuario.rol }}</td>
+          <td>{{ usuario.nombreRol }}</td>
           <td>
-            <span class="badge" [ngClass]="usuario.activo ? 'badge-success' : 'badge-danger'">
-              {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+             <!-- Assuming backend provides 'estado' field in UsuarioWebResponse -->
+            <span class="badge" [ngClass]="usuario.estado === 'Activo' ? 'badge-success' : 'badge-danger'">
+              {{ usuario.estado }}
             </span>
           </td>
           <td>
-            <button class="btn btn-sm btn-info" (click)="verUsuario(usuario)" title="Ver">
+            <!-- View button visible to all users with web roles -->
+            <button class="btn btn-sm btn-info" (click)="verUsuario(usuario)" title="Ver" *ngIf="hasAnyRole(['Administrador', 'Vendedor', 'Almacenero'])">
               <i class="fas fa-eye"></i>
             </button>
-            <button class="btn btn-sm btn-warning" (click)="editarUsuario(usuario)" title="Editar">
+            <!-- Edit button visible only if user is Administrator -->
+            <button class="btn btn-sm btn-warning" (click)="editarUsuario(usuario)" title="Editar" *ngIf="isAdministrator()">
               <i class="fas fa-edit"></i>
             </button>
-            <button class="btn btn-sm btn-danger" (click)="cambiarEstadoUsuario(usuario)" 
-                    [title]="usuario.activo ? 'Desactivar' : 'Activar'">
-              <i class="fas" [ngClass]="usuario.activo ? 'fa-user-slash' : 'fa-user-check'"></i>
+             <!-- State button visible only if user is Administrator -->
+            <button class="btn btn-sm btn-secondary" (click)="cambiarEstadoUsuario(usuario)"
+                    [title]="usuario.estado === 'Activo' ? 'Desactivar' : 'Activar'" *ngIf="isAdministrator()">
+              <i class="fas" [ngClass]="usuario.estado === 'Activo' ? 'fa-user-slash' : 'fa-user-check'"></i>
             </button>
+             <!-- Delete button visible only if user is Administrator -->
+             <button class="btn btn-sm btn-danger" (click)="eliminarUsuario(usuario)" title="Eliminar" *ngIf="isAdministrator()">
+                <i class="fas fa-trash"></i>
+             </button>
           </td>
         </tr>
       </tbody>
@@ -92,58 +104,67 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">
-            <i class="fas" [class.fa-user-plus]="!usuarioSeleccionado.id" [class.fa-user-edit]="usuarioSeleccionado.id"></i>
-            {{ usuarioSeleccionado.id ? 'Editar Usuario' : 'Nuevo Usuario' }}
+            <i class="fas" [class.fa-user-plus]="!usuarioSeleccionado.idUsuario" [class.fa-user-edit]="usuarioSeleccionado.idUsuario"></i>
+            {{ usuarioSeleccionado.idUsuario ? 'Editar Usuario' : 'Nuevo Usuario' }}
           </h5>
           <button type="button" class="close" (click)="cerrarModal()">
             <span>&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <form>
+          <form #usuarioForm="ngForm">
             <div class="form-group">
               <label>Nombre Completo</label>
-              <input type="text" class="form-control" [(ngModel)]="usuarioSeleccionado.nombre" name="nombre" required>
+              <input type="text" class="form-control" [(ngModel)]="usuarioSeleccionado.nombreCompleto" name="nombreCompleto" required>
+            </div>
+             <div class="form-group">
+              <label>Username</label>
+              <input type="text" class="form-control" [(ngModel)]="usuarioSeleccionado.username" name="username" required>
             </div>
             <div class="form-group">
               <label>Email</label>
               <input type="email" class="form-control" [(ngModel)]="usuarioSeleccionado.email" name="email" required>
             </div>
+             <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" class="form-control" [(ngModel)]="usuarioSeleccionado.telefono" name="telefono">
+             </div>
             <div class="form-group">
               <label>Rol</label>
-              <select class="form-control" [(ngModel)]="usuarioSeleccionado.rol" name="rol">
-                <option value="Administrador">Administrador</option>
-                <option value="Almacenero">Almacenero</option>
-                <option value="Vendedor">Vendedor</option>
+              <select class="form-control" [(ngModel)]="usuarioSeleccionado.idRol" name="idRol" required>
+                <option [value]="0" disabled selected>Seleccione Rol</option>
+                <option *ngFor="let rol of roles" [value]="rol.idRol">{{ rol.nombre }}</option>
               </select>
             </div>
             <div class="form-group">
               <label>Contraseña</label>
               <div class="input-group">
-                <input [type]="mostrarPassword ? 'text' : 'password'" class="form-control" 
-                       [(ngModel)]="usuarioSeleccionado.password" name="password" [required]="!usuarioSeleccionado.id">
+                <input [type]="mostrarPassword ? 'text' : 'password'" class="form-control"
+                       [(ngModel)]="usuarioSeleccionado.password" name="password" [required]="!usuarioSeleccionado.idUsuario">
                 <div class="input-group-append">
                   <button class="btn btn-outline-secondary" type="button" (click)="mostrarPassword = !mostrarPassword">
                     <i class="fas" [class.fa-eye]="!mostrarPassword" [class.fa-eye-slash]="mostrarPassword"></i>
                   </button>
                 </div>
               </div>
-              <small class="text-muted" *ngIf="usuarioSeleccionado.id">Dejar en blanco para no cambiar</small>
+              <small class="text-muted" *ngIf="usuarioSeleccionado.idUsuario">Dejar en blanco para no cambiar la contraseña</small>
             </div>
-            <div class="form-group" *ngIf="usuarioSeleccionado.id">
+             <!-- Assuming 'Estado' is not sent in the request, it's managed by backend PUT -->
+             <!-- If you added 'estado' field to UsuarioWebRequest, bind it here -->
+            <!-- <div class="form-group" *ngIf="usuarioSeleccionado.idUsuario">
               <label>Estado</label>
               <select class="form-control" [(ngModel)]="usuarioSeleccionado.activo" name="activo">
                 <option [value]="true">Activo</option>
                 <option [value]="false">Inactivo</option>
               </select>
-            </div>
+            </div> -->
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
             <i class="fas fa-times"></i> Cancelar
           </button>
-          <button type="button" class="btn btn-primary" (click)="guardarUsuario()">
+          <button type="button" class="btn btn-primary" (click)="guardarUsuario()" [disabled]="!usuarioForm.form.valid">
             <i class="fas fa-save"></i> Guardar
           </button>
         </div>

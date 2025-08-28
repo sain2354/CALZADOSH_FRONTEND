@@ -119,19 +119,32 @@
           <input class="form-control" [(ngModel)]="correlativo" name="cor" readonly />
         </div>
         <div class="venta-right-group">
-          <label>Efectivo Recibido *</label>
-          <input type="number" min="0" class="form-control" [(ngModel)]="montoEfectivo" name="ef" required />
-        </div>
+  <label>Efectivo Recibido *</label>
+  <input type="number" min="0" class="form-control" [(ngModel)]="montoEfectivo" name="ef" required />
+</div>
+
+<!-- NUEVO: Checkbox de Efectivo Exacto -->
+<div class="venta-right-group">
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" id="efectivoExacto" 
+           [(ngModel)]="efectivoExacto" name="efectivoExacto"
+           (change)="onEfectivoExactoChange()">
+    <label class="form-check-label" for="efectivoExacto">
+      Efectivo exacto
+    </label>
+  </div>
+</div>
+
+<div class="venta-right-group">
+  <p class="text-danger">Recibido: Gs/ {{ montoEfectivo.toFixed(2) }}</p>
+  <p class="text-danger">Vuelto: Gs/ {{ vuelto.toFixed(2) }}</p>
+</div>
         <div class="venta-right-group">
-          <p class="text-danger">Recibido: Gs/ {{ montoEfectivo.toFixed(2) }}</p>
-          <p class="text-danger">Vuelto: Gs/ {{ vuelto.toFixed(2) }}</p>
-        </div>
-        <div class="venta-right-group">
-          <p>SUBTOTAL: Gs/ {{ subTotal.toFixed(2) }}</p>
-          <p>IGV (18%): Gs/ {{ iva.toFixed(2) }}</p>
-          <p>DESCUENTO: Gs/ {{ descuento.toFixed(2) }}</p>
-          <p class="fw-bold">TOTAL: Gs/ {{ total.toFixed(2) }}</p>
-        </div>
+  <p>SUBTOTAL (Base Imponible): Gs/ {{ subTotal.toFixed(2) }}</p>
+  <p>IGV (18%): Gs/ {{ iva.toFixed(2) }}</p>
+  <p>DESCUENTO: Gs/ {{ descuento.toFixed(2) }}</p>
+  <p class="fw-bold">TOTAL (Incluye IGV): Gs/ {{ total.toFixed(2) }}</p>
+</div>
       </div>
     </div>
   </div>
