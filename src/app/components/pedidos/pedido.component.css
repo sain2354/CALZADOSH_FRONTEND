@@ -23,7 +23,7 @@
 /* Cabecera de tabla */
 .tabla-cabecera {
   display: grid;
-  grid-template-columns: 50px 1.4fr 90px 110px 110px 130px 160px 80px;
+  grid-template-columns: 50px 1.4fr 90px 110px 130px 160px 80px;
   background: #00bcd4;
   color: #fff;
   font-weight: bold;
@@ -44,7 +44,7 @@
 /* Filas de tabla */
 .tabla-cuerpo .tabla-fila {
   display: grid;
-  grid-template-columns: 50px 1.4fr 90px 110px 110px 130px 160px 80px;
+  grid-template-columns: 50px 1.4fr 90px 110px 130px 160px 80px;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -71,29 +71,37 @@
   display: inline-block;
 }
 
-.pendiente {
-  background: #FFF3CD;
-  color: #856404;
+/* Estados de pedido */
+.estado-badge.en-preparación,
+.estado-badge.en-preparacion {
+  background-color: #17a2b8;
+  color: #fff;
 }
 
-.pago-validado {
-  background: #CCE5FF;
-  color: #004085;
+.estado-badge.cancelado {
+  background-color: #6c757d;
+  color: #fff;
 }
 
-.pendiente-validación {
-  background: #E2E3E5;
-  color: #383D41;
+.estado-badge.enviado {
+  background-color: #6610f2;
+  color: #fff;
 }
 
-.validado {
-  background: #D4EDDA;
-  color: #155724;
+.estado-badge.entregado {
+  background-color: #20c997;
+  color: #000;
 }
 
-.rechazado {
-  background: #F8D7DA;
-  color: #721C24;
+.estado-badge.pendiente-validación,
+.estado-badge.pendiente-validacion {
+  background-color: #e2e3e5;
+  color: #383d41;
+}
+
+.estado-badge.pago-validado {
+  background-color: #28a745;
+  color: #fff;
 }
 
 /* Celda de acciones */

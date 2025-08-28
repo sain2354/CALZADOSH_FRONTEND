@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { PedidoService } from '../../services/pedido.service';
-import { Pedido } from '../../models/pedido.model';
+import { Pedido, Cliente } from '../../models/pedido.model';
 import { DetallePedidoComponent } from './detalles_pedidos/detalle-pedido.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import Swal from 'sweetalert2';
@@ -35,10 +35,10 @@ export class PedidoComponent implements OnInit {
   pageSize = 10;
   pedidoSeleccionado: Pedido | null = null;
   mostrarDetalle = false;
+  cargandoNombres = false;
   
   estados: EstadoPedido[] = [
     'Pendiente Validación',
-    'Pago Validado',
     'En Preparación',
     'Enviado',
     'Entregado',
@@ -56,9 +56,78 @@ export class PedidoComponent implements OnInit {
       next: data => {
         // Filtrar los datos para mostrar solo pedidos móviles
         this.pedidos = data.filter(pedido => pedido.tipoComprobante === '01');
+        
+        // Obtener los nombres de los clientes para cada pedido
+        this.obtenerNombresClientes();
       },
       error: err => console.error('Error cargando pedidos', err)
     });
+  }
+
+  obtenerNombresClientes() {
+    this.cargandoNombres = true;
+    const solicitudes = this.pedidos.map(pedido => {
+      // Siempre actualizar para obtener la información más reciente
+      return this.pedidoSvc.getDetallePedido(pedido.idVenta).toPromise()
+        .then(detalle => {
+          if (detalle) {
+            // Actualizar la información del cliente
+            if (detalle.cliente) {
+              pedido.cliente = detalle.cliente;
+            }
+            // Actualizar información de pagos
+            if (detalle.pagos && detalle.pagos.length > 0) {
+              pedido.pagos = detalle.pagos;
+            }
+            // Actualizar estado del pedido también por si hay cambios
+            if (detalle.estado) {
+              pedido.estado = detalle.estado;
+            }
+          }
+        })
+        .catch(err => {
+          console.error(`Error obteniendo detalles para pedido ${pedido.idVenta}`, err);
+          // Crear un cliente vacío si hay error
+          if (!pedido.cliente) {
+            pedido.cliente = {
+              idUsuario: 0,
+              nombreCompleto: '—',
+              telefono: 'No disponible',
+              email: 'No disponible'
+            };
+          }
+        });
+    });
+
+    // Esperar a que todas las solicitudes terminen
+    Promise.all(solicitudes).then(() => {
+      this.cargandoNombres = false;
+    });
+  }
+
+  obtenerMetodoPago(p: Pedido): string {
+    if (!p.pagos || p.pagos.length === 0) {
+      return 'N/A';
+    }
+
+    const pago = p.pagos[0];
+    
+    // Si no hay comprobante, está pendiente
+    if (!pago.comprobanteUrl) {
+      return 'Pendiente';
+    }
+
+    // Determinar el método de pago específico
+    switch (pago.idMedioPago) {
+      case 1:
+        return 'Yape';
+      case 2:
+        return 'Plin';
+      case 3:
+        return 'Transferencia';
+      default:
+        return 'Otro';
+    }
   }
 
   verDetalle(p: Pedido) {
@@ -78,6 +147,21 @@ export class PedidoComponent implements OnInit {
   cerrarDetalle() {
     this.mostrarDetalle = false;
     this.pedidoSeleccionado = null;
+  }
+
+  onPagoActualizado() {
+    // Forzar una recarga completa de los pedidos para asegurar que se vean los cambios
+    this.cargarPedidos();
+    this.cerrarDetalle();
+    
+    // Mostrar mensaje de confirmación
+    Swal.fire({
+      icon: 'success',
+      title: 'Actualizado',
+      text: 'El estado de pago ha sido actualizado correctamente.',
+      timer: 2000,
+      showConfirmButton: false
+    });
   }
 
   async eliminarPedido(p: Pedido) {

@@ -1,9 +1,9 @@
 // src/app/components/detalle-pedido/detalle-pedido.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Pedido, Pago } from '../../../models/pedido.model';
 import { ComprobantePagoComponent } from './comprobante-pago.component';
+import { PagoService } from '../../../services/pago.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -16,11 +16,12 @@ import Swal from 'sweetalert2';
 export class DetallePedidoComponent {
   @Input() pedido!: Pedido;
   @Output() cerrar = new EventEmitter<void>();
+  @Output() pagoActualizado = new EventEmitter<void>();
   mostrarComprobante = false;
   comprobanteUrl?: string;
   metodoPago?: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(private pagoService: PagoService) {}
 
   abrirComprobante(p: Pago) {
     this.comprobanteUrl = p.comprobanteUrl!;
@@ -52,10 +53,15 @@ export class DetallePedidoComponent {
     });
 
     if (result.isConfirmed) {
-      this.http
-        .put(`http://www.chbackend.somee.com/api/Pago/${p.idPago}/validar`, {})
-        .subscribe(() => {
+      this.pagoService.validarPago(p.idPago).subscribe({
+        next: () => {
+          // Actualizar el estado del pago individual
           p.estadoPago = 'Pago Validado';
+          
+          // Actualizar el estado de pago general del pedido
+          this.pedido.estadoPago = 'PAGO VALIDADO';
+          
+          this.pagoActualizado.emit();
           Swal.fire({
             icon: 'success',
             title: 'Pago validado',
@@ -63,7 +69,17 @@ export class DetallePedidoComponent {
             timer: 2000,
             showConfirmButton: false
           });
-        });
+        },
+        error: (err) => {
+          console.error('Error validando pago:', err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo validar el pago. Por favor, intenta nuevamente.',
+            confirmButtonColor: '#00bcd4'
+          });
+        }
+      });
     }
   }
 
@@ -80,10 +96,15 @@ export class DetallePedidoComponent {
     });
 
     if (result.isConfirmed) {
-      this.http
-        .put(`http://www.chbackend.somee.com/api/Pago/${p.idPago}/rechazar`, {})
-        .subscribe(() => {
+      this.pagoService.rechazarPago(p.idPago).subscribe({
+        next: () => {
+          // Actualizar el estado del pago individual
           p.estadoPago = 'Rechazado';
+          
+          // Actualizar el estado de pago general del pedido
+          this.pedido.estadoPago = 'RECHAZADO';
+          
+          this.pagoActualizado.emit();
           Swal.fire({
             icon: 'success',
             title: 'Pago rechazado',
@@ -91,7 +112,17 @@ export class DetallePedidoComponent {
             timer: 2000,
             showConfirmButton: false
           });
-        });
+        },
+        error: (err) => {
+          console.error('Error rechazando pago:', err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo rechazar el pago. Por favor, intenta nuevamente.',
+            confirmButtonColor: '#00bcd4'
+          });
+        }
+      });
     }
   }
 }

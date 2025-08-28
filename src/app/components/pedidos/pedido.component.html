@@ -1,3 +1,4 @@
+<!-- src/app/components/pedido/pedido.component.html -->
 <div class="contenedor-pedidos">
   <div class="tabla-pedidos">
     <div class="tabla-cabecera">
@@ -5,7 +6,6 @@
       <div>Cliente</div>
       <div>Total</div>
       <div>Método Pago</div>
-      <div>Estado Pago</div>
       <div>Estado Pedido</div>
       <div>Fecha</div>
       <div class="acciones-header">Acciones</div>
@@ -15,22 +15,22 @@
         <!-- ID -->
         <div>{{ p.idVenta }}</div>
         
-        <!-- Cliente (si no existe, muestra '—') -->
-        <div>{{ p.cliente?.nombreCompleto || '—' }}</div>
+        <!-- Cliente -->
+        <div>
+          <span *ngIf="cargandoNombres && (!p.cliente || !p.cliente.nombreCompleto || p.cliente.nombreCompleto === '—')">
+            Cargando...
+          </span>
+          <span *ngIf="!cargandoNombres || (p.cliente && p.cliente.nombreCompleto && p.cliente.nombreCompleto !== '—')">
+            {{ p.cliente?.nombreCompleto || '—' }}
+          </span>
+        </div>
         
         <!-- Total -->
         <div>S/ {{ p.total.toFixed(2) }}</div>
         
         <!-- Método Pago -->
         <div>
-          {{ (p.pagos?.length ?? 0) > 0 ? (p.pagos![0].comprobanteUrl ? 'Yape/Plin' : 'Pendiente') : 'N/A' }}
-        </div>
-        
-        <!-- Estado Pago -->
-        <div>
-          <span class="estado-badge" [ngClass]="p.estadoPago.toLowerCase()">
-            {{ p.estadoPago }}
-          </span>
+          {{ obtenerMetodoPago(p) }}
         </div>
         
         <!-- Estado Pedido -->
@@ -62,6 +62,10 @@
   <pagination-controls (pageChange)="page = $event" [maxSize]="5" [autoHide]="true" class="pagination-wrapper">
   </pagination-controls>
   
-  <app-detalle-pedido *ngIf="mostrarDetalle && pedidoSeleccionado" [pedido]="pedidoSeleccionado" (cerrar)="cerrarDetalle()">
+  <app-detalle-pedido 
+    *ngIf="mostrarDetalle && pedidoSeleccionado" 
+    [pedido]="pedidoSeleccionado" 
+    (cerrar)="cerrarDetalle()"
+    (pagoActualizado)="onPagoActualizado()">
   </app-detalle-pedido>
 </div>

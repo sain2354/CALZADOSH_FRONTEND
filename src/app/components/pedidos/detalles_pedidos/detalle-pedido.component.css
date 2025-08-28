@@ -1,3 +1,4 @@
+/* src/app/components/detalle-pedido/detalle-pedido.component.css */
 .contenedor-detalle {
   position: fixed;
   top: 50%;
@@ -273,4 +274,46 @@
 
 .btn-cancelar:hover {
   background: #5a6268;
+}
+.estado-badge.pendiente {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.estado-badge.pago-validado {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.estado-badge.rechazado {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* Estados de pedido */
+.estado-badge.en-preparación,
+.estado-badge.en-preparacion {
+  background-color: #17a2b8;
+  color: #fff;
+}
+
+.estado-badge.cancelado {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.estado-badge.enviado {
+  background-color: #6610f2;
+  color: #fff;
+}
+
+.estado-badge.entregado {
+  background-color: #20c997;
+  color: #000;
+}
+
+.estado-badge.pendiente-validación,
+.estado-badge.pendiente-validacion {
+  background-color: #e2e3e5;
+  color: #383d41;
 }

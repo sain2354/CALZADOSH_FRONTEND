@@ -20,7 +20,7 @@ import { IngresarComprasComponent } from './components/compras/ingresar/ingresar
 import { ListadoComprasComponent } from './components/compras/listado-compras/listado-compras.component';
 import { EntradaSalidaComponent } from './components/inventario/entrada-salida/entrada-salida.component';
 import { ListaUsuarioComponent } from './components/usuarios/lista-usuario/lista-usuario.component';
-import { RolPerfilComponent } from './components/usuarios/rol-perfil/rol-perfil.component';
+
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -83,7 +83,7 @@ export const routes: Routes = [
         path: 'usuarios',
         children: [
           { path: 'lista', component: ListaUsuarioComponent },
-          { path: 'rol-perfil', component: RolPerfilComponent }
+          
         ]
       }
     ]
