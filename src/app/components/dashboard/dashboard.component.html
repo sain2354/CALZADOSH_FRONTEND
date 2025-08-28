@@ -1,31 +1,108 @@
+<!-- src/app/dashboard/dashboard.component.html -->
 <div class="dashboard-container">
-  <h2>Tablero Principal</h2>
-
-  <!-- Tarjetas superiores -->
-  <div class="cards">
-    <div class="card blue">
-      <h3>12</h3>
-      <p>Productos</p>
-    </div>
-    <div class="card yellow">
-      <h3>S/ 226,715.00</h3>
-      <p>Total Ventas Mes</p>
-    </div>
-    <div class="card red">
-      <h3>S/ 27,699.00</h3>
-      <p>Total Ganancias</p>
-    </div>
+  <div class="dashboard-header">
+    <h2>Tablero Principal</h2>
+    <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
+      <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+      {{ loading ? 'Cargando...' : 'Actualizar' }}
+    </button>
   </div>
 
-  <!-- Gráficos -->
-  <div class="charts">
-    <div class="chart">
-      <h4 class="ventas">VENTAS DEL MES: S/ 226,715.00</h4>
-      <canvas id="ventasChart"></canvas>
+  <!-- Estado de carga y error -->
+  <div *ngIf="loading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    Cargando datos del dashboard...
+  </div>
+
+  <div *ngIf="error" class="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+    <button (click)="refreshData()">Reintentar</button>
+  </div>
+
+  <!-- Contenido principal -->
+  <div *ngIf="!loading && !error">
+    <!-- Tarjetas superiores -->
+    <div class="cards">
+      <div class="card blue">
+        <h3>{{ dashboardData.totalProductos }}</h3>
+        <p>Productos</p>
+      </div>
+
+      <div class="card yellow">
+        <h3>S/ {{ formatCurrency(dashboardData.totalVentas) }}</h3>
+        <p>Ventas Totales</p>
+      </div>
+
+      <div class="card green">
+        <h3>S/ {{ formatCurrency(dashboardData.totalCompras) }}</h3>
+        <p>Compras Totales</p>
+      </div>
+
+      <div class="card red">
+        <h3>S/ {{ formatCurrency(dashboardData.totalGanancias) }}</h3>
+        <p>Ganancias Netas</p>
+      </div>
     </div>
-    <div class="chart">
-      <h4 class="compras">COMPRAS DEL MES: S/ 0.00</h4>
-      <canvas id="comprasChart"></canvas>
+
+    <!-- Gráficos principales -->
+    <div class="charts-section">
+      <h3>VENTAS DEL MES: S/ {{ formatCurrency(dashboardData.totalVentas) }}</h3>
+      <div class="chart-container">
+        <canvas id="ventasChart"></canvas>
+      </div>
+    </div>
+
+    <div class="charts-section">
+      <h3>COMPRAS DEL MES: S/ {{ formatCurrency(dashboardData.totalCompras) }}</h3>
+      <div class="chart-container">
+        <canvas id="comprasChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Gráfico de ventas mensuales -->
+    <div class="charts-section">
+      <h3>VENTAS DE LOS ÚLTIMOS MESES</h3>
+      <div class="chart-container large">
+        <canvas id="ventasMensualesChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Controles para gráficos adicionales -->
+    <div class="additional-controls">
+      <button class="btn-toggle" (click)="toggleAdditionalCharts()">
+        {{ showAdditionalCharts ? 'Ocultar' : 'Mostrar' }} Gráficos Adicionales
+      </button>
+    </div>
+
+    <!-- Gráficos adicionales -->
+    <div *ngIf="showAdditionalCharts" class="additional-charts">
+      <!-- Top productos -->
+      <div class="chart-section">
+        <h3>TOP 5 PRODUCTOS MÁS VENDIDOS</h3>
+        <div class="chart-container">
+          <canvas id="topProductosChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Proveedores -->
+      <div class="chart-section">
+        <h3>DISTRIBUCIÓN DE COMPRAS POR PROVEEDOR</h3>
+        <div class="chart-container">
+          <canvas id="proveedoresChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Resumen financiero -->
+      <div class="chart-section" *ngIf="resumenFinanciero.length > 0">
+        <h3>RESUMEN FINANCIERO (Últimos 6 meses)</h3>
+        <div class="financial-summary">
+          <div *ngFor="let item of resumenFinanciero" class="financial-item">
+            <h4>{{ item.tipo }}</h4>
+            <p class="amount">S/ {{ formatCurrency(item.total) }}</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

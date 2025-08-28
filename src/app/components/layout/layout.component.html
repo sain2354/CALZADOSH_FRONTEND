@@ -1,149 +1,112 @@
 <!-- layout.component.html -->
-<div class="layout-container">
+<div class="layout-container" [class.sidebar-hidden]="sidebarHidden">
   <!-- Barra lateral -->
-  <nav class="sidebar" [class.hidden]="sidebarHidden">
+  <nav #sidebar class="sidebar" [class.hidden]="sidebarHidden" (click)="$event.stopPropagation()">
     <h2>CALZADOS</h2>
+
     <ul>
-      <!-- Dashboard -->
       <li>
-        <a
-          routerLink="/dashboard"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-        >
+        <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           Dashboard
         </a>
       </li>
-      <!-- Pedidos -->
+
       <li>
-        <a
-          routerLink="/caja"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-        >
+        <a routerLink="/caja" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           Pedidos
         </a>
       </li>
 
-      <!-- Ventas -->
       <li (click)="toggleVentasMenu($event)" class="menu-item">
         <a class="menu-title" [class.active]="ventasMenuAbierto">
           Ventas
-          <span *ngIf="!ventasMenuAbierto">▼</span>
-          <span *ngIf="ventasMenuAbierto">▲</span>
+          <span class="caret">{{ ventasMenuAbierto ? '▲' : '▼' }}</span>
         </a>
         <ul *ngIf="ventasMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
-          <li>
-            <a routerLink="/ventas/punto" routerLinkActive="active">Punto de Venta</a>
-          </li>
-          <li>
-            <a routerLink="/ventas/listado" routerLinkActive="active">Listado de Ventas</a>
-          </li>
+          <li><a routerLink="/ventas/punto" routerLinkActive="active">Punto de Venta</a></li>
+          <li><a routerLink="/ventas/listado" routerLinkActive="active">Listado de Ventas</a></li>
         </ul>
       </li>
 
-      <!-- Productos -->
       <li (click)="toggleProductosMenu($event)" class="menu-item">
         <a class="menu-title" [class.active]="productosMenuAbierto">
           Productos
-          <span *ngIf="!productosMenuAbierto">▼</span>
-          <span *ngIf="productosMenuAbierto">▲</span>
+          <span class="caret">{{ productosMenuAbierto ? '▲' : '▼' }}</span>
         </a>
         <ul *ngIf="productosMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
-          <li>
-            <a routerLink="/productos/listado" routerLinkActive="active">Lista de Productos</a>
-          </li>
-          <li>
-            <a routerLink="/categorias" routerLinkActive="active">Categorías</a>
-          </li>
+          <li><a routerLink="/productos/listado" routerLinkActive="active">Lista de Productos</a></li>
+          <li><a routerLink="/categorias" routerLinkActive="active">Categorías</a></li>
         </ul>
       </li>
 
-      <!-- Compras -->
       <li (click)="toggleComprasMenu($event)" class="menu-item">
         <a class="menu-title" [class.active]="comprasMenuAbierto">
           Compras
-          <span *ngIf="!comprasMenuAbierto">▼</span>
-          <span *ngIf="comprasMenuAbierto">▲</span>
+          <span class="caret">{{ comprasMenuAbierto ? '▲' : '▼' }}</span>
         </a>
         <ul *ngIf="comprasMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
-          <li>
-            <a routerLink="/compras/ingresar" routerLinkActive="active">Ingresar</a>
-          </li>
-          <li>
-            <a routerLink="/compras/listado" routerLinkActive="active">Listado Compras</a>
-          </li>
+          <li><a routerLink="/compras/ingresar" routerLinkActive="active">Ingresar</a></li>
+          <li><a routerLink="/compras/listado" routerLinkActive="active">Listado Compras</a></li>
         </ul>
       </li>
 
-      <!-- Clientes / Proveedores -->
       <li>
         <a routerLink="/clientes" routerLinkActive="active">Clientes / Proveedores</a>
       </li>
 
-      <!-- Inventario -->
       <li (click)="toggleInventarioMenu($event)" class="menu-item">
         <a class="menu-title" [class.active]="inventarioMenuAbierto">
           Inventario
-          <span *ngIf="!inventarioMenuAbierto">▼</span>
-          <span *ngIf="inventarioMenuAbierto">▲</span>
+          <span class="caret">{{ inventarioMenuAbierto ? '▲' : '▼' }}</span>
         </a>
         <ul *ngIf="inventarioMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
-          <li>
-            <a routerLink="/inventario/entrada-salida" routerLinkActive="active">Entrada/Salidas</a>
-          </li>
+          <li><a routerLink="/inventario/entrada-salida" routerLinkActive="active">Entrada/Salidas</a></li>
         </ul>
       </li>
 
-      <!-- Mantenimiento - Visible only if user is Administrator -->
-      <li (click)="toggleMantenimientoMenu($event)" class="menu-item" *ngIf="authService.hasRole('Administrador')">
+      <li *ngIf="authService.hasRole('Administrador')" (click)="toggleMantenimientoMenu($event)" class="menu-item">
         <a class="menu-title" [class.active]="mantenimientoMenuAbierto">
           Mantenimiento
-          <span *ngIf="!mantenimientoMenuAbierto">▼</span>
-          <span *ngIf="mantenimientoMenuAbierto">▲</span>
+          <span class="caret">{{ mantenimientoMenuAbierto ? '▲' : '▼' }}</span>
         </a>
         <ul *ngIf="mantenimientoMenuAbierto" class="submenu" (click)="$event.stopPropagation()">
-          <li>
-            <a routerLink="/usuarios/lista" routerLinkActive="active">Usuarios</a>
-          </li>
-          
+          <li><a routerLink="/usuarios/lista" routerLinkActive="active">Usuarios</a></li>
         </ul>
       </li>
     </ul>
 
-     <!-- Remove the standalone logout button from here -->
-     <!-- The logout functionality will be in the dropdown -->
-     <!-- <button class="logout-btn" *ngIf="authService.isLoggedIn()" (click)="authService.logout()">
-         Cerrar Sesión
-     </button> -->
-
+    <!-- logout moved to user dropdown in top bar -->
   </nav>
 
+  <!-- Overlay (solo visible en pantallas pequeñas cuando sidebar está abierto) -->
+  <div class="overlay" *ngIf="!sidebarHidden" (click)="toggleSidebar()"></div>
+
   <!-- Contenido principal -->
-  <div class="main-content">
+  <div class="main-content" (click)="closeMenusOnClickOutside()">
     <header class="top-bar">
       <button class="menu-btn" (click)="toggleSidebar()">☰</button>
-       <!-- User info and dropdown menu (visible if logged in) -->
-       <!-- Apply *ngIf="authService.isLoggedIn()" to the container div -->
-      <div class="user-dropdown-container" *ngIf="authService.isLoggedIn()">
-         <!-- User info with clickable area -->
-        <div class="user-info" (click)="toggleUsuarioMenu()">
+
+      <div class="top-right">
+        <!-- Puedes agregar otros botones aquí -->
+        <div class="user-dropdown-container" *ngIf="authService.isLoggedIn()" (click)="$event.stopPropagation()">
+          <div class="user-info" (click)="toggleUsuarioMenu()">
             <span class="username">{{ loggedInUsername }}</span>
-            <i class="fas fa-caret-down"></i> <!-- Dropdown arrow icon -->
-        </div>
-         <!-- Dropdown menu -->
-        <div class="user-dropdown-menu" [class.show]="usuarioMenuAbierto">
+            <i class="fas fa-caret-down"></i>
+          </div>
+
+          <div class="user-dropdown-menu" [class.show]="usuarioMenuAbierto">
             <ul>
-                <!-- Logout option -->
-                <li (click)="logout()">
-                    <i class="fas fa-sign-out-alt"></i> <!-- Logout icon -->
-                    Cerrar Sesión
-                </li>
+              <li (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+              </li>
             </ul>
+          </div>
         </div>
       </div>
     </header>
+
     <div class="content-area">
+      <!-- aquí se renderizan las vistas; content-area tiene scroll nativo -->
       <router-outlet></router-outlet>
     </div>
   </div>

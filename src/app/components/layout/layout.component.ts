@@ -1,5 +1,5 @@
 // layout.component.ts
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -18,7 +18,8 @@ export class LayoutComponent {
   comprasMenuAbierto = false;
   inventarioMenuAbierto = false;
   mantenimientoMenuAbierto = false;
-  usuarioMenuAbierto = false; // Added to control user dropdown menu
+  usuarioMenuAbierto = false;
+  showAdditionalCharts = false; // si lo necesitas
 
   constructor(private router: Router, public authService: AuthService) {}
 
@@ -26,13 +27,12 @@ export class LayoutComponent {
     this.sidebarHidden = !this.sidebarHidden;
   }
 
-  toggleProductosMenu(e: Event) { e.stopPropagation(); this.productosMenuAbierto = !this.productosMenuAbierto; }
-  toggleVentasMenu(e: Event)    { e.stopPropagation(); this.ventasMenuAbierto = !this.ventasMenuAbierto; }
-  toggleComprasMenu(e: Event)   { e.stopPropagation(); this.comprasMenuAbierto = !this.comprasMenuAbierto; }
-  toggleInventarioMenu(e: Event)   { e.stopPropagation(); this.inventarioMenuAbierto = !this.inventarioMenuAbierto; }
-  toggleMantenimientoMenu(e: Event){ e.stopPropagation(); this.mantenimientoMenuAbierto = !this.mantenimientoMenuAbierto; }
+  toggleProductosMenu(e?: Event)    { if (e) e.stopPropagation(); this.productosMenuAbierto = !this.productosMenuAbierto; }
+  toggleVentasMenu(e?: Event)       { if (e) e.stopPropagation(); this.ventasMenuAbierto = !this.ventasMenuAbierto; }
+  toggleComprasMenu(e?: Event)      { if (e) e.stopPropagation(); this.comprasMenuAbierto = !this.comprasMenuAbierto; }
+  toggleInventarioMenu(e?: Event)   { if (e) e.stopPropagation(); this.inventarioMenuAbierto = !this.inventarioMenuAbierto; }
+  toggleMantenimientoMenu(e?: Event){ if (e) e.stopPropagation(); this.mantenimientoMenuAbierto = !this.mantenimientoMenuAbierto; }
 
-  // AGREGADO: Method to toggle the user dropdown menu
   toggleUsuarioMenu() {
     this.usuarioMenuAbierto = !this.usuarioMenuAbierto;
   }
@@ -45,18 +45,40 @@ export class LayoutComponent {
     this.comprasMenuAbierto      = ruta.startsWith('/compras');
     this.inventarioMenuAbierto   = ruta.startsWith('/inventario');
     this.mantenimientoMenuAbierto= ruta.startsWith('/usuarios');
-     // Close user menu on navigation
     this.usuarioMenuAbierto = false;
   }
 
-   // Helper to get the logged-in username
-   get loggedInUsername(): string {
-       return this.authService.getUsername() || 'Usuario';
-   }
+  get loggedInUsername(): string {
+    return this.authService.getUsername() || 'Usuario';
+  }
 
-   // AGREGADO: Method to handle logout from the dropdown menu
-   logout() {
-       this.authService.logout();
-        this.usuarioMenuAbierto = false; // Close menu after logout
-   }
+  logout() {
+    this.authService.logout();
+    this.usuarioMenuAbierto = false;
+  }
+
+  // Cierra submenús y dropdowns cuando se hace clic fuera (útil en mobile/desktop)
+  closeMenusOnClickOutside() {
+    this.productosMenuAbierto = false;
+    this.ventasMenuAbierto = false;
+    this.comprasMenuAbierto = false;
+    this.inventarioMenuAbierto = false;
+    this.mantenimientoMenuAbierto = false;
+    this.usuarioMenuAbierto = false;
+  }
+
+  // También cerramos al hacer clic en cualquier parte del documento (excepto en la sidebar)
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    // si el clic es fuera de la barra lateral y fuera del menú de usuario -> cerrar menús
+    if (!target.closest('.sidebar') && !target.closest('.user-dropdown-container')) {
+      this.productosMenuAbierto = false;
+      this.ventasMenuAbierto = false;
+      this.comprasMenuAbierto = false;
+      this.inventarioMenuAbierto = false;
+      this.mantenimientoMenuAbierto = false;
+      this.usuarioMenuAbierto = false;
+    }
+  }
 }

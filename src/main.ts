@@ -1,7 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
-
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { provideRouter } from '@angular/router';
@@ -14,11 +13,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(),   // ✅ Esto reemplaza HttpClientModule en standalone
     provideAnimationsAsync(),
-    // Sólo módulos que aportan providers (servicios). 
-    importProvidersFrom(
-      FormsModule
-    )
+    importProvidersFrom(FormsModule)
   ]
 }).catch(err => console.error(err));
