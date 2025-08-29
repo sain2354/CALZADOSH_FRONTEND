@@ -172,10 +172,10 @@ export class IngresarComprasComponent implements OnInit {
   }
 
   calcularTotales(): void {
+    // MODIFICACIÓN: Eliminado el cálculo del IGV (18%)
     this.compra.subtotal = this.compra.items.reduce((sum: number, item: ItemCompra) => sum + (item.cantidad * item.precioUnitario), 0);
-    const igvRate = 0.18;
-    this.compra.igv = parseFloat((this.compra.subtotal * igvRate).toFixed(2));
-    this.compra.total = parseFloat((this.compra.subtotal + this.compra.igv).toFixed(2));
+    this.compra.igv = 0; // IGV siempre será 0
+    this.compra.total = parseFloat((this.compra.subtotal).toFixed(2)); // Total igual al subtotal
   }
 
   limpiarItemActual(): void {
