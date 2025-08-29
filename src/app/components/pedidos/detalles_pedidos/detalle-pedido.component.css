@@ -257,6 +257,9 @@
   transition: all .3s ease-in-out;
   min-width: 160px; /* Ancho mínimo para botones */
   font-size: 1rem; /* Tamaño de fuente de botón */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .btn-validar:disabled, .btn-comprobante:disabled {
   opacity: 0.5;

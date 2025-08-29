@@ -7,9 +7,9 @@
   min-height: calc(100vh - 36px);
 }
 
-/* Container central ancho similar */
+/* Container principal para ocupar toda la pantalla */
 .pv-container {
-  max-width: 1180px;
+  max-width: 100%; /* Modificado para ocupar el 100% del ancho */
   margin: 0 auto;
   display: flex;
   gap: 18px;
@@ -74,18 +74,26 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 
 /* Botones a la derecha (azul y rojo) */
 .action-buttons {
-  width: 220px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
+  width: auto;
 }
 .btn-action {
   padding: 10px 12px;
   font-weight:700;
   border-radius:6px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 .btn-primary { background:#0d6efd; border:none; color:#fff; }
 .btn-danger  { background:#dc3545; border:none; color:#fff; }
+.btn-action i {
+  /* MODIFICADO: Estilo para mover el icono a la izquierda */
+  order: -1;
+}
 
 /* Controls Ver / Buscar */
 .controls-row {
@@ -128,16 +136,31 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 /* texto central "No hay información" */
 .text-center { text-align:center; padding:12px 0; }
 
-/* Pie tabla: ahora solo paginador (alineado a la izquierda como en la captura) */
+/* Pie tabla: ahora solo paginador a la izquierda */
 .table-footer {
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-start; /* Alinear paginación a la izquierda */
   align-items:center;
   padding:10px 6px 0 6px;
   font-size:0.95rem;
   color:#444;
 }
-.paginador-only { display:flex; align-items:center; }
+
+/* Estilos de la paginación para que se vean como en la imagen */
+.pagination-controls {
+  display: flex;
+  gap: 8px;
+}
+.pagination-controls a, .pagination-controls li {
+  color: #000;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.pagination-controls .current {
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 4px;
+}
 
 /* pv-right estilos: campos y totales */
 .right-card .form-group { margin-bottom:12px; }
@@ -146,7 +169,16 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 .btn-add { background:#28a745; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-weight:700; }
 
 .serie-correlativo { display:flex; gap:10px; margin-bottom:10px; }
-.input-read { background:#f1f3f5; border:1px solid #e5e5e5; padding:8px; border-radius:6px; width:100%; }
+.correlativo-input {
+  background: #f1f3f5;
+  border: 1px solid #e5e5e5;
+  padding: 8px;
+  border-radius: 6px;
+  width: 100%;
+}
+.correlativo-input::placeholder {
+  color: #a0a0a0;
+}
 
 .checkbox-row { margin:6px 0 8px 0; color:#333; }
 
@@ -166,5 +198,29 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 
 .modal-content { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; z-index:1000; padding:18px; border-radius:8px; width:420px; max-width:92%; box-shadow:0 6px 20px rgba(0,0,0,0.2); }
 
-.modal-content { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; z-index:1000; padding:18px; border-radius:8px; width:420px; max-width:92%; box-shadow:0 6px 20px rgba(0,0,0,0.2); }
-
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .pv-container {
+    flex-direction: column;
+  }
+  .pv-right {
+    width: 100%;
+  }
+  .action-buttons {
+    flex-direction: row; /* Mantener en línea en pantallas pequeñas */
+    justify-content: center; /* Centrar botones */
+    margin-top: 10px;
+  }
+  .controls-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .controls-row .buscar {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .table-footer {
+    justify-content: center;
+  }
+}

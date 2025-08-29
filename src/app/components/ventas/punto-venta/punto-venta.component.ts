@@ -221,7 +221,6 @@ export class PuntoVentaComponent implements OnInit {
 
   seleccionarTalla(t: any) {
     if (this.currentItemIndex !== null) {
-      // CORREGIDO: Template string con backticks
       this.ventaItems[this.currentItemIndex].talla = `${t.usa}/${t.eur}/${t.cm}`;
       this.ventaItems[this.currentItemIndex].idUnidadMedida = t.usa;
     }
@@ -232,15 +231,21 @@ export class PuntoVentaComponent implements OnInit {
   cerrarModalCliente() { this.mostrarModalCliente = false; }
   manejarPersonaCreada(p: Persona) {
     this.personas.push(p);
-    // CORREGIDO: Template string con backticks
     this.clienteSeleccionado = `${p.numeroDocumento} - ${p.nombre}`;
     this.cerrarModalCliente();
   }
 
   realizarVenta(form: NgForm) {
-    if (form.invalid || this.ventaItems.length === 0) {
-       console.log("DEBUG (Frontend): Formulario inválido o no hay items en la venta.");
-       return;
+    // AÑADIDO: Validación para mostrar un mensaje si no hay productos
+    if (this.ventaItems.length === 0) {
+      alert('No hay productos en el listado.');
+      console.log("DEBUG (Frontend): No hay items en la venta.");
+      return;
+    }
+
+    if (form.invalid) {
+      console.log("DEBUG (Frontend): Formulario inválido.");
+      return;
     }
 
     // Validación de efectivo exacto
@@ -296,14 +301,14 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   // Función para resetear otros campos del formulario de venta
-   resetearFormularioVenta(): void {
-       this.documentoSeleccionado = '';
-       this.clienteSeleccionado = '';
-       this.tipoPagoSeleccionado = '';
-       this.serie = '';
-       this.correlativo = '00000001';
-       this.montoEfectivo = 0;
-   }
+    resetearFormularioVenta(): void {
+        this.documentoSeleccionado = '';
+        this.clienteSeleccionado = '';
+        this.tipoPagoSeleccionado = '';
+        this.serie = '';
+        this.correlativo = '00000001';
+        this.montoEfectivo = 0;
+    }
 
   imprimirComprobante() {
     const html = this.reporteBoletaContainer.nativeElement.innerHTML;

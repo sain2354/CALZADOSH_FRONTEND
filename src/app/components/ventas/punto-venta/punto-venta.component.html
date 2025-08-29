@@ -1,6 +1,3 @@
-<!-- punto-venta.component.html -->
-
-<!-- Modal de confirmación -->
 <div *ngIf="mostrarConfirmacion" class="modal-backdrop" (click)="cancelarComprobante()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <h4 class="text-success">✔ Venta registrada correctamente</h4>
@@ -14,12 +11,9 @@
 <form #ventaForm="ngForm" (ngSubmit)="realizarVenta(ventaForm)" novalidate>
   <div class="pv-wrapper">
 
-    <!-- Contenedor principal con left + right -->
     <div class="pv-container">
 
-      <!-- PANEL IZQUIERDO -->
       <div class="pv-left">
-        <!-- Barra superior: buscador full width -->
         <div class="search-row">
           <label class="label-small">Productos</label>
           <ng-autocomplete
@@ -43,7 +37,6 @@
           </ng-template>
         </div>
 
-        <!-- fila del monto grande y botones al lado -->
         <div class="top-panel">
           <div class="big-amount-box">
             <span class="moneda">S/</span>
@@ -56,7 +49,6 @@
           </div>
         </div>
 
-        <!-- Controles Ver/Buscar (debajo) -->
         <div class="controls-row">
           <div class="ver">
             <label>Ver</label>
@@ -73,15 +65,17 @@
           </div>
         </div>
 
-        <!-- Tabla -->
         <div class="table-card">
           <table class="table custom-table">
             <thead>
               <tr>
-                <th>Item</th><th>Codigo</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>Opc.</th><th>Talla</th><th>Stock</th>
+                <th>Item</th><th>Codigo</th><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>Opc.</th><th>Talla</th><th>Stock</th><th>Desc.</th>
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="filteredVentaItems.length === 0">
+                <td colspan="10" class="text-center">No hay información en esta tabla</td>
+              </tr>
               <tr *ngFor="let it of filteredVentaItems | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage } ; let i = index">
                 <td>{{ it.item }}</td>
                 <td>{{ it.codigo }}</td>
@@ -95,27 +89,19 @@
                 <td><button class="btn btn-sm btn-danger" (click)="eliminarItem(getGlobalIndex(i))">Quitar</button></td>
                 <td><span class="talla-link" (click)="mostrarTallas(it, getGlobalIndex(i))">{{ it.talla || '---' }}</span></td>
                 <td>{{ it.stock }}</td>
-              </tr>
-
-              <tr *ngIf="filteredVentaItems.length === 0">
-                <td colspan="9" class="text-center">No hay información en esta tabla</td>
+                <td>0</td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Pie: ahora solo paginador -->
           <div class="table-footer">
-            <div class="paginador-only">
-              <pagination-controls (pageChange)="pageChanged($event)" [maxSize]="5" [directionLinks]="true" [autoHide]="false"
-                                   previousLabel="Anterior" nextLabel="Siguiente">
-              </pagination-controls>
-            </div>
-            <div class="empty-placeholder"></div>
+            <pagination-controls (pageChange)="pageChanged($event)" [maxSize]="5" [directionLinks]="true" [autoHide]="false"
+                                 previousLabel="Anterior" nextLabel="Siguiente">
+            </pagination-controls>
           </div>
         </div>
       </div>
 
-      <!-- PANEL DERECHO -->
       <div class="pv-right">
         <div class="right-card">
           <div class="form-group">
@@ -133,6 +119,7 @@
               <select class="form-select" [(ngModel)]="clienteSeleccionado" name="cli" required>
                 <option value="">Seleccione</option>
                 <option *ngFor="let c of personas">{{ c.numeroDocumento }} - {{ c.nombre }}</option>
+                <option>00000000 - Clientes Varios</option>
               </select>
               <button type="button" class="btn btn-add" (click)="abrirModalCliente()">+</button>
             </div>
@@ -149,21 +136,21 @@
           <div class="serie-correlativo">
             <div>
               <label>Serie</label>
-              <input class="form-control input-read" [(ngModel)]="serie" name="ser" readonly />
+              <input class="form-control correlativo-input" [(ngModel)]="serie" name="ser" readonly placeholder="nro Serie" />
             </div>
             <div>
               <label>Correlativo</label>
-              <input class="form-control input-read" [(ngModel)]="correlativo" name="cor" readonly />
+              <input class="form-control correlativo-input" [(ngModel)]="correlativo" name="cor" readonly placeholder="Nro Venta" />
             </div>
           </div>
 
           <div class="form-group">
             <label>Efectivo recibido</label>
-            <input type="number" min="0" class="form-control" [(ngModel)]="montoEfectivo" name="ef" />
+            <input type="number" min="0" class="form-control" [(ngModel)]="montoEfectivo" name="ef" placeholder="Cantidad de efectivo recibida" />
           </div>
 
           <div class="checkbox-row">
-            <label><input type="checkbox" />  Efectivo Exacto</label>
+            <label><input type="checkbox" />&nbsp; Efectivo Exacto</label>
           </div>
 
           <div class="amounts">
@@ -179,12 +166,10 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </form>
 
-<!-- Modal Tallas -->
 <div class="modal-backdrop" *ngIf="mostrarModalTallas" (click)="cerrarModalTallas()"></div>
 <div class="modal-content" *ngIf="mostrarModalTallas" (click)="$event.stopPropagation()">
   <h4>Elige una Talla</h4>
@@ -205,13 +190,11 @@
   <div class="text-end"><button class="btn btn-secondary" (click)="cerrarModalTallas()">Cerrar</button></div>
 </div>
 
-<!-- Modal Cliente -->
 <div class="modal-backdrop" *ngIf="mostrarModalCliente" (click)="cerrarModalCliente()"></div>
 <div class="modal-content" *ngIf="mostrarModalCliente" (click)="$event.stopPropagation()" style="width:500px">
   <app-persona-form (onCancelar)="cerrarModalCliente()" (onGuardar)="manejarPersonaCreada($event)"></app-persona-form>
 </div>
 
-<!-- Bloque oculto para impresión -->
 <div style="display:none" #reporteBoletaContainer>
   <app-boleta-venta
     *ngIf="boleta"

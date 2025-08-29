@@ -29,7 +29,7 @@
   display: grid;
   /* Anchos de columnas ajustados: Fecha más grande y Acciones más pequeña */
   grid-template-columns: 80px 0.8fr 100px 110px 140px 210px 1fr;
-  background: #007bff;
+  background: #17a2b8;
   color: #fff;
   font-weight: 600;
   font-size: 1.1rem;
@@ -46,7 +46,7 @@
 }
 
 .tabla-cabecera div:last-child {
-  background: #0056b3;
+  background: #187c8b;
   border-right: none;
 }
 
