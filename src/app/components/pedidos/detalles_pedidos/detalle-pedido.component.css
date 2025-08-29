@@ -1,319 +1,337 @@
 /* src/app/components/detalle-pedido/detalle-pedido.component.css */
+/* Contenedor principal del modal */
 .contenedor-detalle {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #fff;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fbfd 100%); /* Degradado suave para elegancia */
+  border-radius: 15px; /* Más redondeado */
   width: 90%;
-  max-width: 700px;
+  max-width: 700px; /* Ancho un poco más generoso pero aún compacto */
   max-height: 90vh;
-  padding: 1.5rem;
+  padding: 2.5rem; /* Más padding para airear */
   overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  z-index: 9999;
+  box-shadow: 0 15px 45px rgba(0,0,0,0.18); /* Sombra más profunda y sofisticada */
+  z-index: 1000;
+  animation: modalSlideIn 0.3s ease-out forwards; /* 'forwards' para mantener el estado final */
+  border: 1px solid #e0e6ed; /* Borde sutil */
 }
 
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(0.95); /* Empieza un poco más arriba y pequeño */
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Cabecera del modal */
 .cabecera-detalle {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #eee;
-  padding-bottom: .5rem;
+  margin-bottom: 2rem; /* Más margen para separar del contenido */
+  border-bottom: 2px solid #e9ecef; /* Línea separadora más definida */
+  padding-bottom: 1.2rem;
 }
 
 .cabecera-detalle h3 {
-  margin:0;
-  font-size:1.5rem;
-  color:#333;
+  margin: 0;
+  font-size: 1.8rem; /* Tamaño de título principal */
+  color: #2c3e50; /* Color oscuro para contraste */
+  font-weight: 700;
+  letter-spacing: -0.03em; /* Ajuste para un look más "pro" */
 }
 
 .btn-cerrar {
-  background:none;
-  border:none;
-  font-size:1.2rem;
-  color:#666;
-  cursor:pointer;
-  transition:color .2s;
+  background: none;
+  border: none;
+  font-size: 1.8rem; /* Tamaño de ícono generoso */
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: color .3s ease-in-out; /* Transición suave */
+  padding: 0.2rem; /* Área de click más fácil */
 }
 
 .btn-cerrar:hover {
-  color:#333;
+  color: #101010; /* Negro sutil al pasar el mouse */
+  transform: none; /* Asegurar que no haya rotación */
 }
 
+/* Cuerpo principal (columnas) */
 .cuerpo-detalle {
-  display:flex;
-  flex-direction:column;
-  gap:2rem;
+  display: grid;
+  grid-template-columns: 1fr; /* Mantenemos una columna para mejor flujo vertical */
+  gap: 2rem; /* Aumentamos el espaciado entre secciones */
 }
 
-/* Secciones */
-.informacion-cliente, .informacion-pedido, .informacion-pago {
-  background:#f8f9fa;
-  padding:1rem;
-  border-radius:8px;
+/* Secciones de información */
+.informacion-cliente,
+.informacion-pedido,
+.informacion-pago {
+  background-color: #fdfdfd; /* Fondo muy claro para contenido */
+  padding: 1.8rem; /* Más padding interno */
+  border-radius: 10px;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.06); /* Sombra más suave */
+  border: 1px solid #f0f4f8; /* Borde muy sutil */
 }
 
-.informacion-cliente h4, .informacion-pedido h4, .informacion-pago h4 {
-  margin-top:0;
-  color:#444;
-  border-bottom:1px solid #ddd;
-  padding-bottom:.5rem;
+.informacion-cliente h4,
+.informacion-pedido h4,
+.informacion-pago h4 {
+  margin-top: 0;
+  color: #34495e;
+  font-size: 1.6rem; /* Títulos de sección más prominentes */
+  border-bottom: 2px solid #3498db; /* Línea azul llamativa */
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Más espacio entre ícono y texto */
+  font-weight: 600;
 }
 
-/* Listado vertical de productos */
+.informacion-cliente h4 i,
+.informacion-pedido h4 i,
+.informacion-pago h4 i {
+  color: #007bff; /* Color de ícono azul */
+  font-size: 1.5em; /* Íconos un poco más grandes */
+}
+
+/* Información textual en secciones */
+.informacion-cliente p,
+.informacion-pedido p,
+.pago-item p {
+  margin: 0.8rem 0;
+  font-size: 1rem; /* Tamaño de texto base */
+  color: #555;
+  line-height: 1.5; /* Mayor interlineado para legibilidad */
+}
+.informacion-cliente p strong,
+.informacion-pedido p strong,
+.pago-item p strong {
+  color: #2c3e50;
+  min-width: 90px; /* Asegura mejor alineación de labels */
+  display: inline-block;
+  font-weight: 500; /* No tan bold, más elegante */
+}
+
+/* Listado de productos */
 .lista-productos {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 1.2rem; /* Espacio entre tarjetas de producto */
 }
 
-/* Cada tarjeta de producto: flex con imagen a la derecha */
+/* Tarjeta de cada producto */
 .producto-card {
   display: flex;
-  flex-direction: row-reverse;
-  background: #fafafa;
-  border-radius: 4px;
-  padding: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  align-items: center;
+  align-items: center; /* Centrar verticalmente */
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f6; /* Borde más claro */
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Imagen al lado derecho */
+.producto-card:hover {
+  transform: translateY(-3px); /* Efecto de elevación sutil */
+  box-shadow: 0 6px 15px rgba(0,0,0,0.09);
+}
+
+/* Imagen del producto */
 .producto-imagen {
-  width: 80px;
+  width: 80px; /* Tamaño de imagen ajustado */
   height: 80px;
   object-fit: cover;
-  border-radius: 4px;
-  margin-left: 1rem; /* separación de la info */
+  border-radius: 6px;
+  margin-right: 1.5rem; /* Espacio a la derecha de la imagen */
+  border: 1px solid #dce4eb; /* Borde sutil en la imagen */
+  flex-shrink: 0; /* Evitar que la imagen se achique */
 }
 
-/* Información textual alineada a la izquierda */
+/* Información textual del producto */
 .producto-info {
-  flex: 1;
+  flex: 1; /* Ocupa el espacio restante */
 }
-
 .prod-nombre {
   margin: 0 0 0.5rem 0;
-  font-size: 1rem;
+  font-size: 1.15rem; /* Nombre de producto más grande */
+  color: #2c3e50;
+  font-weight: 600;
 }
-
 .producto-info p {
   margin: 0.2rem 0;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  color: #7f8c8d;
 }
 
-/* Resumen de envío y total debajo */
+/* Resumen de pedido (envío y total) */
 .resumen-pedido {
-  margin-top: 1rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid #ddd;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dce4eb; /* Línea superior para separar */
 }
 
 .resumen-pedido p {
-  margin: 0.3rem 0;
-  font-weight: bold;
+  margin: 0.8rem 0;
+  font-weight: 600;
+  font-size: 1.15rem; /* Total y envío más grandes */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Pago */
+.resumen-pedido p strong {
+  color: #2c3e50;
+}
+
+.resumen-pedido p span {
+  color: #28a745; /* Verde para destacar el total */
+  font-size: 1.3em; /* Más grande aún para el valor */
+  font-weight: 700;
+}
+
+/* Sección de pago */
+.informacion-pago {
+  grid-column: 1 / -1; /* Ocupa todo el ancho en una sola columna */
+}
+
+.pago-item {
+  margin-bottom: 1.8rem;
+  padding-bottom: 1.8rem;
+  border-bottom: 1px dashed #e0e6ed; /* Línea punteada para separar pagos */
+}
+.pago-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Badges de estado de pago */
 .estado-badge {
-  padding:.3rem .8rem;
-  border-radius:20px;
-  text-transform:uppercase;
-  font-size:.75rem;
-  font-weight:bold;
-  display:inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 25px; /* Más redondeado */
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 100px;
+  display: inline-flex; /* Asegura el centrado vertical del texto */
+  justify-content: center;
+  align-items: center;
+  letter-spacing: 0.5px;
+}
+.estado-badge.pendiente {
+  background-color: #ffe082; /* Tono amarillo más cálido */
+  color: #a1882c;
+}
+.estado-badge.validado {
+  background-color: #a7d9b5; /* Tono verde más suave */
+  color: #3d7d4c;
+}
+.estado-badge.rechazado {
+  background-color: #ffb3b3; /* Tono rojo más claro */
+  color: #b33939;
 }
 
-.pendiente {
-  background:#FFF3CD;
-  color:#856404;
-}
-
-.validado {
-  background:#D4EDDA;
-  color:#155724;
-}
-
-.rechazado {
-  background:#F8D7DA;
-  color:#721C24;
-}
-
+/* Contenedor de botones de acción de pago */
 .validacion-pago {
-  display:flex;
-  gap:1rem;
-  margin-top:1rem;
+  display: flex;
+  justify-content: center; /* Centrar los botones */
+  gap: 1.2rem; /* Espaciado entre botones */
+  margin-top: 2rem; /* Más margen superior */
+  flex-wrap: wrap; /* Permitir que los botones se envuelvan en pantallas pequeñas */
 }
 
-.btn-validar {
-  flex:1;
-  padding:.7rem;
-  border:none;
-  border-radius:4px;
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-  transition:opacity .2s;
+.btn-validar, .btn-comprobante {
+  padding: 0.9rem 1.8rem; /* Más padding para botones grandes */
+  border: none;
+  border-radius: 8px; /* Bordes más redondeados */
+  font-weight: 600; /* Menos bold, más elegante */
+  cursor: pointer;
+  transition: all .3s ease-in-out;
+  min-width: 160px; /* Ancho mínimo para botones */
+  font-size: 1rem; /* Tamaño de fuente de botón */
+}
+.btn-validar:disabled, .btn-comprobante:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn-validar.success {
-  background:#28A745;
+  background: #28a745; /* Verde Bootstrap */
+  color: #fff;
+}
+.btn-validar.success:hover:not(:disabled) {
+  background: #218838;
+  transform: translateY(-2px) scale(1.02); /* Pequeño scale para efecto "pulsar" */
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
 .btn-validar.danger {
-  background:#DC3545;
+  background: #dc3545; /* Rojo Bootstrap */
+  color: #fff;
+}
+.btn-validar.danger:hover:not(:disabled) {
+  background: #c82333;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 .btn-comprobante {
-  padding:.7rem;
-  background:#00bcd4;
-  color:#fff;
-  border:none;
-  border-radius:4px;
-  font-weight:bold;
-  cursor:pointer;
-  margin-left:auto;
-  transition:background .2s;
+  background: #007bff; /* Azul Bootstrap */
+  color: #fff;
+}
+.btn-comprobante:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-.btn-comprobante:hover {
-  background:#0097a7;
-}
-
-/* Modales */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-}
-
-.alert-backdrop {
-  z-index: 10001;
-}
-
-.confirm-backdrop {
-  z-index: 10002;
-}
-
-.modal {
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-  animation: modalFadeIn 0.3s ease;
-  z-index: 10003;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
+/* Media Queries para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .contenedor-detalle {
+    padding: 1.5rem;
+    max-width: 95%; /* Más ancho en móviles */
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .cabecera-detalle h3 {
+    font-size: 1.5rem;
   }
-}
-
-.modal h3 {
-  margin-top: 0;
-  color: #333;
-  font-size: 1.3rem;
-}
-
-.modal p {
-  margin: 1rem 0;
-  color: #555;
-  line-height: 1.5;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.btn-modal {
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  min-width: 80px;
-  transition: all 0.2s ease;
-}
-
-.btn-aceptar {
-  background: #28a745;
-  color: white;
-}
-
-.btn-aceptar:hover {
-  background: #218838;
-}
-
-.btn-cancelar {
-  background: #6c757d;
-  color: white;
-}
-
-.btn-cancelar:hover {
-  background: #5a6268;
-}
-.estado-badge.pendiente {
-  background-color: #ffc107;
-  color: #000;
-}
-
-.estado-badge.pago-validado {
-  background-color: #28a745;
-  color: #fff;
-}
-
-.estado-badge.rechazado {
-  background-color: #dc3545;
-  color: #fff;
-}
-
-/* Estados de pedido */
-.estado-badge.en-preparación,
-.estado-badge.en-preparacion {
-  background-color: #17a2b8;
-  color: #fff;
-}
-
-.estado-badge.cancelado {
-  background-color: #6c757d;
-  color: #fff;
-}
-
-.estado-badge.enviado {
-  background-color: #6610f2;
-  color: #fff;
-}
-
-.estado-badge.entregado {
-  background-color: #20c997;
-  color: #000;
-}
-
-.estado-badge.pendiente-validación,
-.estado-badge.pendiente-validacion {
-  background-color: #e2e3e5;
-  color: #383d41;
+  .cuerpo-detalle {
+    gap: 1.5rem;
+  }
+  .informacion-cliente h4,
+  .informacion-pedido h4,
+  .informacion-pago h4 {
+    font-size: 1.2rem;
+    gap: 8px;
+  }
+  .producto-imagen {
+    width: 60px;
+    height: 60px;
+    margin-right: 1rem;
+  }
+  .prod-nombre {
+    font-size: 1rem;
+  }
+  .resumen-pedido p {
+    font-size: 1.05rem;
+  }
+  .resumen-pedido p span {
+    font-size: 1.2em;
+  }
+  .validacion-pago {
+    flex-direction: column; /* Apilar botones en móvil */
+    gap: 0.8rem;
+  }
+  .btn-validar, .btn-comprobante {
+    width: 100%; /* Ocupar todo el ancho en móvil */
+    min-width: unset;
+  }
 }
