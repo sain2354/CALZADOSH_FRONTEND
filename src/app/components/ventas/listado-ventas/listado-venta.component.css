@@ -17,7 +17,7 @@
   color: #fff;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  padding: 8px 16px;
+  padding: 10px 16px;
 }
 
 .header-titulo h4 {
@@ -91,18 +91,26 @@
 
 /* ====== Tabla ====== */
 .table-encabezado {
-  background-color: #00aca8;
-  color: #fff;
+  background-color: #0d6efd; /* Azul de Bootstrap */
+  color: #fff; /* Letras blancas */
 }
 
 .table-encabezado th {
   padding: 8px 8px;
   font-size: 0.9rem;
   font-weight: 500;
+  /* Aseguramos que los th individuales también hereden el color de fondo y texto */
+  background-color: #17a2b8; 
+  color: #fff;
 }
 
+/* Las filas del cuerpo de la tabla se mantienen en blanco/gris alternado como en la última imagen que enviaste */
 .table-sm tbody tr:nth-of-type(odd) {
-  background-color: #f7f7f7;
+  background-color: #f7f7f7; /* Gris claro para filas impares */
+}
+
+.table-sm tbody tr:nth-of-type(even) {
+  background-color: #fff; /* Blanco para filas pares */
 }
 
 tbody td {
@@ -121,10 +129,8 @@ tbody td.text-muted {
 .badge {
   font-size: 0.8rem;
   padding: 4px 6px;
-  /* *** CAMBIO: Asegurar texto negro para los badges *** */
-  color: #212529 !important; /* Color del texto oscuro de Bootstrap */
-  font-weight: normal; /* Peso normal para que no compita con el encabezado */
-  /* ************************************************** */
+  color: #212529 !important;
+  font-weight: normal;
 }
 
 /* Opciones (botoncitos) */
@@ -136,26 +142,25 @@ tbody td.text-muted {
   justify-content: center;
   border: none;
   background-color: transparent;
-  padding: 0; /* Asegurar padding 0 para mejor alineación */
+  padding: 0;
 }
 
 .opciones-columna .btn i {
   font-size: 0.9rem;
-  /* *** CAMBIO: Colores para los iconos *** */
-  color: #6c757d; /* Gris por defecto */
+  color: #6c757d;
 }
 
 /* Colores específicos para iconos de acción */
-.opciones-columna .btn-info i { /* Ojo */
-    color: #0dcaf0; /* Azul claro de Bootstrap */
+.opciones-columna .btn-info i {
+    color: #0dcaf0;
 }
 
-.opciones-columna .btn-danger i { /* Anular */
-    color: #dc3545; /* Rojo de Bootstrap */
+.opciones-columna .btn-danger i {
+    color: #dc3545;
 }
 
-.opciones-columna .btn-secondary i { /* Imprimir PDF */
-     color: #6c757d; /* Gris de Bootstrap */
+.opciones-columna .btn-secondary i {
+      color: #6c757d;
 }
 
 /* Estilo al pasar el ratón sobre los botones de opción */
@@ -179,20 +184,20 @@ tbody td.text-muted {
   color: #00aca8;
   font-size: 0.85rem;
   padding: 4px 8px;
-  border-radius: 4px; /* Bordes más suaves */
-  margin: 0 1px; /* Espacio entre elementos */
+  border-radius: 4px;
+  margin: 0 1px;
 }
 
 .pagination-sm .page-item.active .page-link {
   background-color: #00aca8;
   border-color: #00aca8;
   color: #fff;
-  border-radius: 4px; /* Mantener bordes suaves */
-  width: auto; /* Ancho automático para números de página */
-  height: auto; /* Altura automática */
-  display: inline-block; /* Display inline-block */
-  padding: 4px 8px; /* Padding ajustado */
-  margin: 0 1px; /* Espacio entre elementos */
+  border-radius: 4px;
+  width: auto;
+  height: auto;
+  display: inline-block;
+  padding: 4px 8px;
+  margin: 0 1px;
 }
 
 .pagination-sm .page-item.disabled .page-link {
@@ -214,72 +219,72 @@ tbody td.text-muted {
 }
 
 .modal-header {
-    background-color: #00aca8; /* Mismo color que el header de la tabla */
+    background-color: #00aca8;
     color: #fff;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    padding: 12px 20px; /* Padding ajustado */
+    padding: 12px 20px;
 }
 
 .modal-header .modal-title {
-    font-size: 1.1rem; /* Tamaño de fuente un poco más grande */
+    font-size: 1.1rem;
     font-weight: 500;
 }
 
 .modal-header .btn-close {
-    filter: invert(1) grayscale(100%) brightness(200%); /* Icono de cerrar blanco */
+    filter: invert(1) grayscale(100%) brightness(200%);
 }
 
 .modal-body {
-    padding: 20px; /* Padding interno */
+    padding: 20px;
 }
 
 .modal-body .form-label {
     font-weight: 500;
-    font-size: 0.95rem; /* Tamaño de fuente para labels del modal */
+    font-size: 0.95rem;
     margin-bottom: 4px;
 }
 
 .modal-body .form-control {
-     font-size: 0.9rem; /* Tamaño de fuente para inputs del modal */
-     height: 36px; /* Altura ajustada */
-     background-color: #e9ecef; /* Color de fondo suave para inputs de solo lectura */
-     border: 1px solid #ced4da;
+      font-size: 0.9rem;
+      height: 36px;
+      background-color: #e9ecef;
+      border: 1px solid #ced4da;
 }
 
 .modal-body h6 {
     font-size: 1rem;
     font-weight: 500;
     color: #333;
-    border-bottom: 1px solid #eee; /* Línea separadora sutil */
+    border-bottom: 1px solid #eee;
     padding-bottom: 5px;
 }
 
 .modal-body .table {
-     margin-bottom: 1rem; /* Espacio debajo de la tabla de detalles */
+      margin-bottom: 1rem;
 }
 
 .modal-body .table th {
-     font-size: 0.9rem;
-     font-weight: 500;
-     background-color: #e9ecef; /* Fondo para el encabezado de la tabla de detalles */
-     color: #333;
-     padding: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background-color: #e9ecef;
+      color: #333;
+      padding: 8px;
 }
 
 .modal-body .table td {
-     font-size: 0.85rem;
-     padding: 8px;
+      font-size: 0.85rem;
+      padding: 8px;
 }
 
 /* Totales en el modal */
 .modal-body .row.justify-content-end .col-md-4 {
-    padding-right: 15px; /* Espacio a la derecha para alinear con los totales */
-    padding-left: 15px; /* Espacio a la izquierda */
+    padding-right: 15px;
+    padding-left: 15px;
 }
 
 .modal-footer {
-    padding: 12px 20px; /* Padding ajustado */
+    padding: 12px 20px;
     border-top: 1px solid #dee2e6;
 }
 

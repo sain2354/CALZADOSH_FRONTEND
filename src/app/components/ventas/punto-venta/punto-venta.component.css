@@ -9,7 +9,7 @@
 
 /* Container principal para ocupar toda la pantalla */
 .pv-container {
-  max-width: 100%; /* Modificado para ocupar el 100% del ancho */
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   gap: 18px;
@@ -44,7 +44,7 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
   width: 100%;
   padding: 10px 12px;
   border-radius: 4px;
-  border: 1px solid #cfe3f3; /* azul claro borde */
+  border: 1px solid #cfe3f3;
   font-size: 0.95rem;
   box-sizing: border-box;
 }
@@ -81,7 +81,7 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 }
 .btn-action {
   padding: 10px 12px;
-  font-weight:700;
+  font-weight: 500; /* Modificado: fuente un poco normal */
   border-radius:6px;
   white-space: nowrap;
   display: flex;
@@ -91,7 +91,6 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 .btn-primary { background:#0d6efd; border:none; color:#fff; }
 .btn-danger  { background:#dc3545; border:none; color:#fff; }
 .btn-action i {
-  /* MODIFICADO: Estilo para mover el icono a la izquierda */
   order: -1;
 }
 
@@ -111,35 +110,37 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 /* Tabla tarjeta */
 .table-card {
   margin-top: 8px;
-  border-top: 1px solid rgba(0,0,0,0.03);
 }
 .custom-table {
   width:100%;
   border-collapse:collapse;
   margin-top:8px;
   font-size:0.92rem;
+  border: 1px solid #dee2e6; /* Agregado: Borde a la tabla principal */
 }
 .custom-table thead th {
   background:#17a2b8;
   color:#fff;
   padding:10px 8px;
-  text-align:left;
-  font-weight:700;
+  text-align: center; /* Modificado: Centrar texto de encabezados */
+  font-weight: 500; /* Modificado: fuente un poco normal */
+  border: 1px solid #dee2e6; /* Agregado: Bordes a los th */
 }
 .custom-table td, .custom-table th {
   padding:10px 8px;
-  border-bottom:1px solid #eee;
+  border: 1px solid #dee2e6; /* Agregado: Bordes a celdas */
   vertical-align:middle;
+  text-align: center; /* Modificado: Centrar texto de celdas */
 }
 .input-cant { width:72px; padding:6px; border-radius:4px; }
 
 /* texto central "No hay información" */
 .text-center { text-align:center; padding:12px 0; }
 
-/* Pie tabla: ahora solo paginador a la izquierda */
+/* Pie tabla: ahora solo paginador al medio */
 .table-footer {
   display:flex;
-  justify-content:flex-start; /* Alinear paginación a la izquierda */
+  justify-content:center;
   align-items:center;
   padding:10px 6px 0 6px;
   font-size:0.95rem;
@@ -198,6 +199,15 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
 
 .modal-content { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; z-index:1000; padding:18px; border-radius:8px; width:420px; max-width:92%; box-shadow:0 6px 20px rgba(0,0,0,0.2); }
 
+/* Agregado: Bordes y alineación para la tabla del modal de tallas */
+.modal-content .table {
+  border: 1px solid #dee2e6;
+}
+.modal-content .table th, .modal-content .table td {
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
 /* Responsive adjustments */
 @media (max-width: 992px) {
   .pv-container {
@@ -207,8 +217,8 @@ ng-autocomplete, .ng-autocomplete .autocomplete-input, input[placeholder] {
     width: 100%;
   }
   .action-buttons {
-    flex-direction: row; /* Mantener en línea en pantallas pequeñas */
-    justify-content: center; /* Centrar botones */
+    flex-direction: row;
+    justify-content: center;
     margin-top: 10px;
   }
   .controls-row {

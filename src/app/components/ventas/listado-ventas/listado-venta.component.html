@@ -1,16 +1,11 @@
-<!-- src/app/components/ventas/listado-ventas/listado-venta.component.html -->
 <div class="card listado-ventas-container">
-  <!-- Header -->
   <div class="card-header header-titulo">
     <h4 class="mb-0">Listado de Ventas</h4>
   </div>
 
-  <!-- Body -->
   <div class="card-body">
 
-    <!-- Filtros de Fecha (sin botón Buscar aquí) -->
     <div class="row mb-2 align-items-end">
-      <!-- Fecha Inicio -->
       <div class="col-md-3">
         <label for="fechaInicio" class="form-label">Fecha Inicio:</label>
         <div class="input-group">
@@ -23,7 +18,6 @@
         </div>
       </div>
 
-      <!-- Fecha Fin -->
       <div class="col-md-3">
         <label for="fechaFin" class="form-label">Fecha Fin:</label>
         <div class="input-group">
@@ -36,20 +30,11 @@
         </div>
       </div>
 
-      <!-- Espacio vacío para desplazar contenido -->
       <div class="col-md-6"></div>
     </div>
 
-    <!-- Botones de Acción (Excel, Imprimir), Selector de Filas, Botón Buscar y Buscador -->
     <div class="d-flex justify-content-between mb-3 acciones-rapidas">
-      <!-- A la izquierda: Exportar e Imprimir -->
       <div class="botones-export">
-        <button
-          class="btn btn-success btn-sm me-1"
-          title="Exportar a Excel"
-          (click)="exportarExcel()">
-          <i class="fa fa-file-excel"></i>
-        </button>
         <button
           class="btn btn-secondary btn-sm"
           title="Imprimir"
@@ -58,66 +43,55 @@
         </button>
       </div>
 
-      <!-- A la derecha: selector → botón Buscar encima del buscador -->
-      <div class="d-flex align-items-start">
-        <!-- Selector Cantidad por página -->
+      <div class="d-flex align-items-center">
+        <span class="me-2 text-secondary fw-semibold" style="font-size: 0.85rem;">Mostrar:</span>
         <select
           class="form-select form-select-sm me-3"
-          style="width: 60px;"
-          [(ngModel)]="cantidadPorPagina">
+          style="width: 70px;"  [(ngModel)]="cantidadPorPagina">
           <option [value]="10">10</option>
           <option [value]="25">25</option>
           <option [value]="50">50</option>
         </select>
 
-        <!-- Contenedor vertical para botón Buscar y campo de búsqueda -->
-        <div class="d-flex flex-column align-items-end">
-          <button
-            class="btn btn-primary btn-sm mb-1"
-            (click)="buscar()">
-            Buscar
-          </button>
+        <div class="input-group input-group-sm" style="width: 200px;">
+          <span class="input-group-text"><i class="fa fa-search"></i></span>
           <input
             type="text"
-            class="form-control form-control-sm"
+            class="form-control"
             placeholder="Buscar..."
-            style="width: 140px;"
             [(ngModel)]="textoBusqueda" />
         </div>
       </div>
     </div>
 
-    <!-- Tabla de Ventas -->
     <div class="table-responsive">
-      <table class="table table-striped table-hover align-middle table-sm">
+      <table class="table table-striped table-hover table-bordered align-middle table-sm">
         <thead class="table-encabezado">
           <tr>
-            <th>Cliente</th>
-            <th>Comprobante</th>
-            <th>Correlativo</th>
-            <th>Monto</th>
-            <th>Fecha</th>
-            <th>Usuario</th>
-            <th>Estado</th>
-            <th>Opciones</th>
+            <th class="text-center">Cliente</th>
+            <th class="text-center">Comprobante</th>
+            <th class="text-center">Correlativo</th>
+            <th class="text-center">Monto</th>
+            <th class="text-center">Fecha</th>
+            <th class="text-center">Usuario</th>
+            <th class="text-center">Estado</th>
+            <th class="text-center">Opciones</th>
           </tr>
         </thead>
         <tbody>
-          <!-- Si no hay registros en la página actual -->
-          <tr *ngIf="ventasPaginaActual.length === 0">
+          <tr *ngIf="ventas.length === 0">
             <td colspan="8" class="text-center text-muted py-3">
               No hay información en esta tabla
             </td>
           </tr>
-          <!-- Si hay registros, iterar sobre las ventas de la página actual -->
-          <tr *ngFor="let venta of ventasPaginaActual">
-              <td>{{ venta.clienteNombre || 'N/A' }}</td> <!-- Usar clienteNombre o placeholder -->
-              <td>{{ venta.tipoComprobante }}</td>
-              <td>{{ venta.serie }}-{{ venta.numeroComprobante }}</td>
-              <td>{{ venta.total | number:'1.2-2' }}</td> <!-- Formatear monto -->
-              <td>{{ venta.fecha | date:'dd/MM/yyyy hh:mm:ss a' }}</td> <!-- Formatear fecha -->
-              <td>{{ venta.usuarioNombre || 'N/A' }}</td> <!-- Usar usuarioNombre o placeholder -->
-              <td>
+          <tr *ngFor="let venta of ventas | paginate: { itemsPerPage: cantidadPorPagina, currentPage: paginaActual }">
+              <td class="text-center">{{ venta.clienteNombre || 'N/A' }}</td>
+              <td class="text-center">{{ venta.tipoComprobante }}</td>
+              <td class="text-center">{{ venta.serie }}-{{ venta.numeroComprobante }}</td>
+              <td class="text-center">S/ {{ venta.total | number:'1.2-2' }}</td>
+              <td class="text-center">{{ venta.fecha | date:'dd/MM/yyyy hh:mm:ss a' }}</td>
+              <td class="text-center">{{ venta.usuarioNombre || 'N/A' }}</td>
+              <td class="text-center">
                   <span class="badge"
                       [ngClass]="{
                           'bg-success': venta.estado === 'REGISTRADA',
@@ -127,18 +101,12 @@
                       {{ venta.estado }}
                   </span>
               </td>
-              <td class="opciones-columna">
-                  <!-- Botón Ver Detalle -->
-                  <button class="btn btn-info btn-sm" title="Ver Detalle" (click)="verDetalle(venta)">
+              <td class="text-center opciones-columna">
+                  <button class="btn btn-info btn-sm me-1" title="Ver Detalle" (click)="verDetalle(venta)">
                       <i class="fa fa-eye"></i>
                   </button>
-                  <!-- Botón Anular Venta -->
                   <button class="btn btn-danger btn-sm" title="Anular Venta" (click)="anularVenta(venta)">
-                      <i class="fa fa-times"></i>
-                  </button>
-                  <!-- Botón Imprimir PDF -->
-                  <button class="btn btn-secondary btn-sm" title="Imprimir PDF" (click)="imprimirPDF(venta)">
-                       <i class="fa fa-file-pdf"></i>
+                      <i class="fa fa-ban"></i>
                   </button>
               </td>
           </tr>
@@ -146,113 +114,110 @@
       </table>
     </div>
 
-    <!-- Paginación -->
-    <div class="d-flex justify-content-between align-items-center mt-2 paginacion-contenedor">
-      <span class="texto-registros">
-        {{ textoPaginacion }}
-      </span>
-      <nav>
-        <ul class="pagination pagination-sm mb-0">
-          <li class="page-item" [class.disabled]="paginaActual === 1">
-            <span class="page-link" (click)="cambiarPagina(paginaActual - 1)">Anterior</span>
-          </li>
-           <!-- Mostramos solo la página actual para simplificar por ahora -->
-          <li class="page-item active">
-            <span class="page-link">{{ paginaActual }}</span>
-          </li>
-           <li class="page-item" [class.disabled]="paginaActual * cantidadPorPagina >= totalRegistros">
-            <span class="page-link" (click)="cambiarPagina(paginaActual + 1)">Siguiente</span>
-          </li>
-        </ul>
-      </nav>
+    <div class="d-flex justify-content-center mt-3">
+      <pagination-controls 
+        previousLabel="Anterior"
+        nextLabel="Siguiente"
+        (pageChange)="paginaActual = $event"
+        [maxSize]="5"
+        [responsive]="true"
+        class="pagination-sm">
+      </pagination-controls>
     </div>
 
   </div>
 </div>
 
-<!-- MODAL DE DETALLE DE VENTA -->
 <div class="modal fade" tabindex="-1" [ngClass]="{'show d-block': mostrarModalDetalle}" id="modalDetalleVenta" role="dialog" aria-labelledby="modalDetalleVentaLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalDetalleVentaLabel">Detalle de la Venta</h5>
-        <button type="button" class="btn-close" aria-label="Close" (click)="cerrarModalDetalle()"></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalDetalleVentaLabel">
+          <i class="fa fa-receipt me-2"></i>Detalle de Venta
+        </h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="cerrarModalDetalle()"></button>
       </div>
-      <div class="modal-body" *ngIf="ventaSeleccionadaParaDetalle">
-        <!-- Información de la venta principal -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label class="form-label">Cliente:</label>
-                <input type="text" class="form-control" [value]="ventaSeleccionadaParaDetalle.cliente?.nombreCompleto || 'N/A'" readonly>
+      <div class="modal-body p-4" *ngIf="ventaSeleccionadaParaDetalle">
+        <div class="row mb-4">
+          <div class="col-md-6 mb-3">
+            <div class="form-group">
+              <label class="form-label fw-semibold text-secondary">Cliente:</label>
+              <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.cliente?.nombreCompleto || 'N/A'}}</div>
             </div>
-             <div class="col-md-6">
-                <label class="form-label">Fecha:</label>
-                <input type="text" class="form-control" [value]="ventaSeleccionadaParaDetalle.fecha | date:'dd/MM/yyyy hh:mm:ss a'" readonly>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="form-group">
+              <label class="form-label fw-semibold text-secondary">Fecha:</label>
+              <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.fecha | date:'dd/MM/yyyy hh:mm:ss a'}}</div>
             </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="form-group">
+              <label class="form-label fw-semibold text-secondary">Tipo Comprobante:</label>
+              <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.tipoComprobante}}</div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="form-group">
+              <label class="form-label fw-semibold text-secondary">Correlativo:</label>
+              <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.serie + '-' + ventaSeleccionadaParaDetalle.numeroComprobante}}</div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="form-group">
+              <label class="form-label fw-semibold text-secondary">Forma de Pago:</label>
+              <div class="form-control-plaintext border-bottom pb-2">Efectivo</div>
+            </div>
+          </div>
         </div>
-         <div class="row mb-3">
-             <div class="col-md-4">
-                <label class="form-label">Tipo:</label>
-                 <input type="text" class="form-control" [value]="ventaSeleccionadaParaDetalle.tipoComprobante" readonly>
-            </div>
-             <div class="col-md-4">
-                <label class="form-label">Correlativo:</label>
-                 <input type="text" class="form-control" [value]="ventaSeleccionadaParaDetalle.serie + '-' + ventaSeleccionadaParaDetalle.numeroComprobante" readonly>
-            </div>
-             <div class="col-md-4">
-                <label class="form-label">Forma de Pago:</label>
-                 <!-- Tendrás que obtener esta información desde los Pagos o un campo específico en VentaResponse si existe -->
-                 <input type="text" class="form-control" value="Efectivo" readonly> <!-- Placeholder -->
-            </div>
-         </div>
 
-         <h6 class="mt-4 mb-2">Detalles de Productos:</h6>
-          <div class="table-responsive">
-            <table class="table table-striped table-sm">
-                <thead>
-                    <tr>
-                        <th>Descripción</th>
-                        <th>Precio</th>
-                        <th>Cantidad</th>
-                        <th>Sub. Total</th>
-                    </tr>
-                </thead>
-                 <tbody>
-                    <tr *ngIf="!ventaSeleccionadaParaDetalle.detalles || ventaSeleccionadaParaDetalle.detalles.length === 0">
-                        <td colspan="4" class="text-center text-muted">No hay detalles para esta venta.</td>
-                    </tr>
-                     <tr *ngFor="let detalle of ventaSeleccionadaParaDetalle.detalles">
-                        <td>{{ detalle.nombreProducto }} - Talla: {{ detalle.talla }}</td>
-                         <td>{{ detalle.precio | number:'1.2-2' }}</td>
-                         <td>{{ detalle.cantidad }}</td>
-                         <td>{{ detalle.total | number:'1.2-2' }}</td>
-                     </tr>
-                 </tbody>
-            </table>
-          </div>
+        <h6 class="mt-4 mb-3 border-bottom pb-2 fw-semibold text-primary">
+          <i class="fa fa-list-alt me-2"></i>Detalles de Productos
+        </h6>
+        
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover table-sm">
+            <thead class="table-light">
+              <tr>
+                <th class="text-center">Descripción</th>
+                <th class="text-center">Precio</th>
+                <th class="text-center">Cantidad</th>
+                <th class="text-center">Sub. Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!ventaSeleccionadaParaDetalle.detalles || ventaSeleccionadaParaDetalle.detalles.length === 0">
+                <td colspan="4" class="text-center text-muted py-3">No hay detalles para esta venta.</td>
+              </tr>
+              <tr *ngFor="let detalle of ventaSeleccionadaParaDetalle.detalles">
+                <td>{{ detalle.nombreProducto }} - Talla: {{ detalle.talla }}</td>
+                <td class="text-end">S/ {{ detalle.precio | number:'1.2-2' }}</td>
+                <td class="text-center">{{ detalle.cantidad }}</td>
+                <td class="text-end">S/ {{ detalle.total | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <div class="row justify-content-end mt-3">
-              <div class="col-md-4">
-                   <label class="form-label">SUBTOTAL:</label>
-                   <input type="text" class="form-control" [value]="ventaSeleccionadaParaDetalle.total - (ventaSeleccionadaParaDetalle.totalIgv || 0)" readonly> <!-- Calcular subtotal si totalIgv está presente -->
-              </div>
+        <div class="row justify-content-end mt-4">
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <span class="fw-semibold text-secondary">SUBTOTAL:</span>
+              <span class="fw-semibold">S/ {{ventaSeleccionadaParaDetalle.total - (ventaSeleccionadaParaDetalle.totalIgv || 0) | number:'1.2-2'}}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <span class="fw-semibold text-secondary">IGV:</span>
+              <span class="fw-semibold">S/ {{ventaSeleccionadaParaDetalle.totalIgv || 0 | number:'1.2-2'}}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-2">
+              <span class="fw-bold text-primary">TOTAL:</span>
+              <span class="fw-bold text-primary">S/ {{ventaSeleccionadaParaDetalle.total | number:'1.2-2'}}</span>
+            </div>
           </div>
-           <div class="row justify-content-end">
-              <div class="col-md-4">
-                   <label class="form-label">IGV:</label>
-                   <input type="text" class="form-control" [value]="ventaSeleccionadaParaDetalle.totalIgv || 0 | number:'1.2-2'" readonly>
-              </div>
-          </div>
-           <div class="row justify-content-end">
-              <div class="col-md-4">
-                   <label class="form-label">TOTAL:</label>
-                   <input type="text" class="form-control" [value]="ventaSeleccionadaParaDetalle.total | number:'1.2-2'" readonly>
-              </div>
-          </div>
+        </div>
 
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="cerrarModalDetalle()">Cerrar</button>
+      <div class="modal-footer bg-light">
       </div>
     </div>
   </div>
