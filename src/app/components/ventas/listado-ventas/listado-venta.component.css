@@ -10,7 +10,7 @@
 
 /* Header principal: color turquesa y padding compacto */
 .header-titulo {
-  background-color: #00aca8 !important; /* Tono turquesa */
+  background-color: #17a2b8 !important; /* Tono turquesa */
   color: #fff !important;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -30,8 +30,8 @@
 
 /* Estilos para los campos de fecha */
 .input-group-text {
-  background-color: #00aca8 !important; /* Color turquesa para el fondo del icono */
-  border: 1px solid #00aca8 !important; /* Borde del mismo color */
+  background-color: #17a2b8 !important; /* Color turquesa para el fondo del icono */
+  border: 1px solid #17a2b8 !important; /* Borde del mismo color */
   color: #fff !important; /* Icono blanco para contraste */
   font-size: 0.9rem;
 }
@@ -51,7 +51,7 @@
 
 /* Asegura que el campo de fecha también tenga un borde turquesa al estar enfocado */
 .input-group .form-control:focus {
-  border-color: #00aca8 !important;
+  border-color: #17a2b8 !important;
   box-shadow: 0 0 0 0.25rem rgba(0, 172, 168, 0.25) !important;
 }
 
@@ -95,11 +95,11 @@
 
 /* Encabezado de la tabla: fondo turquesa y letras blancas */
 .table-encabezado {
-<<<<<<< HEAD
+
   background-color: #17a2b8; /* Azul de Bootstrap */
   color: #fff; /* Letras blancas */
-=======
-  background-color: #00aca8 !important;
+
+  background-color: #17a2b8 !important;
   color: #fff !important;
 >>>>>>> 50df6c2581fbe352c2ffee6046d42c7ca7ffce21
 }
@@ -108,7 +108,7 @@
   padding: 8px 8px;
   font-size: 0.9rem;
   font-weight: 500;
-  background-color: #00aca8 !important;
+  background-color: #17a2b8 !important;
   color: #fff !important;
 }
 
@@ -160,7 +160,7 @@ tbody td.text-muted {
 
 /* Colores específicos para iconos de acción */
 .opciones-columna .btn-info i {
-    color: #0dcaf0 !important;
+    color: #17a2b8 !important;
 }
 
 .opciones-columna .btn-danger i {
@@ -187,7 +187,7 @@ tbody td.text-muted {
 }
 
 .pagination-sm .page-item .page-link {
-  color: #00aca8 !important;
+  color: #17a2b8 !important;
   font-size: 0.85rem;
   padding: 4px 8px;
   border-radius: 4px;
@@ -195,8 +195,8 @@ tbody td.text-muted {
 }
 
 .pagination-sm .page-item.active .page-link {
-  background-color: #00aca8 !important;
-  border-color: #00aca8 !important;
+  background-color: #17a2b8 !important;
+  border-color: #17a2b8 !important;
   color: #fff !important;
   border-radius: 4px;
   width: auto;
@@ -213,8 +213,8 @@ tbody td.text-muted {
 
 .pagination-sm .page-item .page-link:hover:not(.disabled) {
   background-color: rgba(0, 172, 168, 0.1) !important;
-  color: #00aca8 !important;
-  border-color: #00aca8 !important;
+  color: #17a2b8 !important;
+  border-color: #17a2b8 !important;
   border-radius: 4px;
 }
 
@@ -223,7 +223,7 @@ tbody td.text-muted {
 }
 
 .modal-header {
-    background-color: #00aca8 !important; /* Azul turquesa para el encabezado del modal */
+    background-color: #17a2b8 !important; /* Azul turquesa para el encabezado del modal */
     color: #fff !important;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
@@ -259,13 +259,13 @@ tbody td.text-muted {
 .modal-body h6 {
     font-size: 1rem;
     font-weight: 500;
-    color: #00aca8 !important; /* Azul turquesa para el texto */
+    color: #17a2b8 !important; /* Azul turquesa para el texto */
     border-bottom: 1px solid #eee;
     padding-bottom: 5px;
 }
 
 .modal-body h6 i {
-    color: #00aca8 !important; /* Azul turquesa para el ícono */
+    color: #17a2b8 !important; /* Azul turquesa para el ícono */
 }
 
 .modal-body .table {
@@ -287,7 +287,7 @@ tbody td.text-muted {
 
 /* Totales en el modal */
 .modal-body .fw-bold.text-primary {
-    color: #00aca8 !important; /* Asegura que el color sea turquesa */
+    color: #17a2b8 !important; /* Asegura que el color sea turquesa */
 }
 
 .modal-footer {
