@@ -47,7 +47,7 @@
         <span class="me-2 text-secondary fw-semibold" style="font-size: 0.85rem;">Mostrar:</span>
         <select
           class="form-select form-select-sm me-3"
-          style="width: 70px;"  [(ngModel)]="cantidadPorPagina">
+          style="width: 70px;" [(ngModel)]="cantidadPorPagina">
           <option [value]="10">10</option>
           <option [value]="25">25</option>
           <option [value]="50">50</option>
@@ -139,38 +139,31 @@
       </div>
       <div class="modal-body p-4" *ngIf="ventaSeleccionadaParaDetalle">
         <div class="row mb-4">
-          <div class="col-md-6 mb-3">
-            <div class="form-group">
-              <label class="form-label fw-semibold text-secondary">Cliente:</label>
-              <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.cliente?.nombreCompleto || 'N/A'}}</div>
-            </div>
+          <div class="col-md-6 d-flex align-items-center">
+            <span class="form-label fw-semibold text-secondary me-2 mb-0">Cliente:</span>
+            <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.cliente?.nombreCompleto || 'N/A'}}</div>
           </div>
-          <div class="col-md-6 mb-3">
-            <div class="form-group">
-              <label class="form-label fw-semibold text-secondary">Fecha:</label>
-              <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.fecha | date:'dd/MM/yyyy hh:mm:ss a'}}</div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3">
-            <div class="form-group">
-              <label class="form-label fw-semibold text-secondary">Tipo Comprobante:</label>
-              <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.tipoComprobante}}</div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3">
-            <div class="form-group">
-              <label class="form-label fw-semibold text-secondary">Correlativo:</label>
-              <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.serie + '-' + ventaSeleccionadaParaDetalle.numeroComprobante}}</div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3">
-            <div class="form-group">
-              <label class="form-label fw-semibold text-secondary">Forma de Pago:</label>
-              <div class="form-control-plaintext border-bottom pb-2">Efectivo</div>
-            </div>
+          <div class="col-md-6 d-flex align-items-center">
+            <span class="form-label fw-semibold text-secondary me-2 mb-0">Fecha:</span>
+            <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.fecha | date:'dd/MM/yyyy hh:mm:ss a'}}</div>
           </div>
         </div>
-
+        
+        <div class="row mb-4">
+          <div class="col-md-4 d-flex align-items-center">
+            <span class="form-label fw-semibold text-secondary me-2 mb-0">Tipo Comprobante:</span>
+            <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.tipoComprobante}}</div>
+          </div>
+          <div class="col-md-4 d-flex align-items-center">
+            <span class="form-label fw-semibold text-secondary me-2 mb-0">Correlativo:</span>
+            <div class="form-control-plaintext border-bottom pb-2">{{ventaSeleccionadaParaDetalle.serie + '-' + ventaSeleccionadaParaDetalle.numeroComprobante}}</div>
+          </div>
+          <div class="col-md-4 d-flex align-items-center">
+            <span class="form-label fw-semibold text-secondary me-2 mb-0">Forma de Pago:</span>
+            <div class="form-control-plaintext border-bottom pb-2">Efectivo</div>
+          </div>
+        </div>
+        
         <h6 class="mt-4 mb-3 border-bottom pb-2 fw-semibold text-primary">
           <i class="fa fa-list-alt me-2"></i>Detalles de Productos
         </h6>
@@ -215,7 +208,6 @@
             </div>
           </div>
         </div>
-
       </div>
       <div class="modal-footer bg-light">
       </div>

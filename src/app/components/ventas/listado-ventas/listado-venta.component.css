@@ -93,7 +93,7 @@
   padding: 0;
 }
 
-/* Encabezado de la tabla: fondo turquesa y letras blancas */
+/* Estilos de la Tabla Principal */
 .table-encabezado {
 
   background-color: #17a2b8; /* Azul de Bootstrap */
@@ -101,7 +101,6 @@
 
   background-color: #17a2b8 !important;
   color: #fff !important;
->>>>>>> 50df6c2581fbe352c2ffee6046d42c7ca7ffce21
 }
 
 .table-encabezado th {
@@ -218,6 +217,7 @@ tbody td.text-muted {
   border-radius: 4px;
 }
 
+/* ====== Modal de Detalle de Venta ====== */
 .modal-content {
     border-radius: 8px;
 }
@@ -257,15 +257,25 @@ tbody td.text-muted {
 }
 
 .modal-body h6 {
+    font-size: 1.15rem !important; /* Aumentado para visibilidad */
+    font-weight: 500 !important;
+    color: #00aca8 !important; /* Azul turquesa para el texto */
+
     font-size: 1rem;
     font-weight: 500;
     color: #17a2b8 !important; /* Azul turquesa para el texto */
+
     border-bottom: 1px solid #eee;
     padding-bottom: 5px;
 }
 
 .modal-body h6 i {
+
+    font-size: 1.3rem !important; /* Aumentado para visibilidad */
+    color: #00aca8 !important; /* Azul turquesa para el ícono */
+
     color: #17a2b8 !important; /* Azul turquesa para el ícono */
+
 }
 
 .modal-body .table {
