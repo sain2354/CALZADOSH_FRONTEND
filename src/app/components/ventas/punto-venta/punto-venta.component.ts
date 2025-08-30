@@ -72,6 +72,10 @@ export class PuntoVentaComponent implements OnInit {
   serie = '';
   correlativo = '00000001';
 
+  // Variables para controlar correlativos
+  ultimoCorrelativoBoleta = 0;
+  ultimoCorrelativoFactura = 0;
+
   montoEfectivo = 0;
   get vuelto() {
     return +(this.montoEfectivo - this.total).toFixed(2);
@@ -94,7 +98,7 @@ export class PuntoVentaComponent implements OnInit {
       clienteNombre: vr.clienteNombre,
       clienteDocumento: vr.clienteDocumento,
       direccion: vr.direccion,
-      moneda: 'Gs/',
+      moneda: 'S/',
       detalles: (vr.detalles ?? []).map((d: any) => ({
         cantidad: d.cantidad,
         descripcion: d.descripcion,
@@ -118,6 +122,9 @@ export class PuntoVentaComponent implements OnInit {
   ngOnInit(): void {
     this.cargarProductos();
     this.cargarPersonas();
+    // Inicializar desde localStorage si existe
+    this.ultimoCorrelativoBoleta = parseInt(localStorage.getItem('ultimoCorrelativoBoleta') || '0');
+    this.ultimoCorrelativoFactura = parseInt(localStorage.getItem('ultimoCorrelativoFactura') || '0');
   }
 
   private cargarProductos() {
@@ -189,17 +196,32 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   private calcularTotal() {
+    // El precio ya incluye IGV, por lo que el subtotal es la suma de precios * cantidad
     const sum = this.ventaItems.reduce((acc, it) => acc + it.cantidad * it.precio, 0);
     this.subTotal = +sum.toFixed(2);
+    
+    // Calcular IGV (18% del subtotal)
     this.iva = +(this.subTotal * 0.18).toFixed(2);
-    this.total = +(this.subTotal + this.iva - this.descuento).toFixed(2);
+    
+    // El total es igual al subtotal (ya que el IGV está incluido)
+    this.total = +(this.subTotal - this.descuento).toFixed(2);
   }
 
   onDocumentoChange() {
-    if (this.documentoSeleccionado === 'Boleta') this.serie = 'B001';
-    else if (this.documentoSeleccionado === 'Factura') this.serie = 'F001';
-    else this.serie = '';
-    this.correlativo = '00000001';
+    if (this.documentoSeleccionado === 'Boleta') {
+      this.serie = 'B001';
+      this.ultimoCorrelativoBoleta++;
+      this.correlativo = this.ultimoCorrelativoBoleta.toString().padStart(8, '0');
+      localStorage.setItem('ultimoCorrelativoBoleta', this.ultimoCorrelativoBoleta.toString());
+    } else if (this.documentoSeleccionado === 'Factura') {
+      this.serie = 'F001';
+      this.ultimoCorrelativoFactura++;
+      this.correlativo = this.ultimoCorrelativoFactura.toString().padStart(8, '0');
+      localStorage.setItem('ultimoCorrelativoFactura', this.ultimoCorrelativoFactura.toString());
+    } else {
+      this.serie = '';
+      this.correlativo = '00000001';
+    }
   }
 
   mostrarTallas(item: any, idx: number) {

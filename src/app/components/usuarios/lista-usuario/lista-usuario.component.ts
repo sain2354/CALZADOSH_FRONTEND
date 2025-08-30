@@ -1,4 +1,3 @@
-// lista-usuario.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -194,25 +193,6 @@ export class ListaUsuarioComponent implements OnInit {
       });
     }
   }
-
-   // MODIFICADO: cambiarEstadoUsuario - Frontend UI control
-   cambiarEstadoUsuario(usuario: UsuarioWebResponse): void {
-       // Only allow if user has Administrator role (Frontend UI control)
-        if (!this.isAdministrator()) {
-           alert('No tienes permisos para cambiar el estado de los usuarios.');
-           return; // Stop the operation
-       }
-
-       const accion = usuario.estado === 'Activo' ? 'desactivar' : 'activar';
-       if (confirm(`¿Estás seguro de ${accion} al usuario ${usuario.nombreCompleto}?`)) {
-
-            // TODO: Implement backend endpoint/logic to change user state
-            // Currently, your backend update method doesn't seem to handle 'estado'.
-            // This part requires backend support for the 'Estado' field in PUT request or a dedicated endpoint.
-            alert('Funcionalidad de cambiar estado no implementada en backend.'); // Placeholder message
-       }
-   }
-
 
    // AGREGADO: eliminarUsuario - Frontend UI control
    eliminarUsuario(usuario: UsuarioWebResponse): void {

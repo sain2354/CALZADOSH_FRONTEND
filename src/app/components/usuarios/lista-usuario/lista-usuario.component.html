@@ -57,7 +57,6 @@
           <th>Nombre Completo</th>
           <th>Email</th>
           <th>Rol</th>
-          <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -69,12 +68,6 @@
           <td>{{ usuario.email }}</td>
           <td>{{ usuario.nombreRol }}</td>
           <td>
-             <!-- Assuming backend provides 'estado' field in UsuarioWebResponse -->
-            <span class="badge" [ngClass]="usuario.estado === 'Activo' ? 'badge-success' : 'badge-danger'">
-              {{ usuario.estado }}
-            </span>
-          </td>
-          <td>
             <!-- View button visible to all users with web roles -->
             <button class="btn btn-sm btn-info" (click)="verUsuario(usuario)" title="Ver" *ngIf="hasAnyRole(['Administrador', 'Vendedor', 'Almacenero'])">
               <i class="fas fa-eye"></i>
@@ -82,11 +75,6 @@
             <!-- Edit button visible only if user is Administrator -->
             <button class="btn btn-sm btn-warning" (click)="editarUsuario(usuario)" title="Editar" *ngIf="isAdministrator()">
               <i class="fas fa-edit"></i>
-            </button>
-             <!-- State button visible only if user is Administrator -->
-            <button class="btn btn-sm btn-secondary" (click)="cambiarEstadoUsuario(usuario)"
-                    [title]="usuario.estado === 'Activo' ? 'Desactivar' : 'Activar'" *ngIf="isAdministrator()">
-              <i class="fas" [ngClass]="usuario.estado === 'Activo' ? 'fa-user-slash' : 'fa-user-check'"></i>
             </button>
              <!-- Delete button visible only if user is Administrator -->
              <button class="btn btn-sm btn-danger" (click)="eliminarUsuario(usuario)" title="Eliminar" *ngIf="isAdministrator()">
@@ -149,15 +137,6 @@
               </div>
               <small class="text-muted" *ngIf="usuarioSeleccionado.idUsuario">Dejar en blanco para no cambiar la contraseña</small>
             </div>
-             <!-- Assuming 'Estado' is not sent in the request, it's managed by backend PUT -->
-             <!-- If you added 'estado' field to UsuarioWebRequest, bind it here -->
-            <!-- <div class="form-group" *ngIf="usuarioSeleccionado.idUsuario">
-              <label>Estado</label>
-              <select class="form-control" [(ngModel)]="usuarioSeleccionado.activo" name="activo">
-                <option [value]="true">Activo</option>
-                <option [value]="false">Inactivo</option>
-              </select>
-            </div> -->
           </form>
         </div>
         <div class="modal-footer">
