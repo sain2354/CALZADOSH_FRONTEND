@@ -1,5 +1,3 @@
-/* src/app/components/ventas/listado-ventas/listado-venta.component.css */
-
 /* Contenedor principal (card) */
 .listado-ventas-container {
   background: #fff;
@@ -7,17 +5,16 @@
   border-radius: 8px;
   margin: 20px auto;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
-  /* Ahora se aprovecha todo el ancho disponible */
   width: calc(100% - 40px);
 }
 
-/* Header: color turquesa más suave y padding compacto */
+/* Header principal: color turquesa y padding compacto */
 .header-titulo {
-  background-color: #00aca8; /* Tono turquesa */
-  color: #fff;
+  background-color: #00aca8 !important; /* Tono turquesa */
+  color: #fff !important;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  padding: 10px 16px;
+  padding: 8px 16px;
 }
 
 .header-titulo h4 {
@@ -31,23 +28,31 @@
   padding: 16px 20px 12px 20px;
 }
 
-/* Filtros de Fecha */
+/* Estilos para los campos de fecha */
 .input-group-text {
-  background-color: #eee;
-  border: 1px solid #ccc;
+  background-color: #00aca8 !important; /* Color turquesa para el fondo del icono */
+  border: 1px solid #00aca8 !important; /* Borde del mismo color */
+  color: #fff !important; /* Icono blanco para contraste */
   font-size: 0.9rem;
 }
 
 .input-group .form-control-sm {
-  border-left: 0;
-  font-size: 0.9rem;
-  height: 32px;
+  border-left: 0 !important;
+  font-size: 0.9rem !important;
+  height: 32px !important;
+  border-color: #ccc !important; /* Un borde más claro para el campo de fecha */
 }
 
 .form-label {
-  font-weight: 500;
-  font-size: 0.9rem;
-  margin-bottom: 2px;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  margin-bottom: 2px !important;
+}
+
+/* Asegura que el campo de fecha también tenga un borde turquesa al estar enfocado */
+.input-group .form-control:focus {
+  border-color: #00aca8 !important;
+  box-shadow: 0 0 0 0.25rem rgba(0, 172, 168, 0.25) !important;
 }
 
 /* Botones de acción rápida */
@@ -81,7 +86,6 @@
   height: 30px;
 }
 
-/* Botón Buscar ubicado arriba del buscador */
 .acciones-rapidas .btn-primary.btn-sm {
   font-size: 0.85rem;
   height: 32px;
@@ -89,28 +93,27 @@
   padding: 0;
 }
 
-/* ====== Tabla ====== */
+/* Encabezado de la tabla: fondo turquesa y letras blancas */
 .table-encabezado {
-  background-color: #0d6efd; /* Azul de Bootstrap */
-  color: #fff; /* Letras blancas */
+  background-color: #00aca8 !important;
+  color: #fff !important;
 }
 
 .table-encabezado th {
   padding: 8px 8px;
   font-size: 0.9rem;
   font-weight: 500;
-  /* Aseguramos que los th individuales también hereden el color de fondo y texto */
-  background-color: #17a2b8; 
-  color: #fff;
+  background-color: #00aca8 !important;
+  color: #fff !important;
 }
 
-/* Las filas del cuerpo de la tabla se mantienen en blanco/gris alternado como en la última imagen que enviaste */
+/* Filas del cuerpo de la tabla */
 .table-sm tbody tr:nth-of-type(odd) {
-  background-color: #f7f7f7; /* Gris claro para filas impares */
+  background-color: #f7f7f7 !important;
 }
 
 .table-sm tbody tr:nth-of-type(even) {
-  background-color: #fff; /* Blanco para filas pares */
+  background-color: #fff !important;
 }
 
 tbody td {
@@ -152,22 +155,21 @@ tbody td.text-muted {
 
 /* Colores específicos para iconos de acción */
 .opciones-columna .btn-info i {
-    color: #0dcaf0;
+    color: #0dcaf0 !important;
 }
 
 .opciones-columna .btn-danger i {
-    color: #dc3545;
+    color: #dc3545 !important;
 }
 
 .opciones-columna .btn-secondary i {
-      color: #6c757d;
+      color: #6c757d !important;
 }
 
 /* Estilo al pasar el ratón sobre los botones de opción */
 .opciones-columna .btn:hover i {
     opacity: 0.8;
 }
-
 
 /* ====== Paginación ====== */
 .paginacion-contenedor {
@@ -179,9 +181,8 @@ tbody td.text-muted {
   color: #555;
 }
 
-/* Pagination-small */
 .pagination-sm .page-item .page-link {
-  color: #00aca8;
+  color: #00aca8 !important;
   font-size: 0.85rem;
   padding: 4px 8px;
   border-radius: 4px;
@@ -189,9 +190,9 @@ tbody td.text-muted {
 }
 
 .pagination-sm .page-item.active .page-link {
-  background-color: #00aca8;
-  border-color: #00aca8;
-  color: #fff;
+  background-color: #00aca8 !important;
+  border-color: #00aca8 !important;
+  color: #fff !important;
   border-radius: 4px;
   width: auto;
   height: auto;
@@ -201,26 +202,24 @@ tbody td.text-muted {
 }
 
 .pagination-sm .page-item.disabled .page-link {
-  color: #ccc;
+  color: #ccc !important;
   pointer-events: none;
 }
 
 .pagination-sm .page-item .page-link:hover:not(.disabled) {
-  background-color: rgba(0, 172, 168, 0.1);
-  color: #00aca8;
-  border-color: #00aca8;
+  background-color: rgba(0, 172, 168, 0.1) !important;
+  color: #00aca8 !important;
+  border-color: #00aca8 !important;
   border-radius: 4px;
 }
 
-
-/* ====== Modal de Detalle de Venta ====== */
 .modal-content {
     border-radius: 8px;
 }
 
 .modal-header {
-    background-color: #00aca8;
-    color: #fff;
+    background-color: #00aca8 !important; /* Azul turquesa para el encabezado del modal */
+    color: #fff !important;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
     padding: 12px 20px;
@@ -255,9 +254,13 @@ tbody td.text-muted {
 .modal-body h6 {
     font-size: 1rem;
     font-weight: 500;
-    color: #333;
+    color: #00aca8 !important; /* Azul turquesa para el texto */
     border-bottom: 1px solid #eee;
     padding-bottom: 5px;
+}
+
+.modal-body h6 i {
+    color: #00aca8 !important; /* Azul turquesa para el ícono */
 }
 
 .modal-body .table {
@@ -278,9 +281,8 @@ tbody td.text-muted {
 }
 
 /* Totales en el modal */
-.modal-body .row.justify-content-end .col-md-4 {
-    padding-right: 15px;
-    padding-left: 15px;
+.modal-body .fw-bold.text-primary {
+    color: #00aca8 !important; /* Asegura que el color sea turquesa */
 }
 
 .modal-footer {
