@@ -48,3 +48,40 @@
 .componente-categorias small.text-muted {
   font-size: 0.85rem !important;
 }
+
+/* Modal simple */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1040;
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: block;
+}
+.modal-dialog {
+  background: transparent;
+}
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* Success check styling */
+.success-check {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: #e8f6ee;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-size: 36px;
+  color: #2e7d32; /* verde */
+  border: 2px solid #c8e6c9;
+}

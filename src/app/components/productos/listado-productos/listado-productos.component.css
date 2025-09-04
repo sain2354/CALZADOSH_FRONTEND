@@ -43,16 +43,19 @@
   gap: 10px;
 }
 
-.card-body .mb-0.me-2 { /* Label "Buscar" */
+.card-body .mb-0.me-2 {
+  /* Label "Buscar" */
   font-size: 0.8rem;
 }
 
-.card-body .ng-autocomplete { /* Autocomplete */
+.card-body .ng-autocomplete {
+  /* Autocomplete */
   width: 350px !important;
   font-size: 0.8rem;
 }
 
-.card-body .btn.btn-primary.ms-3 { /* Botón "Nuevo" */
+.card-body .btn.btn-primary.ms-3 {
+  /* Botón "Nuevo" */
   padding: 5px 10px;
   font-size: 0.8rem;
 }
@@ -63,7 +66,6 @@
   font-size: 0.8rem;
   margin-bottom: 8px !important;
 }
-
 
 /* --- Estilos para el Contenedor de Filtros --- */
 .card-body > div.d-flex.align-items-center.flex-wrap.mb-3 {
@@ -84,9 +86,8 @@
 
 /* --- Estilos para el Texto "rows" al lado del select de mostrar --- */
 .card-body > div.d-flex.align-items-center.flex-wrap.mb-3 label.mb-0:last-child {
-    font-size: 0.8rem;
+  font-size: 0.8rem;
 }
-
 
 /* --- Estilos para la Tabla Principal (Ajustes para Caber Mejor y Tamaño) --- */
 .product-table {
@@ -161,7 +162,6 @@
   table-layout: fixed;
 }
 
-
 /* --- Estilos de Paginación --- */
 .pagination-controls {
   margin-top: 8px;
@@ -169,7 +169,6 @@
   justify-content: center;
   font-size: 0.75rem;
 }
-
 
 /* --- Estilos para el Modal General --- */
 .modal {
@@ -199,7 +198,6 @@
   position: relative;
 }
 
-
 /* Estilos para el encabezado del modal */
 .modal-content h3 {
   margin-top: 0;
@@ -209,7 +207,6 @@
   padding-bottom: 8px;
   font-size: 1.4rem;
 }
-
 
 /* --- Estilos de Formulario dentro del Modal --- */
 .form-grid {
@@ -248,7 +245,7 @@
 }
 
 select.form-control {
-   height: calc(2rem + 2px);
+  height: calc(2rem + 2px);
 }
 
 textarea.form-control {
@@ -259,7 +256,6 @@ textarea.form-control {
 input[type="checkbox"] {
   margin-right: 5px;
 }
-
 
 /* --- Estilos de Botones en el Modal Footer --- */
 .modal-actions {
@@ -296,7 +292,6 @@ input[type="checkbox"] {
   background-color: #5a6268;
 }
 
-
 /* --- Estilos para la Tabla de Tallas dentro del Modal --- */
 .table-bordered {
   border: 1px solid #dee2e6;
@@ -318,9 +313,149 @@ input[type="checkbox"] {
   font-weight: bold;
 }
 
+/* --- Estilos para Modal de Confirmación --- */
+.modal-confirmacion {
+  max-width: 450px;
+  min-height: 200px;
+}
+
+.confirmacion-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #f39c12;
+}
+
+.confirmacion-header i {
+  font-size: 2.5rem;
+  margin-right: 15px;
+}
+
+.confirmacion-header h3 {
+  margin: 0;
+  border: none;
+  padding: 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.confirmacion-body {
+  text-align: center;
+  margin: 25px 0;
+  padding: 0 10px;
+}
+
+.confirmacion-body p {
+  font-size: 1.1rem;
+  color: #555;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.confirmacion-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.confirmacion-actions button {
+  padding: 10px 25px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  min-width: 100px;
+}
+
+.confirmacion-actions .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.confirmacion-actions .btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+.confirmacion-actions .btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.confirmacion-actions .btn-primary:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+/* --- Estilos para Modal de Éxito --- */
+.modal-exito {
+  max-width: 400px;
+  min-height: 180px;
+}
+
+.exito-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #28a745;
+}
+
+.exito-header i {
+  font-size: 2.5rem;
+  margin-right: 15px;
+}
+
+.exito-header h3 {
+  margin: 0;
+  border: none;
+  padding: 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.exito-body {
+  text-align: center;
+  margin: 25px 0;
+  padding: 0 10px;
+}
+
+.exito-body p {
+  font-size: 1.1rem;
+  color: #555;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.exito-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.exito-actions button {
+  padding: 10px 25px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  min-width: 120px;
+  background-color: #28a745;
+  color: white;
+}
+
+.exito-actions .btn-success:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
 
 /* --- Otros Estilos Existentes (Mantener o ajustar si es necesario) --- */
-
 .form-inline .form-control {
   display: inline-block;
   width: auto;

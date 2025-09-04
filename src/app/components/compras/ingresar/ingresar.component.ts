@@ -12,13 +12,16 @@ import { MedioPagoService } from '../../../services/medio-pago.service';
 import { MedioPago } from '../../../models/medio-pago.model';
 import { TallaService } from '../../../services/talla.service';
 import { Talla } from '../../../models/talla.model';
-import { debounceTime, distinctUntilChanged, switchMap, forkJoin } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, forkJoin, catchError, firstValueFrom } from 'rxjs';
 import { Subject, Observable, of } from 'rxjs';
+
+// Importar componente de persona para abrir modal (standalone)
+import { PersonaComponent } from '../../persona/nuevo-persona/persona.component';
 
 @Component({
   selector: 'app-ingresar-compras',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PersonaComponent],
   templateUrl: './ingresar.component.html',
   styleUrls: ['./ingresar.component.css']
 })
@@ -28,8 +31,8 @@ export class IngresarComprasComponent implements OnInit {
     tipoDocumento: 'Boleta',
     idProveedor: 0,
     idFormaPago: 0,
-    numeroDocumento: '00000001',
-    serie: '0001',
+    numeroDocumento: '00000001', // correlativo 8 dígitos
+    serie: 'B001',                // serie por defecto para Boleta
     subtotal: 0,
     igv: 0,
     total: 0,
@@ -58,14 +61,29 @@ export class IngresarComprasComponent implements OnInit {
     idTalla: 0,
     cantidad: 1,
     precioUnitario: 0,
-       codigoBarra: undefined,
-       nombreProducto: undefined,
-       nombreTalla: undefined,
-       stock: undefined,
-       subtotalItem: undefined
+    codigoBarra: undefined,
+    nombreProducto: undefined,
+    nombreTalla: undefined,
+    stock: undefined,
+    subtotalItem: undefined
   };
   tallaSeleccionada: any | null = null; // Declarar tallaSeleccionada (puedes tiparla mejor si sabes el tipo)
 
+  // flags para control de correlativo
+  private ultimoCorrelativoUsadoDesdeBackend: boolean = false;
+  private ultimoCorrelativoCountBeforeAsign: number = 0; // número de compras ya registradas (antes de la nueva)
+
+  // --- NUEVO: modal para crear proveedor desde el botón +
+  mostrarModalProveedor: boolean = false;
+  nuevoProveedor: Persona = {
+    nombre: '',
+    telefono: '',
+    correo: '',
+    direccion: '',
+    tipoPersona: 'Proveedor',
+    tipoDocumento: 'RUC',
+    numeroDocumento: ''
+  };
 
   constructor(
     private compraService: CompraService,
@@ -93,15 +111,157 @@ export class IngresarComprasComponent implements OnInit {
         this.listaTallasMaestra = results.tallasMaestras;
         this.datosCargados = true;
         console.log('Datos iniciales cargados (Proveedores, Formas Pago, Tallas Maestras).');
-        console.log('Contenido completo del array formasPago al cargar:', JSON.stringify(this.formasPago, null, 2));
-        console.log('Contenido completo del array listaTallasMaestra al cargar:', JSON.stringify(this.listaTallasMaestra, null, 2));
       },
       error: (err: any) => {
         console.error('Error al cargar datos iniciales:', err);
         this.datosCargados = true;
       }
     });
+
+    // Asignar correlativo/serie inicial según el tipo de documento por defecto
+    this.asignarCorrelativoYSerie(this.compra.tipoDocumento);
   }
+
+  // ------------------- LOGICA DE CORRELATIVO / SERIE -------------------
+
+  // Llamada pública para cuando el usuario cambia el tipo de documento (select)
+  onTipoDocumentoChange(): void {
+    this.asignarCorrelativoYSerie(this.compra.tipoDocumento);
+  }
+
+  // Asigna compra.numeroDocumento y compra.serie llamando al resolver del backend (si existe) o fallback.
+  private asignarCorrelativoYSerie(tipoDocumento: string) {
+    this.obtenerCorrelativoYSerie(tipoDocumento).then(result => {
+      this.compra.numeroDocumento = result.numero;
+      this.compra.serie = result.serie;
+      // Guardar info de cómo se calculó para decidir incrementos luego
+      this.ultimoCorrelativoUsadoDesdeBackend = !!result.usedBackend;
+      this.ultimoCorrelativoCountBeforeAsign = result.currentCountBeforeAssign ?? 0;
+    }).catch(err => {
+      console.warn('No se pudo obtener correlativo/serie desde el servicio, usando defaults:', err);
+      // fallback por seguridad
+      this.compra.serie = (tipoDocumento === 'Factura') ? 'F001' : 'B001';
+      this.compra.numeroDocumento = this.padNumber(1, 8);
+      this.ultimoCorrelativoUsadoDesdeBackend = false;
+      this.ultimoCorrelativoCountBeforeAsign = 0;
+    });
+  }
+
+  /**
+   * Intenta obtener el correlativo basándose en:
+   *  - conteo de compras en el backend (preferible)
+   *  - si no hay un endpoint, usa sessionStorage como fallback
+   *
+   * Importante: NO actualiza sessionStorage en este método. sessionStorage solo se actualizará
+   * cuando la compra se registre con éxito (realizarCompra -> success).
+   *
+   * Retorna: { numero, serie, usedBackend, currentCountBeforeAssign }
+   *  - numero: cadena con padding (8 dígitos)
+   *  - serie: 'B001' o 'F001'
+   *  - usedBackend: true si el conteo provino del backend
+   *  - currentCountBeforeAssign: número de compras ya registradas (antes de esta nueva)
+   */
+  private async obtenerCorrelativoYSerie(tipoDocumento: string): Promise<{ numero: string, serie: string, usedBackend: boolean, currentCountBeforeAssign: number }> {
+    const svcAny = (this.compraService as any);
+    const serie = (tipoDocumento === 'Factura') ? 'F001' : 'B001';
+
+    // Métodos que podrían devolver un array de compras
+    const candidateArrayMethods = [
+      'getAllCompras', 'getCompras', 'listarCompras', 'obtenerCompras', 'getAll', 'listarAllCompras', 'fetchCompras'
+    ];
+
+    for (const name of candidateArrayMethods) {
+      if (typeof svcAny[name] === 'function') {
+        try {
+          const maybe = svcAny[name]();
+          let res: any;
+          if (maybe && typeof maybe.subscribe === 'function') {
+            // Observable
+            try {
+              res = await firstValueFrom(maybe.pipe(catchError(() => of(null))));
+            } catch (err) {
+              res = null;
+            }
+          } else if (maybe instanceof Promise) {
+            res = await maybe;
+          } else {
+            res = maybe;
+          }
+
+          if (Array.isArray(res)) {
+            // contar compras por tipo (ignorar numeroDocumento con formatos raros)
+            const contarPorTipo = (c: any) => {
+              const possibleTipo = c.tipoDocumento ?? c.TipoDocumento ?? c.tipo ?? c.Tipo ?? '';
+              return typeof possibleTipo === 'string' && possibleTipo.toLowerCase() === tipoDocumento.toLowerCase();
+            };
+            const count = res.filter(contarPorTipo).length;
+            const next = count + 1;
+            return { numero: this.padNumber(next, 8), serie, usedBackend: true, currentCountBeforeAssign: count };
+          }
+        } catch (err) {
+          console.warn(`Error llamando ${name} en compraService:`, err);
+          // continuar probando otras opciones
+        }
+      }
+    }
+
+    // Si no encontramos método que devuelva array, intentar métodos que devuelvan la "última compra" por tipo
+    const candidateLastMethods = [
+      'obtenerUltimaCompraPorTipo', 'getUltimaCompraPorTipo', 'getLastCompraByTipo', 'getLastCompra', 'obtenerUltimaCompra', 'getUltimaCompra'
+    ];
+    for (const name of candidateLastMethods) {
+      if (typeof svcAny[name] === 'function') {
+        try {
+          const maybe = svcAny[name].length > 0 ? svcAny[name](tipoDocumento) : svcAny[name]();
+          let res: any;
+          if (maybe && typeof maybe.subscribe === 'function') {
+            try {
+              res = await firstValueFrom(maybe.pipe(catchError(() => of(null))));
+            } catch (err) {
+              res = null;
+            }
+          } else if (maybe instanceof Promise) {
+            res = await maybe;
+          } else {
+            res = maybe;
+          }
+
+          // Si devuelve objeto de "última compra", tratar de obtener count mediante su número (no ideal),
+          // pero preferimos devolver next = lastCount + 1 si encontramos número.
+          if (res && typeof res === 'object') {
+            const posibleNumero = res.numeroDocumento ?? res.numero ?? res.nroDocumento ?? res.NroDocumento ?? null;
+            if (posibleNumero) {
+              // extraer dígitos y tomar como número (si backend no tiene conteo directo)
+              const digits = String(posibleNumero).replace(/\D/g, '');
+              const lastNum = parseInt(digits || '0', 10);
+              const next = isNaN(lastNum) ? 1 : (lastNum + 1);
+              // NOTE: aquí no conocemos el count real (solo inferimos desde último número),
+              // marcaremos usedBackend=true porque vinimos del backend
+              return { numero: this.padNumber(next, 8), serie, usedBackend: true, currentCountBeforeAssign: (isNaN(lastNum) ? 0 : lastNum) };
+            }
+          }
+        } catch (err) {
+          console.warn(`Error llamando ${name} en compraService:`, err);
+        }
+      }
+    }
+
+    // Fallback: usar sessionStorage para guardar el count de compras realizadas por tipo
+    const key = (tipoDocumento === 'Factura') ? 'correlativo_count_factura' : 'correlativo_count_boleta';
+    const stored = Number(sessionStorage.getItem(key) || '0'); // este valor representa cuántas compras ya se registraron
+    const next = stored + 1;
+    // Importante: NO escribimos sessionStorage aquí — solo escribiremos si la compra se registra con éxito.
+    return { numero: this.padNumber(next, 8), serie, usedBackend: false, currentCountBeforeAssign: stored };
+  }
+
+  private padNumber(n: number, len = 8): string {
+    const s = String(n);
+    if (s.length >= len) return s;
+    return '0'.repeat(len - s.length) + s;
+  }
+
+  // ------------------- FIN LOGICA CORRELATIVO / SERIE -------------------
+
 
   buscarProductos(event: Event): void {
     const termino = (event.target as HTMLInputElement).value;
@@ -244,7 +404,20 @@ export class IngresarComprasComponent implements OnInit {
         next: (response: any) => {
           console.log('Compra registrada con éxito:', response);
           alert('Compra registrada con éxito!');
+
+          // Si usamos fallback (sessionStorage), actualizar el contador AHORA (solo cuando la compra se realiza)
+          if (!this.ultimoCorrelativoUsadoDesdeBackend) {
+            const key = (this.compra.tipoDocumento === 'Factura') ? 'correlativo_count_factura' : 'correlativo_count_boleta';
+            const stored = Number(sessionStorage.getItem(key) || '0'); // compras ya registradas
+            const newCount = Math.max(stored, this.ultimoCorrelativoCountBeforeAsign) + 1; // asegurar coherencia
+            sessionStorage.setItem(key, String(newCount));
+          }
+
+          // Si backend fue usado, reasignamos el correlativo consultando de nuevo (el backend debería reflejar la nueva compra)
+          // Si no, la asignación al fallback ya fue actualizada arriba.
           this.resetearFormularioCompra();
+          // reasignar correlativo para el nuevo documento por defecto (será Boleta y buscará next)
+          this.asignarCorrelativoYSerie(this.compra.tipoDocumento);
         },
         error: (error: any) => {
           console.error('Error al registrar la compra:', error);
@@ -281,7 +454,7 @@ export class IngresarComprasComponent implements OnInit {
       idProveedor: 0,
       idFormaPago: 0,
       numeroDocumento: '00000001',
-      serie: '0001',
+      serie: 'B001',
       subtotal: 0,
       igv: 0,
       total: 0,
@@ -290,6 +463,8 @@ export class IngresarComprasComponent implements OnInit {
     this.productoSeleccionado = null;
     this.nombreProductoNuevoItem = '';
     this.tallasPorProducto = {};
+    // reasignar correlativo/serie por si usamos backend o sessionStorage
+    this.asignarCorrelativoYSerie(this.compra.tipoDocumento);
      // No necesitas resetear listaTallasMaestra
   }
 
@@ -340,5 +515,50 @@ export class IngresarComprasComponent implements OnInit {
   getTallasForItem(item: ItemCompra): SizeWithStock[] {
      return item.idProducto ? (this.tallasPorProducto[item.idProducto] || []) : [];
   }
+
+  // ------------------- NUEVAS FUNCIONES PARA PROVEEDOR (botón +) -------------------
+
+  abrirModalProveedor() {
+    // preparar el objeto para abrir el formulario en modo "Proveedor"
+    this.nuevoProveedor = {
+      nombre: '',
+      telefono: '',
+      correo: '',
+      direccion: '',
+      tipoPersona: 'Proveedor',
+      tipoDocumento: 'RUC',
+      numeroDocumento: ''
+    };
+    this.mostrarModalProveedor = true;
+  }
+
+  cerrarModalProveedor() {
+    this.mostrarModalProveedor = false;
+  }
+
+  // Maneja el evento cuando el componente persona emite onGuardar con el proveedor creado
+  manejarProveedorCreado(p: Persona) {
+    if (!p) {
+      console.warn('Proveedor creado es nulo o indefinido');
+      this.cerrarModalProveedor();
+      return;
+    }
+
+    // Agregar al array de proveedores en la UI
+    this.proveedores.push(p);
+
+    // Seleccionar automáticamente el nuevo proveedor en la compra (buscar idPersona)
+    const id = (p as any).idPersona ?? (p as any).id ?? (p as any).idProveedor ?? 0;
+    if (id) {
+      this.compra.idProveedor = id;
+    } else {
+      // si no viene id, intentar seleccionar por número de documento
+      this.compra.idProveedor = 0;
+    }
+
+    this.cerrarModalProveedor();
+  }
+
+  // -------------------------------------------------------------------------------
 
 }

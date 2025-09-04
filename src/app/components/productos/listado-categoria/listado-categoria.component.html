@@ -13,6 +13,7 @@
             <button class="btn btn-secondary btn-sm" (click)="imprimir()">
               <i class="fas fa-print"></i> Print
             </button>
+            
           </div>
         </div>
 
@@ -78,7 +79,7 @@
                     </button>
                     <button
                       class="btn btn-danger btn-sm"
-                      (click)="eliminarCategoria(cat.idCategoria)"
+                      (click)="solicitarEliminarCategoria(cat.idCategoria)"
                     >
                       <i class="fas fa-trash"></i>
                     </button>
@@ -115,7 +116,7 @@
           <h4 class="mb-0">Registro de Categorías</h4>
         </div>
         <div class="card-body">
-          <form (ngSubmit)="registrarCategoria()">
+          <form (ngSubmit)="registrarCategoria()" novalidate>
             <div class="mb-3">
               <label for="descripcionCategoria" class="form-label">
                 Categoría <span class="text-danger">*</span>
@@ -129,12 +130,80 @@
                 name="descripcionCategoria"
                 required
               />
+              <div *ngIf="campoInvalido" class="text-danger small mt-1">
+                Debes ingresar un nombre de categoría.
+              </div>
             </div>
             <button type="submit" class="btn btn-primary w-100">
               Registrar Categoría
             </button>
           </form>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Confirmar eliminación -->
+<div class="modal-backdrop" *ngIf="mostrarConfirmEliminar"></div>
+<div class="modal" *ngIf="mostrarConfirmEliminar" (click)="cancelarEliminar()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()" style="max-width: 420px; margin: 10% auto;">
+    <div class="modal-content p-3">
+      <h5>Confirmar eliminación</h5>
+      <p>¿Deseas eliminar esta categoría?</p>
+      <div class="text-end">
+        <button class="btn btn-secondary me-2" (click)="cancelarEliminar()">Cancelar</button>
+        <button class="btn btn-danger" (click)="confirmarEliminar()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Success (check verde) -->
+<div class="modal-backdrop" *ngIf="mostrarModalSuccess"></div>
+<div class="modal" *ngIf="mostrarModalSuccess" (click)="cerrarModalSuccess()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()" style="max-width: 420px; margin: 10% auto;">
+    <div class="modal-content p-4 text-center">
+      <div class="success-check">&#10004;</div>
+      <h5 class="mt-2">Operación realizada</h5>
+      <p>{{ modalSuccessMessage }}</p>
+      <div class="text-center mt-3">
+        <button class="btn btn-primary" (click)="cerrarModalSuccess()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Error -->
+<div class="modal-backdrop" *ngIf="mostrarModalError"></div>
+<div class="modal" *ngIf="mostrarModalError" (click)="cerrarModalError()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()" style="max-width: 480px; margin: 10% auto;">
+    <div class="modal-content p-3">
+      <h5 class="text-danger">Error</h5>
+      <p>{{ modalErrorMessage }}</p>
+      <div class="text-end">
+        <button class="btn btn-secondary" (click)="cerrarModalError()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Editar categoría -->
+<div class="modal-backdrop" *ngIf="mostrarModalEditar"></div>
+<div class="modal" *ngIf="mostrarModalEditar" (click)="cancelarEdicion()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()" style="max-width: 520px; margin: 7% auto;">
+    <div class="modal-content p-3">
+      <h5>Editar Categoría</h5>
+      <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <input type="text" class="form-control" [(ngModel)]="descripcionEdicion" />
+        <div *ngIf="editCampoInvalido" class="text-danger small mt-1">
+          Debes ingresar una descripción válida.
+        </div>
+      </div>
+      <div class="text-end">
+        <button class="btn btn-secondary me-2" (click)="cancelarEdicion()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardarEdicionCategoria()">Guardar</button>
       </div>
     </div>
   </div>

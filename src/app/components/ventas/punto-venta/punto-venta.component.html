@@ -192,7 +192,8 @@
 
 <div class="modal-backdrop" *ngIf="mostrarModalCliente" (click)="cerrarModalCliente()"></div>
 <div class="modal-content" *ngIf="mostrarModalCliente" (click)="$event.stopPropagation()" style="width:500px">
-  <app-persona-form (onCancelar)="cerrarModalCliente()" (onGuardar)="manejarPersonaCreada($event)"></app-persona-form>
+  <!-- Pasamos el objeto nuevoCliente para que el formulario abra en modo Cliente -->
+  <app-persona-form [persona]="nuevoCliente" (onCancelar)="cerrarModalCliente()" (onGuardar)="manejarPersonaCreada($event)"></app-persona-form>
 </div>
 
 <div style="display:none" #reporteBoletaContainer>

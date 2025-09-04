@@ -1,5 +1,3 @@
-
-
 /* Encabezado color celeste fuerte */
 .bg-celeste {
   background-color: #0097a7 !important;
@@ -55,3 +53,42 @@ input::placeholder {
   color: #006f7b;
   text-decoration: none;
 }
+
+/* ============================
+   Estilos personalizados para el modal de PROVEEDOR creado en compras
+   Estos reemplazan el overlay negro completo y colocan el modal centrado
+   ============================ */
+.overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.45); /* semitransparente */
+  z-index: 1050;
+}
+
+.modal-centered {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1060;
+  width: 520px;
+  max-width: 95%;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+  padding: 12px;
+  overflow: auto;
+  max-height: 80vh;
+}
+
+/* Asegurar que el formulario interno use todo el ancho disponible */
+.modal-centered app-persona-form {
+  display: block;
+  width: 100%;
+}
+
+/* Si usas las clases bootstrap .modal-backdrop en otros lugares, mantenlas intactas.
+   Estos estilos son específicos para el modal de proveedor y no tocan la lógica. */

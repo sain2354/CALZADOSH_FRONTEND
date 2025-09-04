@@ -47,10 +47,7 @@
     <div *ngIf="showFilters" class="d-flex align-items-center flex-wrap mb-3" style="gap: 10px;">
       <!-- Combo Categoría -->
       <label class="mb-0">Categoría:</label>
-      <select class="form-select form-select-sm"
-              style="width: auto;"
-              [(ngModel)]="selectedCategory"
-              (ngModelChange)="onCategoryChange($event)">
+      <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="selectedCategory" (ngModelChange)="onCategoryChange($event)">
         <option [ngValue]="0">Todas</option>
         <option *ngFor="let c of categorias" [value]="c.id">
           {{ c.nombre }}
@@ -59,10 +56,7 @@
 
       <!-- Combo Género (Nuevo Filtro) -->
       <label class="mb-0 ms-3">Género:</label>
-      <select class="form-select form-select-sm"
-              style="width: auto;"
-              [(ngModel)]="selectedGenero"
-              (ngModelChange)="onGeneroChange($event)">
+      <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="selectedGenero" (ngModelChange)="onGeneroChange($event)">
         <option value="">Todos</option>
         <option *ngFor="let genero of generos" [value]="genero">
           {{ genero }}
@@ -71,10 +65,7 @@
 
       <!-- Combo Artículo (Nuevo Filtro) -->
       <label class="mb-0 ms-3">Artículo:</label>
-      <select class="form-select form-select-sm"
-              style="width: auto;"
-              [(ngModel)]="selectedArticulo"
-              (ngModelChange)="onArticuloChange($event)">
+      <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="selectedArticulo" (ngModelChange)="onArticuloChange($event)">
         <option value="">Todos</option>
         <option *ngFor="let articulo of articulos" [value]="articulo">
           {{ articulo }}
@@ -83,10 +74,7 @@
 
       <!-- Combo Estilo (Nuevo Filtro) -->
       <label class="mb-0 ms-3">Estilo:</label>
-      <select class="form-select form-select-sm"
-              style="width: auto;"
-              [(ngModel)]="selectedEstilo"
-              (ngModelChange)="onEstiloChange($event)">
+      <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="selectedEstilo" (ngModelChange)="onEstiloChange($event)">
         <option value="">Todos</option>
         <option *ngFor="let estilo of estilos" [value]="estilo">
           {{ estilo }}
@@ -95,10 +83,7 @@
 
       <!-- Combo PageSize -->
       <label class="mb-0 ms-3">Mostrar:</label>
-      <select class="form-select form-select-sm"
-              style="width: auto;"
-              [(ngModel)]="pageSize"
-              (ngModelChange)="onPageSizeChange($event)">
+      <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange($event)">
         <option [value]="5">5</option>
         <option [value]="10">10</option>
         <option [value]="15">15</option>
@@ -112,8 +97,8 @@
         <tr>
           <th>CódigoBarra</th>
           <th>Producto</th>
-          <th>Artículo</th> <!-- Nueva Columna -->
-          <th>Estilo</th> <!-- Nueva Columna -->
+          <th>Artículo</th>
+          <th>Estilo</th>
           <th>P. Compra</th>
           <th>P. Venta</th>
           <th>Stock</th>
@@ -125,22 +110,14 @@
       </thead>
       <tbody>
         <!-- Paginación local con ngx-pagination -->
-        <tr
-          *ngFor="let producto of productosFiltrados 
-                    | paginate: { 
-                        itemsPerPage: pageSize,
-                        currentPage: page,
-                        id: 'prodList'
-                      }"
-        >
+        <tr *ngFor="let producto of productosFiltrados | paginate: { itemsPerPage: pageSize, currentPage: page, id: 'prodList' }">
           <td data-label="CódigoBarra">{{ producto.codigoBarra }}</td>
           <td data-label="Producto">{{ producto.nombre }}</td>
-          
-          <td data-label="Artículo">{{ producto.articulo }}</td> <!-- Mostrar Artículo -->
-          <td data-label="Estilo">{{ producto.estilo }}</td> <!-- Mostrar Estilo -->
+          <td data-label="Artículo">{{ producto.articulo }}</td>
+          <td data-label="Estilo">{{ producto.estilo }}</td>
           <td data-label="P. Compra">S/ {{ producto.precioCompra }}</td>
           <td data-label="P. Venta">
-            S/ {{ producto.promocion ? (producto.precioVenta - (producto.promocion.tipoDescuento === 'Porcentaje' ? producto.precioVenta * (producto.promocion.descuento / 100) : producto.promocion.descuento)) : producto.precioVenta | number:'1.2-2' }}
+            S/ {{ producto.promocion ? (producto.precioVenta - (producto.promocion.tipoDescuento === 'Porcentaje' ? producto.precioVenta * (producto.promocion.descuento / 100) : producto.promocion.descuento)) : (producto.precioVenta | number:'1.2-2') }}
             <span *ngIf="producto.promocion" class="badge bg-success ms-1">Promo!</span>
           </td>
           <td data-label="Stock">{{ producto.stock }}</td>
@@ -153,30 +130,13 @@
           </td>
           <td data-label="Opciones">
             <!-- BOTONES DE OPCIONES -->
-            <!-- Editar -->
-            <button
-              class="btn btn-warning btn-sm me-1"
-              (click)="editarProducto(producto)"
-              title="Editar"
-            >
+            <button class="btn btn-warning btn-sm me-1" (click)="editarProducto(producto)" title="Editar">
               <i class="fas fa-edit"></i>
             </button>
-
-            <!-- Generar Código de Barras -->
-            <button
-              class="btn btn-secondary btn-sm me-1"
-              (click)="generarCodigoBarras(producto)"
-              title="Generar Código de Barras"
-            >
+            <button class="btn btn-secondary btn-sm me-1" (click)="generarCodigoBarras(producto)" title="Generar Código de Barras">
               <i class="fas fa-barcode"></i>
             </button>
-
-            <!-- Eliminar -->
-            <button
-              class="btn btn-danger btn-sm"
-              (click)="eliminarProducto(producto)"
-              title="Eliminar"
-            >
+            <button class="btn btn-danger btn-sm" (click)="eliminarProducto(producto)" title="Eliminar">
               <i class="fas fa-trash"></i>
             </button>
           </td>
@@ -194,8 +154,7 @@
       [maxSize]="5"
       [directionLinks]="true"
       [autoHide]="false"
-    >
-    </pagination-controls>
+    ></pagination-controls>
   </div>
 </div>
 
@@ -207,129 +166,77 @@
       <div class="form-grid grid-2">
         <div class="form-group">
           <label>Código de Barra:</label>
-          <input
-            type="text"
-            [(ngModel)]="producto.codigoBarra"
-            name="codigoBarra"
-            required
-          />
+          <input type="text" [(ngModel)]="producto.codigoBarra" name="codigoBarra" required />
         </div>
+
         <div class="form-group">
           <label>Nombre del Producto:</label>
-          <input
-            type="text"
-            [(ngModel)]="producto.nombre"
-            name="nombre"
-            required
-          />
+          <input type="text" [(ngModel)]="producto.nombre" name="nombre" required />
         </div>
+
         <div class="form-group">
           <label>Categoría (Marca):</label>
-          <select
-            [(ngModel)]="producto.idCategoria"
-            name="idCategoria"
-            (ngModelChange)="actualizarSubcategorias()"
-            required
-          >
+          <select [(ngModel)]="producto.idCategoria" name="idCategoria" (ngModelChange)="actualizarSubcategorias()" required>
             <option [ngValue]="0">-- Seleccionar categoría --</option>
-            <option
-              *ngFor="let categoria of categorias"
-              [ngValue]="categoria.id"
-            >
+            <option *ngFor="let categoria of categorias" [ngValue]="categoria.id">
               {{ categoria.nombre }}
             </option>
           </select>
         </div>
+
         <div class="form-group">
           <label>Subcategoría:</label>
-          <select
-            [(ngModel)]="producto.idSubCategoria"
-            name="idSubCategoria"
-            required
-          >
-            <option
-              *ngFor="let subCategoria of subcategoriasFiltradas"
-              [value]="subCategoria.id"
-            >
+          <select [(ngModel)]="producto.idSubCategoria" name="idSubCategoria" required>
+            <option [value]="0">-- Seleccionar subcategoría --</option>
+            <option *ngFor="let subCategoria of subcategoriasFiltradas" [value]="subCategoria.id">
               {{ subCategoria.nombre }}
             </option>
           </select>
         </div>
+
         <div class="form-group">
           <label>Precio de Compra:</label>
-          <input
-            type="number"
-            [(ngModel)]="producto.precioCompra"
-            name="precioCompra"
-            step="0.01"
-            required
-          />
+          <input type="number" [(ngModel)]="producto.precioCompra" name="precioCompra" step="0.01" required />
         </div>
+
         <div class="form-group">
           <label>Precio de Venta:</label>
-          <input
-            type="number"
-            [(ngModel)]="producto.precioVenta"
-            name="precioVenta"
-            step="0.01"
-            required
-          />
+          <input type="number" [(ngModel)]="producto.precioVenta" name="precioVenta" step="0.01" required />
         </div>
+
         <div class="form-group">
           <label>Stock Disponible:</label>
-          <input
-            type="number"
-            [(ngModel)]="producto.stock"
-            name="stock"
-            required
-          />
+          <input type="number" [(ngModel)]="producto.stock" name="stock" required />
         </div>
+
         <div class="form-group">
           <label>Stock Mínimo:</label>
-          <input
-            type="number"
-            [(ngModel)]="producto.stockMinimo"
-            name="stockMinimo"
-            required
-          />
+          <input type="number" [(ngModel)]="producto.stockMinimo" name="stockMinimo" required />
         </div>
+
         <div class="form-group">
           <label>Unidad de Medida:</label>
-          <select
-            [(ngModel)]="producto.idUnidadMedida"
-            name="idUnidadMedida"
-            required
-          >
-            <option
-              *ngFor="let unidad of unidadesMedida"
-              [value]="unidad.id"
-            >
+          <select [(ngModel)]="producto.idUnidadMedida" name="idUnidadMedida" required>
+            <option *ngFor="let unidad of unidadesMedida" [value]="unidad.id">
               {{ unidad.nombre }}
             </option>
           </select>
         </div>
+
         <div class="form-group">
           <!-- Vista previa de la imagen existente -->
- <div *ngIf="producto.idProducto && imagenExistenteUrl">
- <label>Imagen Actual:</label>
- <img [src]="imagenExistenteUrl" alt="Imagen del producto" style="width: 100px; margin-bottom: 10px;">
- </div>
-
- <!-- Input para seleccionar nueva foto -->
- <label>{{ producto.idProducto ? 'Seleccionar Nueva Foto:' : 'Foto del Producto:' }}</label>
-          <input
-            type="file"
-            (change)="manejarFoto($event)"
-            name="foto"
-          />
+          <div *ngIf="producto.idProducto && imagenExistenteUrl">
+            <label>Imagen Actual:</label>
+            <img [src]="imagenExistenteUrl" alt="Imagen del producto" style="width: 100px; margin-bottom: 10px;" (error)="imagenExistenteUrl = null" />
+          </div>
+          <!-- Input para seleccionar nueva foto -->
+          <label>{{ producto.idProducto ? 'Seleccionar Nueva Foto:' : 'Foto del Producto:' }}</label>
+          <input type="file" (change)="manejarFoto($event)" name="foto" accept="image/*" />
         </div>
+
         <div class="form-group">
- <label>Estado:</label>
-          <select
-            [(ngModel)]="producto.estado"
-            name="estado"
-            required
-          >
+          <label>Estado:</label>
+          <select [(ngModel)]="producto.estado" name="estado" required>
             <option [value]="true">Activo</option>
             <option [value]="false">Inactivo</option>
           </select>
@@ -338,34 +245,27 @@
         <!-- —— NUEVOS CAMPOS —— -->
         <div class="form-group">
           <label>Género:</label>
-          <select
-            [(ngModel)]="producto.genero"
-            name="genero"
-          >
+          <select [(ngModel)]="producto.genero" name="genero">
             <option value="">-- Seleccionar Género --</option>
             <option *ngFor="let genero of generos" [value]="genero">
               {{ genero }}
             </option>
           </select>
         </div>
+
         <div class="form-group">
           <label>Artículo:</label>
-          <select
-            [(ngModel)]="producto.articulo"
-            name="articulo"
-          >
+          <select [(ngModel)]="producto.articulo" name="articulo">
             <option value="">-- Seleccionar Artículo --</option>
             <option *ngFor="let articulo of articulos" [value]="articulo">
               {{ articulo }}
             </option>
           </select>
         </div>
+
         <div class="form-group">
           <label>Estilo:</label>
-          <select
-            [(ngModel)]="producto.estilo"
-            name="estilo"
-          >
+          <select [(ngModel)]="producto.estilo" name="estilo">
             <option value="">-- Seleccionar Estilo --</option>
             <option *ngFor="let estilo of estilos" [value]="estilo">
               {{ estilo }}
@@ -375,54 +275,33 @@
 
         <div class="form-group">
           <label>MPN:</label>
-          <input
-            type="text"
-            [(ngModel)]="producto.mpn"
-            name="mpn"
-          />
+          <input type="text" [(ngModel)]="producto.mpn" name="mpn" />
         </div>
+
         <div class="form-group">
           <label>Material:</label>
-          <input
-            type="text"
-            [(ngModel)]="producto.material"
-            name="material"
-          />
+          <input type="text" [(ngModel)]="producto.material" name="material" />
         </div>
+
         <div class="form-group">
           <label>Color:</label>
-          <input
-            type="text"
-            [(ngModel)]="producto.color"
-            name="color"
-          />
+          <input type="text" [(ngModel)]="producto.color" name="color" />
         </div>
+
         <div class="form-group">
           <label>Envío:</label>
-          <textarea
-            [(ngModel)]="producto.shippingInfo"
-            name="shippingInfo"
-            readonly
-          ></textarea>
+          <textarea [(ngModel)]="producto.shippingInfo" name="shippingInfo" readonly></textarea>
         </div>
       </div>
-
-      <hr />
 
       <hr />
 
       <!-- Sección de Tallas -->
       <div class="form-group">
         <label>Seleccione Talla:</label>
-        <select
-          [(ngModel)]="tallaSeleccionadaId"
-          name="tallaSeleccionadaId"
-        >
+        <select [(ngModel)]="tallaSeleccionadaId" name="tallaSeleccionadaId">
           <option [ngValue]="0">-- Seleccionar --</option>
-          <option
-            *ngFor="let talla of tallasDisponibles"
-            [ngValue]="talla.idTalla"
-          >
+          <option *ngFor="let talla of tallasDisponibles" [ngValue]="talla.idTalla">
             USA {{ talla.usa }} — EUR {{ talla.eur }} — CM {{ talla.cm }}
           </option>
         </select>
@@ -430,19 +309,10 @@
 
       <div class="form-group">
         <label>Stock para esta Talla:</label>
-        <input
-          type="number"
-          [(ngModel)]="stockTallaSeleccionada"
-          name="stockTallaSeleccionada"
-          min="1"
-        />
+        <input type="number" [(ngModel)]="stockTallaSeleccionada" name="stockTallaSeleccionada" min="1" />
       </div>
 
-      <button
-        type="button"
-        class="btn btn-info"
-        (click)="agregarTalla()"
-      >
+      <button type="button" class="btn btn-info" (click)="agregarTalla()">
         Agregar Talla
       </button>
 
@@ -459,11 +329,7 @@
             <td>USA {{ t.usa }} — EUR {{ t.eur }} — CM {{ t.cm }}</td>
             <td>{{ t.stock }}</td>
             <td>
-              <button
-                type="button"
-                class="btn btn-danger btn-sm"
-                (click)="eliminarTalla(i)"
-              >
+              <button type="button" class="btn btn-danger btn-sm" (click)="eliminarTalla(i)">
                 Eliminar
               </button>
             </td>
@@ -474,18 +340,11 @@
         </tbody>
       </table>
 
-      <div
-        class="modal-actions"
-        style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;"
-      >
+      <div class="modal-actions" style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
         <button type="submit" class="btn btn-success">
           Guardar Producto
         </button>
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="cerrarModal()"
-        >
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
           Cancelar
         </button>
       </div>
@@ -497,88 +356,122 @@
 <div *ngIf="modalCodigoBarrasAbierto" class="modal">
   <div class="modal-content" style="max-width: 500px;">
     <h3>Generar Código de Barras</h3>
-    
- <form #barcodeForm="ngForm" (ngSubmit)="generarPDFCodigoBarras()">
- <div class="form-grid grid-2">
- <div class="form-group">
- <label for="codigoProducto">Código Producto:</label>
- <input
- type="text"
-          id="codigoProducto"
- [(ngModel)]="codigoBarrasData.codigoProducto"
- name="codigoProducto"
- class="form-control"
- />
+    <form #barcodeForm="ngForm" (ngSubmit)="generarPDFCodigoBarras()">
+      <div class="form-grid grid-2">
+        <div class="form-group">
+          <label for="codigoProducto">Código Producto:</label>
+          <input
+            type="text"
+            id="codigoProducto"
+            [(ngModel)]="codigoBarrasData.codigoProducto"
+            name="codigoProducto"
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="tallaSeleccionada">Talla:</label>
+          <select
+            id="tallaSeleccionada"
+            [(ngModel)]="codigoBarrasData.tallaSeleccionada"
+            name="tallaSeleccionada"
+            class="form-control"
+            required
+          >
+            <option value="">-- Seleccionar Talla --</option>
+            <option *ngFor="let talla of tallasSeleccionadas" [ngValue]="talla.usa">
+              USA {{ talla.usa }} — EUR {{ talla.eur }} — CM {{ talla.cm }}
+            </option>
+          </select>
+        </div>
       </div>
 
-      <div class="form-group">
- <label for="tallaSeleccionada">Talla:</label>
-        <select
-          id="tallaSeleccionada"
-          [(ngModel)]="codigoBarrasData.tallaSeleccionada"
- name="tallaSeleccionada"
-          class="form-control"
-          required
+      <div *ngIf="barcodeForm.submitted && !codigoBarrasData.tallaSeleccionada" class="text-danger mt-1" style="font-size: 0.8em;">
+        Debe seleccionar una talla.
+      </div>
+
+      <div class="form-grid grid-2">
+        <div class="form-group">
+          <label for="fila">Fila:</label>
+          <input
+            type="number"
+            [(ngModel)]="codigoBarrasData.fila"
+            name="fila"
+            min="1"
+            max="7"
+            required
+            id="fila"
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="columna">Columna:</label>
+          <input
+            type="number"
+            [(ngModel)]="codigoBarrasData.columna"
+            name="columna"
+            min="1"
+            class="form-control"
+            max="3"
+            id="columna"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="modal-actions" style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="cerrarModalCodigoBarras(barcodeForm)"
+          style="flex-grow: 1;"
         >
-          <option value="">-- Seleccionar Talla --</option>
-          <option *ngFor="let talla of tallasSeleccionadas" [ngValue]="talla.usa">
-   USA {{ talla.usa }} — EUR {{ talla.eur }} — CM {{ talla.cm }}
-          </option>
-        </select>
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" style="flex-grow: 1;">
+          Generar
+        </button>
       </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div *ngIf="modalConfirmacionAbierto" class="modal">
+  <div class="modal-content modal-confirmacion">
+    <div class="confirmacion-header">
+      <i class="fas fa-question-circle"></i>
+      <h3>Confirmación</h3>
     </div>
-    <!-- Validation message for Talla -->
- <div *ngIf="barcodeForm.submitted && !codigoBarrasData.tallaSeleccionada" class="text-danger mt-1" style="font-size: 0.8em;">
- Debe seleccionar una talla.
- </div>
-
-    <div class="form-grid grid-2">
-      <div class="form-group">
- <label for="fila">Fila:</label>
-        <input
-          type="number"
-          [(ngModel)]="codigoBarrasData.fila"
-          name="fila"
-          min="1"
-          max="7"
-          required
- id="fila"
-          class="form-control"
-      />
-      </div>
-
-      <div class="form-group">
- <label for="columna">Columna:</label>
-        <input
-          type="number"
-          [(ngModel)]="codigoBarrasData.columna"
-          name="columna"
-          min="1"
-          class="form-control"
-          max="3"
- id="columna"
-          required
-      />
-      </div>
+    <div class="confirmacion-body">
+      <p>{{ mensajeConfirmacion }}</p>
     </div>
-
- <div class="modal-actions" style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
-      <button
-        type="button"
-        class="btn btn-secondary"
- (click)="cerrarModalCodigoBarras(barcodeForm)"
-        style="flex-grow: 1;"
-      >
+    <div class="confirmacion-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancelarOperacion()">
         Cancelar
- </button>
-      <button
-        type="submit"
-        class="btn btn-primary"
-        style="flex-grow: 1;"
-      >
-        Generar
+      </button>
+      <button type="button" class="btn btn-primary" (click)="confirmarOperacion()">
+        Aceptar
       </button>
     </div>
- </form>
+  </div>
+</div>
+
+<!-- Modal de Éxito -->
+<div *ngIf="modalExitoAbierto" class="modal">
+  <div class="modal-content modal-exito">
+    <div class="exito-header">
+      <i class="fas fa-check-circle"></i>
+      <h3>Operación Exitosa</h3>
+    </div>
+    <div class="exito-body">
+      <p>{{ mensajeExito }}</p>
+    </div>
+    <div class="exito-actions">
+      <button type="button" class="btn btn-success" (click)="cerrarModalExito()">
+        Aceptar
+      </button>
+    </div>
   </div>
 </div>

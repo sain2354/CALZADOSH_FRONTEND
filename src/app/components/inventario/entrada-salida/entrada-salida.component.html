@@ -1,57 +1,136 @@
 <div class="contenedor">
- <h3>Listado de Entradas y Salidas</h3>
- 
+  <h3>Listado de Entradas y Salidas</h3>
+  
   <div class="barra-superior">
- <button class="btn-exportar">📄 Exportar</button>
+    <!-- Botón Exportar -> descarga Excel (.xlsx) y CSV (.csv) -->
+    <button type="button" class="btn-exportar" (click)="exportInventarioExcelCsv()">📄 Exportar</button>
+
     <select #selectRPP (change)="actualizarRegistros(selectRPP.value)">
- <option value="5">Mostrar 5 filas</option>
- <option value="10" selected>Mostrar 10 filas</option>
+      <option value="5">Mostrar 5 filas</option>
+      <option value="10" selected>Mostrar 10 filas</option>
       <option value="15">Mostrar 15 filas</option>
     </select>
+
     <input type="text" placeholder="Buscar por ID Producto o Tipo..." #buscarInput (input)="actualizarBusqueda(buscarInput.value)" />
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Descripción</th>
-        <th>Ingresos</th>
-        <th>Salidas</th>
-        <th>Stock</th>
-        <th>Opciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let producto of inventarioPaginado">
-        <td>{{ producto.codigo }}</td>
-        <td>{{ producto.descripcion }}</td>
-        <td>{{ producto.ingresos }}</td>
-        <td>{{ producto.salidas }}</td>
-        <td>{{ producto.stock }}</td>
-        <td>
-          <button title="Ver Detalles" class="btn-ver">👁️</button>
-          <!-- Puedes agregar un botón para eliminar o editar si implementas esa funcionalidad -->
-        </td>
-      </tr>
-      <tr *ngIf="inventarioPaginado.length === 0">
-        <td colspan="7">No hay movimientos de inventario para mostrar.</td>
- </tr>
-    </tbody>
-  </table>
+  <!-- Div que contiene la tabla (usado para impresión y exportación) -->
+  <div id="reporteInventario">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th>Ingresos</th>
+          <th>Salidas</th>
+          <th>Stock</th>
+          <th>Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let producto of inventarioPaginado">
+          <td>{{ producto.codigo }}</td>
+          <td>{{ producto.descripcion }}</td>
+          <td>{{ producto.ingresos }}</td>
+          <td>{{ producto.salidas }}</td>
+          <td>{{ producto.stock }}</td>
+          <td>
+            <!-- Nuevo ícono de "ver detalles" (SVG simple, no realista) -->
+            <button type="button" title="Ver Detalles" class="btn-ver" (click)="abrirModalMovimientos(producto)">
+              <!-- ojo estilizado simple -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="#333" stroke-width="1.4" fill="none"/>
+                <circle cx="12" cy="12" r="3" stroke="#333" stroke-width="1.4" fill="none"/>
+              </svg>
+            </button>
+
+            <!-- Ícono de impresión por producto (mejorado) -->
+            <button type="button" title="Imprimir Movimientos" class="btn-print" (click)="imprimirMovimientosProducto(producto)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="3" y="7" width="18" height="10" rx="2" stroke="#333" stroke-width="1.4" fill="none"></rect>
+                <path d="M7 11h10" stroke="#333" stroke-width="1.6" stroke-linecap="round"></path>
+                <rect x="7" y="3" width="10" height="4" rx="1" stroke="#333" stroke-width="1.2" fill="none"></rect>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="inventarioPaginado.length === 0">
+          <td colspan="6">No hay movimientos de inventario para mostrar.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <div class="paginacion" *ngIf="totalPaginas() > 1">
-    <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
+    <button type="button" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
     <button *ngFor="let pag of [].constructor(totalPaginas()); let i = index"
             [class.activo]="paginaActual === (i + 1)"
- (click)="cambiarPagina(i + 1)">
+            (click)="cambiarPagina(i + 1)">
       {{ i + 1 }}
     </button>
-    <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas()">Siguiente</button>
+    <button type="button" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas()">Siguiente</button>
   </div>
 
   <div class="reporte">
     <h4>Reporte Stock por Producto</h4>
-    <button class="btn-reporte">Reporte Inventario 📁</button>
+    <!-- Botón que abre la vista imprimible / para sacar impresión -->
+    <button type="button" class="btn-reporte" (click)="imprimirHtmlInventario()">Reporte Inventario 📁</button>
+  </div>
+</div>
+
+<!-- Modal compacto y centrado -->
+<div class="modal-overlay" *ngIf="modalVisible" (click)="cerrarModal()">
+  <div class="modal-centered" (click)="$event.stopPropagation()" tabindex="0" role="dialog" aria-modal="true" aria-label="Movimientos del producto">
+    <div class="modal-header-compact">
+      <h3 class="modal-title">Movimientos por Producto</h3>
+      <button type="button" class="close-compact" (click)="cerrarModal()">✕</button>
+    </div>
+
+    <div class="modal-body-compact">
+      <div class="detalle-producto">
+        <div><strong>Producto:</strong> {{ productoSeleccionado?.descripcion || productoSeleccionado?.codigo }}</div>
+        <div><strong>Inventario inicial:</strong> {{ inicialInventarioTexto }}</div>
+      </div>
+
+      <table class="tabla-movimientos-compact">
+        <thead>
+          <tr>
+            <th>Comprobante</th>
+            <th>Concepto</th>
+            <th>Fecha</th>
+            <th>Ingresos</th>
+            <th>Salidas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of movimientosSeleccionados">
+            <td>{{ m.comprobante ?? '-' }}</td>
+            <td>{{ m.concepto ?? '-' }}</td>
+            <td>{{ m.fecha ?? '' }}</td>
+            <td style="text-align:right">{{ m.ingresos ?? 0 }}</td>
+            <td style="text-align:right">{{ m.salidas ?? 0 }}</td>
+          </tr>
+          <tr *ngIf="movimientosSeleccionados.length === 0">
+            <td colspan="5">No hay movimientos registrados para este producto.</td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="movimientosSeleccionados.length > 0">
+          <tr>
+            <td colspan="3" style="text-align:right"><strong>Total:</strong></td>
+            <td style="text-align:right">
+              {{ totalIngresos(movimientosSeleccionados) }}
+            </td>
+            <td style="text-align:right">
+              {{ totalSalidas(movimientosSeleccionados) }}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="modal-footer-compact">
+      
+      <button type="button" (click)="cerrarModal()">Cerrar</button>
+    </div>
   </div>
 </div>

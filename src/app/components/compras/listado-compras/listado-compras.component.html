@@ -1,40 +1,47 @@
 <div class="card shadow-sm mt-4 small-view">
   <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
     <h6 class="mb-0">Listado de Compras</h6>
-    <button class="btn btn-sm btn-primary buscar-btn"><i class="fas fa-search"></i> Buscar</button>
+    
+      
+    
   </div>
 
   <div class="card-body">
     <div class="row mb-3">
       <div class="col-md-3">
         <label for="fechaInicio" class="form-label">Fecha Inicio:</label>
-        <input type="date" id="fechaInicio" class="form-control form-control-sm" />
+        <input type="date" id="fechaInicio" class="form-control form-control-sm" [(ngModel)]="fechaInicio" />
       </div>
       <div class="col-md-3">
         <label for="fechaFin" class="form-label">Fecha Fin:</label>
-        <input type="date" id="fechaFin" class="form-control form-control-sm" />
+        <input type="date" id="fechaFin" class="form-control form-control-sm" [(ngModel)]="fechaFin" />
       </div>
-      <div class="col-md-2 offset-md-4 d-flex align-items-end justify-content-end">
-        <div class="d-flex align-items-center">
-          <label for="buscarTabla" class="me-2 mb-0">Buscar:</label>
-          <input type="text" id="buscarTabla" class="form-control form-control-sm w-auto"
-                 [(ngModel)]="filtro" (input)="aplicarFiltro()">
+
+      <div class="col-md-4 offset-md-2 d-flex align-items-end justify-content-end">
+        <div class="d-flex align-items-center w-100 justify-content-end">
+          <!-- Eliminado autocomplete — queda solo el buscador simple -->
+          <div class="d-flex align-items-center ms-3">
+            <label for="buscarTabla" class="me-2 mb-0">Buscar:</label>
+            <input type="text" id="buscarTabla" class="form-control form-control-sm w-auto"
+                   [(ngModel)]="filtro" (input)="aplicarFiltro()">
+          </div>
         </div>
       </div>
     </div>
 
     <div class="d-flex justify-content-between mb-2 align-items-center flex-wrap">
       <div class="btn-group mb-2 mb-md-0">
-        <button class="btn btn-sm btn-success me-1">
+        <button class="btn btn-sm btn-success me-1" (click)="exportarExcel()">
           <i class="fas fa-file-excel fa-sm"></i> Exportar Excel
         </button>
-        <button class="btn btn-sm btn-dark me-1">
+        <button class="btn btn-sm btn-dark me-1" (click)="imprimir()">
           <i class="fas fa-print fa-sm"></i> Imprimir
         </button>
-        <select class="form-select form-select-sm w-auto">
-          <option>10</option>
-          <option>25</option>
-          <option>50</option>
+        <select class="form-select form-select-sm w-auto" [value]="itemsPerPage" (change)="onItemsPerPageChange($event)">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
         </select>
       </div>
     </div>
@@ -48,55 +55,44 @@
             <th>Proveedor</th>
             <th>Documento</th>
             <th>Total</th>
-            <!-- Si tu backend devuelve Usuario y Estado de la compra, puedes incluirlos -->
-            <!-- <th>Usuario</th> -->
-            <!-- <th>Estado</th> -->
             <th>Opciones</th>
           </tr>
         </thead>
         <tbody>
-          <!-- *** CORREGIDO: Iteramos sobre la lista 'compras' *** -->
-          <tr *ngFor="let compra of compras">
+          <tr *ngFor="let compra of compras | paginate: { itemsPerPage: itemsPerPage, currentPage: p }">
             <td>{{ compra.idCompra }}</td>
-            <!-- *** CORREGIDO: Usamos fechaCompra y formateamos *** -->
             <td>{{ compra.fechaCompra | date:'shortDate' }}</td>
-            <!-- *** CORREGIDO: Usamos nombreProveedor *** -->
             <td>{{ compra.nombreProveedor }}</td>
-            <!-- *** CORREGIDO: Combinamos tipoDocumento y numeroDocumento *** -->
             <td>{{ compra.tipoDocumento }} - {{ compra.numeroDocumento }}</td>
-            <!-- *** CORREGIDO: Usamos total y formateamos *** -->
-            <td>Gs/ {{ compra.total | number:'1.2-2' }}</td>
-            <!-- <td>{{ compra.usuario }}</td> -->
-            <!-- <td>{{ compra.estado }}</td> -->
+            <td>s/ {{ compra.total | number:'1.2-2' }}</td>
             <td>
-              <!-- *** CORREGIDO: Llama al método verDetalleCompra con el ID de la compra *** -->
               <button class="btn btn-info btn-sm" title="Ver Detalles" (click)="verDetalleCompra(compra.idCompra)">
                 <i class="fas fa-eye"></i>
               </button>
-              <!-- Otros botones de opciones si son necesarios -->
+              <button class="btn btn-danger btn-sm" title="Eliminar" (click)="confirmarEliminar(compra.idCompra)">
+                <i class="fas fa-trash"></i>
+              </button>
             </td>
           </tr>
-           <!-- Mostrar "No hay información" solo si la lista de compras está vacía -->
-           <tr *ngIf="compras.length === 0">
+          <tr *ngIf="compras.length === 0">
             <td colspan="6">No hay información en esta tabla</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="d-flex justify-content-between mt-2 small-text">
-       <!-- *** CORREGIDO: Mostrar el total de registros originales *** -->
-      <div>Registros del ({{ compras.length > 0 ? 1 : 0 }} al {{ compras.length }}) total de {{ comprasOriginal.length }} registros</div>
+    <div class="d-flex justify-content-between mt-2 small-text align-items-center">
       <div>
-        <span class="me-2 text-muted">Anterior</span>
-        <span class="text-muted">Siguiente</span>
+        Registros del ({{ startRecord > 0 ? startRecord : 0 }} al {{ endRecord }}) total de {{ compras.length }} registros (orig: {{ comprasOriginal.length }})
+      </div>
+      <div class="d-flex align-items-center">
+        <pagination-controls (pageChange)="p = $event"></pagination-controls>
       </div>
     </div>
   </div>
 </div>
 
-<!-- *** SECCIÓN PARA EL MODAL DE DETALLE DE COMPRA (AÑADIR ESTO) *** -->
-<!-- Puedes usar un componente de modal de Bootstrap o crear uno simple -->
+<!-- Modal: Detalle de la Compra (sin cambios funcionales) -->
 <div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display': mostrarModalDetalle ? 'block' : 'none'}">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -105,7 +101,6 @@
         <button type="button" class="btn-close" aria-label="Close" (click)="cerrarModalDetalle()"></button>
       </div>
       <div class="modal-body">
-        <!-- Mostrar los detalles de la compra seleccionada -->
         <div *ngIf="compraSeleccionadaDetalle">
           <div class="row">
             <div class="col-md-6">
@@ -116,8 +111,6 @@
             <div class="col-md-6">
               <p><strong>Fecha:</strong> {{ compraSeleccionadaDetalle.fechaCompra | date:'shortDate' }}</p>
               <p><strong>Forma Pago:</strong> {{ compraSeleccionadaDetalle.formaPago }}</p>
-              <!-- Puedes añadir el usuario si lo recibes -->
-              <!-- <p><strong>Usuario:</strong> {{ compraSeleccionadaDetalle.usuario }}</p> -->
             </div>
           </div>
 
@@ -135,15 +128,12 @@
                 </tr>
               </thead>
               <tbody>
-                <!-- Iterar sobre los ítems de la compra detallada -->
                 <tr *ngFor="let item of compraSeleccionadaDetalle.itemsCompra">
                   <td>{{ item.nombreProducto }}</td>
-                  <!-- *** CORREGIDO: Mostrar el nombre de la talla *** -->
                   <td>{{ item.nombreTalla }}</td>
-                  <td>Gs/ {{ item.precioUnitario | number:'1.2-2' }}</td>
+                  <td>s/ {{ item.precioUnitario | number:'1.2-2' }}</td>
                   <td>{{ item.cantidad }}</td>
-                  <td>Gs/ {{ item.subtotal | number:'1.2-2' }}</td>
-                   <!-- *** CORREGIDO: Mostrar el Stock *** -->
+                  <td>s/ {{ item.subtotal | number:'1.2-2' }}</td>
                   <td>{{ item.stock }}</td>
                 </tr>
               </tbody>
@@ -152,15 +142,54 @@
 
           <div class="row justify-content-end mt-3">
             <div class="col-md-4">
-              <p><strong>SUBTOTAL:</strong> Gs/ {{ compraSeleccionadaDetalle.subtotal | number:'1.2-2' }}</p>
-              <p><strong>IGV:</strong> Gs/ {{ compraSeleccionadaDetalle.igv | number:'1.2-2' }}</p>
-              <p><strong>TOTAL:</strong> Gs/ {{ compraSeleccionadaDetalle.total | number:'1.2-2' }}</p>
+              <p><strong>SUBTOTAL:</strong> s/ {{ compraSeleccionadaDetalle.subtotal | number:'1.2-2' }}</p>
+              <p><strong>IGV:</strong> s/ {{ compraSeleccionadaDetalle.igv | number:'1.2-2' }}</p>
+              <p><strong>TOTAL:</strong> s/ {{ compraSeleccionadaDetalle.total | number:'1.2-2' }}</p>
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="cerrarModalDetalle()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmación Eliminación (estilo imagen) -->
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display': mostrarModalConfirm ? 'block' : 'none'}">
+  <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+    <div class="modal-content confirm-modal">
+      <div class="modal-body text-center">
+        <div class="confirm-icon">
+          <div class="icon-circle">
+            <i class="fas fa-exclamation"></i>
+          </div>
+        </div>
+        <h4 class="mt-3">¿Está seguro que desea eliminar este registro?</h4>
+        <p class="text-muted small">Esta operación es irreversible</p>
+
+        <div class="d-flex justify-content-center mt-3 gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-lg" (click)="cancelarEliminar()">Cancelar</button>
+          <button type="button" class="btn btn-danger btn-lg" (click)="confirmarEliminarAccion()">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Éxito Eliminación -->
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display': mostrarModalSuccess ? 'block' : 'none'}">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content text-center p-3 success-modal">
+      <div class="modal-body">
+        <div class="check-icon mb-3">
+          <i class="fas fa-check-circle fa-3x text-success"></i>
+        </div>
+        <h5>El registro fue eliminado correctamente</h5>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-primary" (click)="cerrarModalSuccess()">Aceptar</button>
       </div>
     </div>
   </div>

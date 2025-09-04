@@ -1,4 +1,4 @@
-// punto-venta.component.ts
+// punto-venta.component.ts  
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -53,6 +53,17 @@ export class PuntoVentaComponent implements OnInit {
   tallasProducto: any[] = [];
   mostrarModalCliente = false;
 
+  // Nuevo: objeto usado para abrir el modal en modo Cliente
+  nuevoCliente: Persona = {
+    nombre: '',
+    telefono: '',
+    correo: '',
+    direccion: '',
+    tipoPersona: 'Cliente',
+    tipoDocumento: 'DNI',
+    numeroDocumento: ''
+  };
+
   // CONFIRMACIÓN
   mostrarConfirmacion = false;
   ventaCreadaResponse: any = null;
@@ -72,7 +83,7 @@ export class PuntoVentaComponent implements OnInit {
   serie = '';
   correlativo = '00000001';
 
-  // Variables para controlar correlativos
+  // Variables para controlar correlativos (valores guardados que representan el *último* correlativo ya utilizado)
   ultimoCorrelativoBoleta = 0;
   ultimoCorrelativoFactura = 0;
 
@@ -122,9 +133,9 @@ export class PuntoVentaComponent implements OnInit {
   ngOnInit(): void {
     this.cargarProductos();
     this.cargarPersonas();
-    // Inicializar desde localStorage si existe
-    this.ultimoCorrelativoBoleta = parseInt(localStorage.getItem('ultimoCorrelativoBoleta') || '0');
-    this.ultimoCorrelativoFactura = parseInt(localStorage.getItem('ultimoCorrelativoFactura') || '0');
+    // Inicializar desde localStorage si existe (estos representan el último correlativo ya usado para cada tipo)
+    this.ultimoCorrelativoBoleta = parseInt(localStorage.getItem('ultimoCorrelativoBoleta') || '0', 10) || 0;
+    this.ultimoCorrelativoFactura = parseInt(localStorage.getItem('ultimoCorrelativoFactura') || '0', 10) || 0;
   }
 
   private cargarProductos() {
@@ -150,7 +161,10 @@ export class PuntoVentaComponent implements OnInit {
 
   private cargarPersonas() {
     this.personaService.getAllPersonas().subscribe({
-      next: p => (this.personas = p),
+      next: p => {
+        // Filtrar SOLO clientes para punto de venta
+        this.personas = (p || []).filter(persona => persona.tipoPersona === 'Cliente');
+      },
       error: err => console.error(err)
     });
   }
@@ -207,17 +221,20 @@ export class PuntoVentaComponent implements OnInit {
     this.total = +(this.subTotal - this.descuento).toFixed(2);
   }
 
+  /**
+   * Cuando el usuario cambia el documento (Boleta/Factura) mostramos la serie y
+   * el *preview* del correlativo sin persistirlo todavía.
+   * Nota: NO incrementamos localStorage aquí. El incremento final se hará sólo
+   * cuando la venta se registre con éxito en realizarVenta().
+   */
   onDocumentoChange() {
     if (this.documentoSeleccionado === 'Boleta') {
       this.serie = 'B001';
-      this.ultimoCorrelativoBoleta++;
-      this.correlativo = this.ultimoCorrelativoBoleta.toString().padStart(8, '0');
-      localStorage.setItem('ultimoCorrelativoBoleta', this.ultimoCorrelativoBoleta.toString());
+      // preview = ultimoCorrelativoBoleta (último usado) + 1
+      this.correlativo = (this.ultimoCorrelativoBoleta + 1).toString().padStart(8, '0');
     } else if (this.documentoSeleccionado === 'Factura') {
       this.serie = 'F001';
-      this.ultimoCorrelativoFactura++;
-      this.correlativo = this.ultimoCorrelativoFactura.toString().padStart(8, '0');
-      localStorage.setItem('ultimoCorrelativoFactura', this.ultimoCorrelativoFactura.toString());
+      this.correlativo = (this.ultimoCorrelativoFactura + 1).toString().padStart(8, '0');
     } else {
       this.serie = '';
       this.correlativo = '00000001';
@@ -249,11 +266,29 @@ export class PuntoVentaComponent implements OnInit {
     this.cerrarModalTallas();
   }
 
-  abrirModalCliente() { this.mostrarModalCliente = true; }
+  abrirModalCliente() {
+    // Asegurarnos que el modal abra con modo Cliente
+    this.nuevoCliente = {
+      nombre: '',
+      telefono: '',
+      correo: '',
+      direccion: '',
+      tipoPersona: 'Cliente',
+      tipoDocumento: 'DNI',
+      numeroDocumento: ''
+    };
+    this.mostrarModalCliente = true;
+  }
   cerrarModalCliente() { this.mostrarModalCliente = false; }
+
   manejarPersonaCreada(p: Persona) {
-    this.personas.push(p);
-    this.clienteSeleccionado = `${p.numeroDocumento} - ${p.nombre}`;
+    // Sólo agregar si realmente es Cliente
+    if (p && p.tipoPersona === 'Cliente') {
+      this.personas.push(p);
+      this.clienteSeleccionado = `${p.numeroDocumento} - ${p.nombre}`;
+    } else {
+      console.warn('Se intentó agregar una persona que no es Cliente en Punto de Venta:', p);
+    }
     this.cerrarModalCliente();
   }
 
@@ -308,10 +343,26 @@ export class PuntoVentaComponent implements OnInit {
 
     this.ventaService.createVenta(payload).subscribe({
       next: resp => {
+        // Al confirmarse la venta en el backend, AHÍ sí incrementamos y persistimos el correlativo
+        if (this.documentoSeleccionado === 'Boleta') {
+          // obtener valor actual guardado y aumentar en 1 (asegurando coherencia)
+          const stored = Number(localStorage.getItem('ultimoCorrelativoBoleta') || '0');
+          const newCount = Math.max(stored, this.ultimoCorrelativoBoleta) + 1;
+          this.ultimoCorrelativoBoleta = newCount;
+          localStorage.setItem('ultimoCorrelativoBoleta', String(newCount));
+        } else if (this.documentoSeleccionado === 'Factura') {
+          const stored = Number(localStorage.getItem('ultimoCorrelativoFactura') || '0');
+          const newCount = Math.max(stored, this.ultimoCorrelativoFactura) + 1;
+          this.ultimoCorrelativoFactura = newCount;
+          localStorage.setItem('ultimoCorrelativoFactura', String(newCount));
+        }
+
         this.ventaCreadaResponse = resp;
         this.mostrarConfirmacion = true;
         this.cargarProductos();
         this.vaciarListado();
+
+        // Resetear formulario y valores (se mantiene la política de que el siguiente preview se calcula al seleccionar documento)
         this.resetearFormularioVenta();
         console.log("DEBUG (Frontend): Venta creada exitosamente.");
       },
@@ -323,14 +374,15 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   // Función para resetear otros campos del formulario de venta
-    resetearFormularioVenta(): void {
-        this.documentoSeleccionado = '';
-        this.clienteSeleccionado = '';
-        this.tipoPagoSeleccionado = '';
-        this.serie = '';
-        this.correlativo = '00000001';
-        this.montoEfectivo = 0;
-    }
+  resetearFormularioVenta(): void {
+      this.documentoSeleccionado = '';
+      this.clienteSeleccionado = '';
+      this.tipoPagoSeleccionado = '';
+      this.serie = '';
+      // dejamos el correlativo en el valor por defecto; el usuario al seleccionar el documento verá el preview correcto
+      this.correlativo = '00000001';
+      this.montoEfectivo = 0;
+  }
 
   imprimirComprobante() {
     const html = this.reporteBoletaContainer.nativeElement.innerHTML;
