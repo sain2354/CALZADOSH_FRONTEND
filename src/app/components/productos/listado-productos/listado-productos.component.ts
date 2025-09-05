@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { ProductoService } from '../../../services/producto.service';
 import { TallaService } from '../../../services/talla.service';
 import { TallaProductoService } from '../../../services/talla-producto.service';
@@ -736,6 +738,201 @@ export class ListadoProductosComponent implements OnInit {
         }
       });
   }
+
+  // ------------------- INICIO: Métodos de Catálogo / Excel / Imprimir -------------------
+
+  // ---------- GENERAR CATÁLOGO PDF (mejorado, usa fetchImageAsDataURL del servicio) ----------
+  async generarCatalogoPDF() {
+    try {
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+      const margin = 12;
+      const cols = 2; // tarjetas por fila
+      const gapX = 8;
+      const gapY = 10;
+      const cardW = (pageWidth - margin * 2 - gapX) / cols;
+      const cardH = 60;
+      const imgW = 38;
+      const imgH = 38;
+      let x = margin;
+      let y = margin + 8;
+
+      doc.setFontSize(16);
+      doc.text('Catálogo de Productos', pageWidth / 2, 10, { align: 'center' });
+      doc.setFontSize(10);
+
+      const lista = (this.productosFiltrados && this.productosFiltrados.length > 0)
+        ? this.productosFiltrados
+        : this.productos || [];
+
+      for (let i = 0; i < lista.length; i++) {
+        const p = lista[i];
+
+        // nueva página si no cabe
+        if (y + cardH > pageHeight - margin) {
+          doc.addPage();
+          y = margin + 8;
+          x = margin;
+        }
+
+        // Card borde
+        doc.setDrawColor(220);
+        doc.roundedRect(x, y, cardW, cardH, 3, 3, 'S');
+
+        // Obtener la URL normalizada desde el servicio
+        const imgUrl = this.productoService.getImageFullUrl((p as any).foto) ?? (p as any).foto ?? '';
+        let imgData: string | null = null;
+
+        // Intentar convertir a dataURL usando el helper central del servicio (fetch -> blob -> FileReader)
+        if (imgUrl) {
+          try {
+            imgData = await this.productoService.fetchImageAsDataURL(imgUrl, 7000);
+          } catch (e) {
+            imgData = null;
+          }
+        }
+
+        // fallback al placeholder central del servicio
+        if (!imgData) {
+          imgData = this.productoService.getPlaceholderImage();
+        }
+
+        // Añadir imagen con fallback entre formatos
+        try {
+          doc.addImage(imgData as string, 'JPEG', x + 6, y + 10, imgW, imgH);
+        } catch {
+          try {
+            doc.addImage(imgData as string, 'PNG', x + 6, y + 10, imgW, imgH);
+          } catch (e) {
+            // si falla, no bloqueamos el PDF
+            console.warn('No se pudo incrustar imagen en PDF para producto', p, e);
+          }
+        }
+
+        // Texto: nombre, artículo, estilo, precio
+        const textX = x + 6 + imgW + 6;
+        let lineY = y + 14;
+        doc.setFontSize(11);
+        doc.text((p.nombre || 'Sin nombre').toString(), textX, lineY, { maxWidth: cardW - imgW - 18 });
+        doc.setFontSize(9);
+        lineY += 6;
+        doc.text(`Artículo: ${p.articulo ?? '-'}`, textX, lineY, { maxWidth: cardW - imgW - 18 });
+        lineY += 5;
+        doc.text(`Estilo: ${p.estilo ?? '-'}`, textX, lineY, { maxWidth: cardW - imgW - 18 });
+        lineY += 6;
+        doc.setFontSize(10);
+        doc.text(`S/ ${(p.precioVenta ?? 0).toFixed(2)}`, textX, lineY);
+
+        // avanzar posición: columnas/filas
+        if ((i + 1) % cols === 0) {
+          x = margin;
+          y += cardH + gapY;
+        } else {
+          x += cardW + gapX;
+        }
+      }
+
+      doc.save('catalogo_productos_con_imagenes.pdf');
+    } catch (err) {
+      console.error('Error al generar catálogo PDF (mejorado):', err);
+      alert('No se pudo generar el PDF del catálogo con imágenes. Revisa la consola.');
+    }
+  }
+
+  // Exportar a Excel usando xlsx
+  exportarExcel() {
+    try {
+      const lista = (this.productosFiltrados && this.productosFiltrados.length > 0)
+        ? this.productosFiltrados
+        : this.productos || [];
+
+      const data = lista.map(p => ({
+        CodigoBarra: p.codigoBarra ?? '',
+        Nombre: p.nombre ?? '',
+        Articulo: p.articulo ?? '',
+        Estilo: p.estilo ?? '',
+        PrecioVenta: p.precioVenta ?? 0,
+        PrecioCompra: p.precioCompra ?? 0,
+        Stock: p.stock ?? 0,
+        Estado: p.estado ? 'Activo' : 'Inactivo'
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Productos');
+      XLSX.writeFile(wb, 'catalogo_productos.xlsx');
+    } catch (err) {
+      console.error('Error exportando Excel:', err);
+      alert('No se pudo exportar a Excel. Revisa la consola.');
+    }
+  }
+
+  // ---------- IMPRIMIR CATÁLOGO (vista en grid, con fallback de imagen) ----------
+  imprimirCatalogo() {
+    try {
+      const lista = (this.productosFiltrados && this.productosFiltrados.length > 0)
+        ? this.productosFiltrados
+        : this.productos || [];
+
+      const style = `
+        <style>
+          body { font-family: Arial, Helvetica, sans-serif; margin: 16px; color: #333; }
+          .catalog-header { text-align: center; margin-bottom: 12px; }
+          .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+          .card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background: #fff; display:flex; gap:8px; align-items:flex-start; }
+          .thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; background:#f6f6f6; }
+          .meta { flex:1; }
+          .meta h4 { margin: 0 0 6px 0; font-size: 14px; word-break: break-word; }
+          .meta p { margin: 3px 0; font-size: 12px; color:#555; }
+          .price { font-weight:700; color:#0a5; margin-top:4px; }
+          @media print { .page-break { page-break-after: always; } }
+        </style>
+      `;
+
+      let html = `<html><head><title>Catálogo</title>${style}</head><body>`;
+      html += `<div class="catalog-header"><h2>Catálogo de Productos</h2></div>`;
+      html += `<div class="grid">`;
+
+      lista.forEach(p => {
+        const raw = this.productoService.getImageFullUrl((p as any).foto) ?? (p as any).foto ?? '';
+        const safeImg = raw || this.productoService.getPlaceholderImage();
+
+        // Note: onerror usa placeholder embebido si la URL no carga por CORS/404.
+        html += `
+          <div class="card">
+            <img class="thumb" src="${safeImg}" onerror="this.onerror=null;this.src='${this.productoService.getPlaceholderImage()}';"/>
+            <div class="meta">
+              <h4>${(p.nombre ?? 'Sin nombre')}</h4>
+              <p>Artículo: ${p.articulo ?? '-'}</p>
+              <p>Estilo: ${p.estilo ?? '-'}</p>
+              <p class="price">S/ ${(p.precioVenta ?? 0).toFixed(2)}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div></body></html>`;
+
+      const newWin = window.open('', '_blank');
+      if (!newWin) { alert('No se pudo abrir la vista de impresión. Revisa el bloqueador de popups.'); return; }
+      newWin.document.open();
+      newWin.document.write(html);
+      newWin.document.close();
+      newWin.focus();
+
+      // Esperar a que carguen las imágenes (si las hay) y luego imprimir
+      setTimeout(() => {
+        newWin.print();
+        // newWin.close();
+      }, 900);
+    } catch (err) {
+      console.error('Error al imprimir catálogo (mejorado):', err);
+      alert('No se pudo imprimir el catálogo. Revisa la consola.');
+    }
+  }
+
+  // ------------------- FIN: Métodos de Catálogo / Excel / Imprimir -------------------
 
   // Métodos para manejar los modales de confirmación y éxito
   confirmarOperacion() {

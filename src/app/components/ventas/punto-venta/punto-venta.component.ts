@@ -78,7 +78,7 @@ export class PuntoVentaComponent implements OnInit {
   documentoSeleccionado = '';
   personas: Persona[] = [];
   clienteSeleccionado = '';
-  mediosPago = ['Yape', 'Plin', 'Transferencia Bancaria'];
+  mediosPago = ['Efectivo','Yape', 'Plin', 'Transferencia'];
   tipoPagoSeleccionado = '';
   serie = '';
   correlativo = '00000001';

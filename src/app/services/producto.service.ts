@@ -8,10 +8,9 @@ import { catchError, tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ProductoService {
-  /**
-   * Ajusta esto a la URL real de tu API.
-   */
-  private baseUrl = 'https://www.chbackend.somee.com/api/Producto';
+  // Base API (sin ruta de recurso) y endpoint específico para Producto
+  private baseApi = 'https://www.chbackend.somee.com';
+  private productEndpoint = `${this.baseApi}/api/Producto`;
 
   constructor(private http: HttpClient) {}
 
@@ -33,49 +32,38 @@ export class ProductoService {
       params = params.set('estilo', estilo);
     }
 
-    return this.http.get<Producto[]>(`${this.baseUrl}`, { params });
+    return this.http.get<Producto[]>(`${this.productEndpoint}`, { params });
   }
 
   crearProductoConArchivo(formData: FormData): Observable<Producto> {
-    return this.http.post<Producto>(`${this.baseUrl}/createWithFile`, formData);
+    return this.http.post<Producto>(`${this.productEndpoint}/createWithFile`, formData);
   }
 
   crearProducto(producto: any): Observable<Producto> {
-    return this.http.post<Producto>(`${this.baseUrl}`, producto);
+    return this.http.post<Producto>(`${this.productEndpoint}`, producto);
   }
 
-  /**
-   * Actualizar producto con JSON (PUT). Usar cuando no hay imagen multipart.
-   */
   updateProducto(id: number, producto: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, producto);
+    return this.http.put(`${this.productEndpoint}/${id}`, producto);
   }
 
-  /**
-   * Intento de actualización enviando FormData (multipart). Uso PUT para mantener semántica.
-   * El backend en tu controller tiene [Consumes("multipart/form-data")] para PUT.
-   */
   updateProductoFormData(id: number, formData: FormData): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, formData);
+    return this.http.put(`${this.productEndpoint}/${id}`, formData);
   }
 
-  /**
-   * Alternativa por si tu backend implementó un endpoint específico para update con file (POST).
-   * No lo usamos en el componente actual, lo dejo por compatibilidad.
-   */
   updateProductoWithFile(id: number, formData: FormData): Observable<any> {
-    return this.http.post(`${this.baseUrl}/updateWithFile/${id}`, formData);
+    return this.http.post(`${this.productEndpoint}/updateWithFile/${id}`, formData);
   }
 
   deleteProducto(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`);
+    return this.http.delete(`${this.productEndpoint}/${id}`);
   }
 
   buscarProductos(termino: string): Observable<Producto[]> {
     if (!termino.trim()) {
       return of([]);
     }
-    const url = `${this.baseUrl}/buscar?termino=${termino}`;
+    const url = `${this.productEndpoint}/buscar?termino=${encodeURIComponent(termino)}`;
     return this.http.get<Producto[]>(url).pipe(
       tap(x => x.length ?
         console.log(`found products matching "${termino}"`) :
@@ -88,27 +76,80 @@ export class ProductoService {
   }
 
   /**
-   * Construye una URL completa para una imagen devuelta por el backend (si el backend
-   * guarda solo el nombre de archivo o la ruta parcial). Normaliza entradas que ya
-   * contienen 'uploads' o que empiezan con '/'. Ajusta la ruta si tu servidor usa otra carpeta.
+   * Devuelve una URL absoluta y normalizada para la imagen del producto.
+   * - Si `path` ya es absoluta (http/https) la devuelve tal cual.
+   * - Normaliza barras duplicadas y evita rutas como '/uploads//uploads/...'
+   * - Si solo recibe nombre de archivo -> asume carpeta '/uploads/{file}'
+   * - Si recibe una ruta que incluye '/api/Producto' la limpia.
    */
   getImageFullUrl(path?: string | null): string | null {
     if (!path) return null;
-    // Si es URL absoluta, devolvemos tal cual.
-    if (path.startsWith('http://') || path.startsWith('https://')) return path;
 
-    // Limpiar barras iniciales
-    let cleaned = path.replace(/^\/+/, '');
+    const p = (path || '').trim();
 
-    // Base sin "/api/Producto"
-    const base = this.baseUrl.replace(/\/api\/Producto\/?$/, '');
-
-    // Si la cadena ya contiene 'uploads/' al inicio o en otra parte, retornamos base + '/' + cleaned
-    if (cleaned.indexOf('uploads/') !== -1) {
-      return `${base}/${cleaned}`;
+    // Si ya es URL absoluta -> devolver
+    if (p.startsWith('http://') || p.startsWith('https://')) {
+      return p;
     }
 
-    // Si solo es nombre de archivo, retornamos base + '/uploads/{file}'
-    return `${base}/uploads/${cleaned}`;
+    // Limpiar prefijos comunes que pueden venir desde el backend
+    let cleaned = p.replace(/\\/g, '/');           // normalizar backslashes
+    cleaned = cleaned.replace(/\/{2,}/g, '/');    // eliminar // repetidos
+    cleaned = cleaned.replace(/^\/+/, '');        // eliminar slashes al inicio
+    cleaned = cleaned.replace(/^\s+|\s+$/g, '');  // trim
+
+    // Si la ruta contiene 'api/Producto' (o similar), quitar esa parte
+    cleaned = cleaned.replace(/^(api\/Producto\/?)/i, '');
+    cleaned = cleaned.replace(/^(\/?api\/Producto\/?)/i, '');
+
+    // Evitar duplicar 'uploads' -> dejar solo una ocurrencia
+    cleaned = cleaned.replace(/(\/?uploads\/?)+/i, 'uploads/');
+
+    // Si después de limpiar la ruta quedó algo con 'uploads/' lo usamos tal cual
+    // sino asumimos que es solo nombre de archivo y lo ponemos en uploads/
+    const finalPath = cleaned.toLowerCase().includes('uploads/') ? cleaned : `uploads/${cleaned}`;
+
+    // Construir URL final y asegurarnos de que esté bien codificada
+    const url = `${this.baseApi}/${finalPath}`.replace(/\/{2,}/g, '/'); // eliminar // accidental
+    // Reponer protocolo correcto si fue recortado por replace anterior (caso raro)
+    const normalizedUrl = url.startsWith('http') ? url : `https://${url.replace(/^https?:\/+/, '')}`;
+
+    // encodeURI para evitar problemas con espacios o caracteres especiales
+    return encodeURI(normalizedUrl);
+  }
+
+  /**
+   * DataURL placeholder pequeño para fallbacks (1x1 transparent PNG).
+   * Puedes retornarlo desde aquí y usarlo donde lo necesites.
+   */
+  getPlaceholderImage(): string {
+    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
+  }
+
+  /**
+   * (Opcional) Helper para convertir una imagen remota a dataURL usando fetch.
+   * Útil si quieres generar PDF con imágenes embebidas (fetch -> blob -> FileReader).
+   * OJO: si el servidor no permite CORS, esto fallará y deberás habilitar CORS en el backend.
+   */
+  async fetchImageAsDataURL(url: string, timeoutMs = 8000): Promise<string | null> {
+    if (!url) return null;
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      const resp = await fetch(url, { signal: controller.signal, mode: 'cors', cache: 'no-cache' });
+      clearTimeout(timer);
+      if (!resp.ok) return null;
+
+      const blob = await resp.blob();
+      return await new Promise<string | null>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string | null);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch (err) {
+      return null;
+    }
   }
 }
