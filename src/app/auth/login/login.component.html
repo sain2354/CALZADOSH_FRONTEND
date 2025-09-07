@@ -1,54 +1,43 @@
 <!-- login.component.html -->
 <div class="login-wrapper">
-  <!-- Lado izquierdo -->
-  <div class="login-left">
-    <img src="https://sistropa.gustavomasiasdev.com/vistas/assets/login/img/s1.svg" alt="Illustration" />
-  </div>
+  <div class="login-box">
+    <img src="https://cdn-icons-png.flaticon.com/512/17/17004.png" alt="User" class="user-icon" />
+    <h2>BIENVENIDO</h2>
 
-  <!-- Lado derecho -->
-  <div class="login-right">
-    <div class="login-box">
-      <img src="https://cdn-icons-png.flaticon.com/512/17/17004.png" alt="User" class="user-icon" />
-      <h2>BIENVENIDO</h2>
+    <!-- Mensaje de error (si existe) -->
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+    </div>
 
-      <!-- Add a div to display error message -->
-      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
-        {{ errorMessage }}
+    <form (ngSubmit)="login()">
+      <div class="input-group">
+        <i class="fa fa-user"></i>
+        <input
+          type="text"
+          name="username"
+          [(ngModel)]="username"
+          placeholder="Usuario"
+          required
+        />
       </div>
 
-      <!-- Form calls the modified login() function -->
-      <form (ngSubmit)="login()">
-        <!-- Usuario -->
-        <div class="input-group">
-          <i class="fa fa-user"></i>
-          <input
-            type="text"
-            name="username"
-            [(ngModel)]="username"
-            placeholder="Usuario"
-            required
-          />
-        </div>
+      <div class="input-group">
+        <i class="fa fa-lock"></i>
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          name="password"
+          [(ngModel)]="password"
+          placeholder="Clave"
+          required
+        />
+        <i
+          class="fa"
+          [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+          (click)="togglePasswordVisibility()"
+        ></i>
+      </div>
 
-        <!-- Contraseña -->
-        <div class="input-group">
-          <i class="fa fa-lock"></i>
-          <input
-            [type]="showPassword ? 'text' : 'password'"
-            name="password"
-            [(ngModel)]="password"
-            placeholder="Clave"
-            required
-          />
-          <i
-            class="fa"
-            [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
-            (click)="togglePasswordVisibility()"
-          ></i>
-        </div>
-
-        <button type="submit" class="login-btn">INICIAR SESIÓN</button>
-      </form>
-    </div>
+      <button type="submit" class="login-btn">INICIAR SESIÓN</button>
+    </form>
   </div>
 </div>

@@ -58,7 +58,8 @@ export class LoginComponent {
         } else {
           this.errorMessage = 'Inicio de sesión exitoso, pero la información del usuario no está disponible.';
           console.error('Login successful, but user information is missing in the backend response.');
-           this.router.navigate(['/dashboard']);
+
+          this.router.navigate(['/dashboard']);
         }
       },
       error: (error) => {

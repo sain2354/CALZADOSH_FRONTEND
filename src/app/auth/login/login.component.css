@@ -1,83 +1,68 @@
+/* login.component.css */
+
+/* Fondo full-page con la imagen que subiste */
 .login-wrapper {
+  min-height: 100vh;
   display: flex;
-  height: 100vh;
+  align-items: center;
+  justify-content: center;
   font-family: 'Poppins', sans-serif;
+
+  /* Fondo con la imagen en assets */
+  background: url('/assets/pagina-fondo.png') no-repeat center center fixed;
+  background-size: cover;
+  padding: 28px;
+  box-sizing: border-box;
 }
 
-/* Lado izquierdo con curva */
-.login-left {
-  flex: 1;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-/* Fondo curvo más grande, ocupando mitad de la página */
-.login-left::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #0095ff;
-  /* Curva más pronunciada y ancha */
-  clip-path: path("M0,0 C0,1000 1000,100 900,1000 L0 1000 Z");
-  z-index: 0;
-}
-
-/* Imagen sobre la curva */
-.login-left img {
-  position: relative;
-  z-index: 2;
-  width: 95%;
-  max-width: 650px; /* un poco más grande */
-}
-
-/* Lado derecho */
-.login-right {
-  flex: 1;
-  background-color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Caja de login */
+/* Caja del login: más pequeña y translúcida para ver el fondo */
 .login-box {
   width: 100%;
-  max-width: 400px;
+  max-width: 360px;               /* un poco más pequeña */
+  background: rgba(255, 255, 255, 0.18); /* muy translúcida para ver bien la imagen */
+  backdrop-filter: blur(6px);     /* efecto glass (si el navegador lo soporta) */
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 22px 24px;             /* padding reducido */
   text-align: center;
-  transform: scale(1.15);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.20);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #0b1a2b;                 /* texto oscuro para buena legibilidad sobre el fondo translúcido */
 }
 
+/* Icono de usuario: un poco más pequeño */
 .user-icon {
-  width: 100px;
-  height: 100px;
-  margin-bottom: 15px;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 8px auto;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
 }
 
+/* Título ligeramente más pequeño */
 .login-box h2 {
-  font-size: 26px;
-  font-weight: bold;
-  margin-bottom: 40px;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 6px 0 18px 0;
+  letter-spacing: 0.4px;
+  color: #081224; /* oscuro */
 }
 
-/* Inputs */
+/* Inputs: fondo muy suave para distinguir sobre la caja translúcida */
 .input-group {
   display: flex;
   align-items: center;
-  border-bottom: 2px solid #ccc;
-  margin-bottom: 25px;
-  padding: 10px 0;
+  background: rgba(255,255,255,0.06); /* sutil */
+  border-radius: 6px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(11,26,43,0.06);
 }
 
 .input-group i {
-  color: gray;
-  margin: 0 12px;
-  font-size: 20px;
+  color: rgba(11,26,43,0.6);
+  margin-right: 10px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -85,24 +70,59 @@
   flex: 1;
   border: none;
   outline: none;
-  font-size: 16px;
+  font-size: 14px;
+  background: transparent;
+  color: #071923; /* texto input oscuro */
 }
 
-/* Botón */
+/* Placeholder color */
+.input-group input::placeholder {
+  color: rgba(11,26,43,0.55);
+}
+
+/* Botón: mantengo el estilo azul que tenías, ajustado a la caja más pequeña */
 .login-btn {
   background-color: #0095ff;
   border: none;
   color: white;
-  font-weight: bold;
+  font-weight: 700;
   width: 100%;
-  padding: 14px;
-  border-radius: 30px;
-  font-size: 16px;
+  padding: 12px;
+  border-radius: 24px;
+  font-size: 14px;
   cursor: pointer;
-  margin-top: 15px;
-  transition: background-color 0.3s ease;
+  margin-top: 6px;
+  transition: background-color 0.18s ease, transform 0.12s ease;
+  box-shadow: 0 8px 18px rgba(0,149,255,0.18);
 }
 
 .login-btn:hover {
   background-color: #007acc;
+  transform: translateY(-2px);
+}
+
+/* Mensajes de alerta (si hay) */
+.alert {
+  margin-bottom: 12px;
+  text-align: left;
+  color: #7b1f1f;
+  background: rgba(255, 240, 240, 0.7);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* Responsive: reducir aún más en pantallas pequeñas */
+@media (max-width: 480px) {
+  .login-box {
+    max-width: 320px;
+    padding: 18px;
+  }
+  .user-icon {
+    width: 72px;
+    height: 72px;
+  }
+  .login-box h2 {
+    font-size: 20px;
+  }
 }
