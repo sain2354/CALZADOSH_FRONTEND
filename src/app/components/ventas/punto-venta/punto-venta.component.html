@@ -117,10 +117,11 @@
             <label>Cliente*</label>
             <div class="cliente-row">
               <select class="form-select" [(ngModel)]="clienteSeleccionado" name="cli" required>
-                <option value="">Seleccione</option>
-                <option *ngFor="let c of personas">{{ c.numeroDocumento }} - {{ c.nombre }}</option>
-                <option>00000000 - Clientes Varios</option>
-              </select>
+  <option [ngValue]="null">Seleccione</option>
+  <option *ngFor="let c of personas" [ngValue]="c">{{ c.numeroDocumento }} - {{ c.nombre }}</option>
+  <option [ngValue]="'VARIOS'">00000000 - Clientes Varios</option>
+</select>
+
               <button type="button" class="btn btn-add" (click)="abrirModalCliente()">+</button>
             </div>
           </div>
@@ -197,8 +198,11 @@
 </div>
 
 <div style="display:none" #reporteBoletaContainer>
-  <app-boleta-venta
-    *ngIf="boleta"
-    [venta]="boleta">
-  </app-boleta-venta>
+  <app-invoice
+    #invoiceComp
+    *ngIf="ventaCreadaResponse"
+    [ventaData]="ventaCreadaResponse">
+  </app-invoice>
 </div>
+
+

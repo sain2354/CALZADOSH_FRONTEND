@@ -1,15 +1,21 @@
-<!-- login.component.html -->
-<div class="login-wrapper">
-  <div class="login-box">
-    <img src="https://cdn-icons-png.flaticon.com/512/17/17004.png" alt="User" class="user-icon" />
+<div class="login-container">
+  <div class="background"></div>
+
+  <div class="login-card">
+    <img
+      src="https://cdn-icons-png.flaticon.com/512/666/666201.png"
+      alt="User"
+      class="user-icon"
+    />
     <h2>BIENVENIDO</h2>
 
-    <!-- Mensaje de error (si existe) -->
-    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+  <!-- Mensaje de error (si existe) -->
+<div *ngIf="errorMessage" class="alert alert-danger" role="alert">
       {{ errorMessage }}
     </div>
 
     <form (ngSubmit)="login()">
+      <!-- Usuario -->
       <div class="input-group">
         <i class="fa fa-user"></i>
         <input
@@ -21,6 +27,7 @@
         />
       </div>
 
+      <!-- Clave -->
       <div class="input-group">
         <i class="fa fa-lock"></i>
         <input

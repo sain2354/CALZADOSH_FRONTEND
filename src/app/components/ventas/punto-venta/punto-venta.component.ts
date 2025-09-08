@@ -1,4 +1,4 @@
-// punto-venta.component.ts  
+// punto-venta.component.ts  (modificado sólo en imports del decorador)
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -10,8 +10,10 @@ import { VentaService } from '../../../services/venta.service';
 import { TallaProductoService } from '../../../services/talla-producto.service';
 import { PersonaService } from '../../../services/persona.service';
 import { PersonaComponent } from '../../persona/nuevo-persona/persona.component';
+// import { BoletaVentaComponent } from '../../../boleta-venta/boleta-venta.component';
+import { InvoiceComponent } from '../../../invoice/invoice.component'; // <-- nuevo
 import { Persona } from '../../../models/persona.model';
-import { BoletaVentaComponent } from '../../../boleta-venta/boleta-venta.component';
+import { AuthService } from '../../../services/auth.service'; // <- añadir si no está
 
 @Component({
   selector: 'app-punto-venta',
@@ -22,7 +24,7 @@ import { BoletaVentaComponent } from '../../../boleta-venta/boleta-venta.compone
     NgxPaginationModule,
     AutocompleteLibModule,
     PersonaComponent,
-    BoletaVentaComponent
+    InvoiceComponent // <-- sustituye BoletaVentaComponent
   ],
   templateUrl: './punto-venta.component.html',
   styleUrls: ['./punto-venta.component.css']
@@ -77,7 +79,8 @@ export class PuntoVentaComponent implements OnInit {
   // DATOS VENTA
   documentoSeleccionado = '';
   personas: Persona[] = [];
-  clienteSeleccionado = '';
+  clienteSeleccionado: Persona | 'VARIOS' | null = null;
+
   mediosPago = ['Efectivo','Yape', 'Plin', 'Transferencia'];
   tipoPagoSeleccionado = '';
   serie = '';
@@ -121,22 +124,46 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   @ViewChild('reporteBoletaContainer', { static: false, read: ElementRef })
-  reporteBoletaContainer!: ElementRef;
+reporteBoletaContainer!: ElementRef;
+
+// referencia al InvoiceComponent para llamar generateQr/generateBarcode antes de imprimir
+@ViewChild(InvoiceComponent, { static: false })
+invoiceComponent!: InvoiceComponent;
+
+// usuario actual (nombre / username) traído desde AuthService / localStorage
+usuarioActual: string | null = null;
+
 
   constructor(
-    private productoService: ProductoService,
-    private ventaService: VentaService,
-    private tallaProductoService: TallaProductoService,
-    private personaService: PersonaService
-  ) {}
+  private productoService: ProductoService,
+  private ventaService: VentaService,
+  private tallaProductoService: TallaProductoService,
+  private personaService: PersonaService,
+  private authService: AuthService // <- nuevo
+) {}
 
   ngOnInit(): void {
-    this.cargarProductos();
-    this.cargarPersonas();
-    // Inicializar desde localStorage si existe (estos representan el último correlativo ya usado para cada tipo)
-    this.ultimoCorrelativoBoleta = parseInt(localStorage.getItem('ultimoCorrelativoBoleta') || '0', 10) || 0;
-    this.ultimoCorrelativoFactura = parseInt(localStorage.getItem('ultimoCorrelativoFactura') || '0', 10) || 0;
+  this.cargarProductos();
+  this.cargarPersonas();
+
+  // Obtener username desde AuthService (login guardó username en localStorage vía authService.loginSuccess)
+  try {
+    this.usuarioActual = this.authService.getUsername() ?? null;
+  } catch {
+    // fallback a localStorage directo por si acaso
+    try {
+      const raw = localStorage.getItem('username') || localStorage.getItem('usuario');
+      this.usuarioActual = raw ? JSON.parse(raw)?.username ?? raw : null;
+    } catch {
+      this.usuarioActual = null;
+    }
   }
+
+  // Inicializar correlativos
+  this.ultimoCorrelativoBoleta = parseInt(localStorage.getItem('ultimoCorrelativoBoleta') || '0', 10) || 0;
+  this.ultimoCorrelativoFactura = parseInt(localStorage.getItem('ultimoCorrelativoFactura') || '0', 10) || 0;
+}
+
 
   private cargarProductos() {
     this.productoService.getAll().subscribe({
@@ -282,15 +309,17 @@ export class PuntoVentaComponent implements OnInit {
   cerrarModalCliente() { this.mostrarModalCliente = false; }
 
   manejarPersonaCreada(p: Persona) {
-    // Sólo agregar si realmente es Cliente
-    if (p && p.tipoPersona === 'Cliente') {
-      this.personas.push(p);
-      this.clienteSeleccionado = `${p.numeroDocumento} - ${p.nombre}`;
-    } else {
-      console.warn('Se intentó agregar una persona que no es Cliente en Punto de Venta:', p);
-    }
-    this.cerrarModalCliente();
+  // Sólo agregar si realmente es Cliente
+  if (p && p.tipoPersona === 'Cliente') {
+    this.personas.push(p);
+    // Guardamos el objeto Persona (no su texto) para que coincida con el tipo Cliente | 'VARIOS' | null
+    this.clienteSeleccionado = p;
+  } else {
+    console.warn('Se intentó agregar una persona que no es Cliente en Punto de Venta:', p);
   }
+  this.cerrarModalCliente();
+}
+
 
   realizarVenta(form: NgForm) {
     // AÑADIDO: Validación para mostrar un mensaje si no hay productos
@@ -313,90 +342,183 @@ export class PuntoVentaComponent implements OnInit {
     }
 
     const detalles = this.ventaItems.map(it => {
-      const base = +(it.cantidad * it.precio).toFixed(2);
-      return {
-        idProducto: it.idProducto,
-        IdTallaUsa: it.idUnidadMedida,
-        descripcion: it.nombre,
-        cantidad: it.cantidad,
-        precio: it.precio,
-        descuento: 0,
-        total: base,
-        igv: +(base * 0.18).toFixed(2)
-      };
-    });
+  const base = +(it.cantidad * it.precio).toFixed(2);
+  return {
+    idProducto: it.idProducto,
+    IdTallaUsa: it.idUnidadMedida,
+    descripcion: it.nombre,
+    nombre: it.nombre,         // opcional: por si invoice usa nombre
+    cantidad: it.cantidad,
+    precio: it.precio,
+    talla: it.talla ?? '',     // <-- ADICIÓN: guarda la talla del item
+    descuento: 0,
+    total: base,
+    igv: +(base * 0.18).toFixed(2)
+  };
+});
 
-    const payload: any = {
-      idUsuario: 22,
-      tipoComprobante: this.documentoSeleccionado,
-      fecha: new Date().toISOString(),
-      total: this.total,
-      estado: 'Emitido',
-      serie: this.serie,
-      numeroComprobante: this.correlativo,
-      totalIgv: this.iva,
-      detalles: detalles
-    };
+// EXTRAEMOS datos del cliente seleccionado (puede ser Persona, 'VARIOS' o null)
+const clienteObj = (this.clienteSeleccionado && typeof this.clienteSeleccionado === 'object') ? this.clienteSeleccionado as Persona : null;
+const clienteNombre = clienteObj ? clienteObj.nombre : (this.clienteSeleccionado === 'VARIOS' ? 'Clientes Varios' : '');
+const clienteDocumento = clienteObj ? clienteObj.numeroDocumento : (this.clienteSeleccionado === 'VARIOS' ? '00000000' : '');
+const direccion = clienteObj ? clienteObj.direccion : '';
 
-    console.log("DEBUG (Frontend): Objeto payload antes de enviar:", payload);
-    console.log("DEBUG (Frontend): Contenido de detalles:", detalles);
+// Construimos payload incluyendo datos del cliente y forma de pago
+// obtener nombre del vendedor desde usuarioActual (AuthService)
+const vendedorNombre = this.usuarioActual || this.authService.getUsername?.() || 'PuntoVenta';
 
-    this.ventaService.createVenta(payload).subscribe({
-      next: resp => {
-        // Al confirmarse la venta en el backend, AHÍ sí incrementamos y persistimos el correlativo
-        if (this.documentoSeleccionado === 'Boleta') {
-          // obtener valor actual guardado y aumentar en 1 (asegurando coherencia)
-          const stored = Number(localStorage.getItem('ultimoCorrelativoBoleta') || '0');
-          const newCount = Math.max(stored, this.ultimoCorrelativoBoleta) + 1;
-          this.ultimoCorrelativoBoleta = newCount;
-          localStorage.setItem('ultimoCorrelativoBoleta', String(newCount));
-        } else if (this.documentoSeleccionado === 'Factura') {
-          const stored = Number(localStorage.getItem('ultimoCorrelativoFactura') || '0');
-          const newCount = Math.max(stored, this.ultimoCorrelativoFactura) + 1;
-          this.ultimoCorrelativoFactura = newCount;
-          localStorage.setItem('ultimoCorrelativoFactura', String(newCount));
-        }
+const payload: any = {
+  idUsuario: 22,
+  tipoComprobante: this.documentoSeleccionado,
+  fecha: new Date().toISOString(),
+  total: this.total,
+  estado: 'Emitido',
+  serie: this.serie,
+  numeroComprobante: this.correlativo,
+  totalIgv: this.iva,
+  detalles: detalles,
+  clienteNombre: clienteNombre,
+  clienteDocumento: clienteDocumento,
+  direccion: direccion,
+  formaPago: this.tipoPagoSeleccionado,
+  vendedor: vendedorNombre
+};
 
-        this.ventaCreadaResponse = resp;
-        this.mostrarConfirmacion = true;
-        this.cargarProductos();
-        this.vaciarListado();
 
-        // Resetear formulario y valores (se mantiene la política de que el siguiente preview se calcula al seleccionar documento)
-        this.resetearFormularioVenta();
-        console.log("DEBUG (Frontend): Venta creada exitosamente.");
-      },
-      error: err => {
-        console.error("ERROR (Frontend): Error al crear la venta:", err);
-        alert('Error interno al crear la venta.');
-      }
-    });
+this.ventaService.createVenta(payload).subscribe({
+  next: resp => {
+    // Actualizamos correlativos (misma lógica que ya tenías)
+    if (this.documentoSeleccionado === 'Boleta') {
+      const stored = Number(localStorage.getItem('ultimoCorrelativoBoleta') || '0');
+      const newCount = Math.max(stored, this.ultimoCorrelativoBoleta) + 1;
+      this.ultimoCorrelativoBoleta = newCount;
+      localStorage.setItem('ultimoCorrelativoBoleta', String(newCount));
+    } else if (this.documentoSeleccionado === 'Factura') {
+      const stored = Number(localStorage.getItem('ultimoCorrelativoFactura') || '0');
+      const newCount = Math.max(stored, this.ultimoCorrelativoFactura) + 1;
+      this.ultimoCorrelativoFactura = newCount;
+      localStorage.setItem('ultimoCorrelativoFactura', String(newCount));
+    }
+
+    // ENRIQUECEMOS la respuesta para asegurar que el Invoice reciba cliente, documento y dirección
+    const detalles = this.ventaItems.map(it => {
+  const base = +(it.cantidad * it.precio).toFixed(2);
+  return {
+    idProducto: it.idProducto,
+    IdTallaUsa: it.idUnidadMedida,
+    descripcion: it.nombre,
+    nombre: it.nombre,         // opcional: por si invoice usa nombre
+    cantidad: it.cantidad,
+    precio: it.precio,
+    talla: it.talla ?? '',     // <-- ADICIÓN: guarda la talla del item
+    descuento: 0,
+    total: base,
+    igv: +(base * 0.18).toFixed(2)
+  };
+});
+
+// ...
+
+this.ventaCreadaResponse = Object.assign({}, resp, {
+  clienteNombre,
+  clienteDocumento,
+  direccion,
+  formaPago: this.tipoPagoSeleccionado,
+  vendedor: vendedorNombre,
+  serie: this.serie,
+  numeroComprobante: this.correlativo,
+  fecha: new Date().toISOString(),
+  moneda: 'S/',
+  // <-- ADICIÓN: pasamos los detalles ya normalizados al InvoiceComponent
+  detalles: (detalles || []).map(d => ({
+  cantidad: d.cantidad,
+  precio: d.precio,
+  total: d.total,
+  descripcion: d.descripcion,
+  nombre: d.nombre,
+  talla: d.talla,
+  desc: d.descuento ?? 0    // <-- usar solo la propiedad que sí existe
+}))
+});
+
+
+
+    this.mostrarConfirmacion = true;
+    this.cargarProductos();
+    this.vaciarListado();
+
+    // Resetear formulario y valores
+    this.resetearFormularioVenta();
+    console.log("DEBUG (Frontend): Venta creada exitosamente.");
+  },
+  error: err => {
+    console.error("ERROR (Frontend): Error al crear la venta:", err);
+    alert('Error interno al crear la venta.');
+  }
+});
+
   }
 
   // Función para resetear otros campos del formulario de venta
   resetearFormularioVenta(): void {
-      this.documentoSeleccionado = '';
-      this.clienteSeleccionado = '';
-      this.tipoPagoSeleccionado = '';
-      this.serie = '';
-      // dejamos el correlativo en el valor por defecto; el usuario al seleccionar el documento verá el preview correcto
-      this.correlativo = '00000001';
-      this.montoEfectivo = 0;
-  }
+    this.documentoSeleccionado = '';
+    this.clienteSeleccionado = null; // ahora limpiamos el objeto cliente
+    this.tipoPagoSeleccionado = '';
+    this.serie = '';
+    // dejamos el correlativo en el valor por defecto; el usuario al seleccionar el documento verá el preview correcto
+    this.correlativo = '00000001';
+    this.montoEfectivo = 0;
+}
 
-  imprimirComprobante() {
-    const html = this.reporteBoletaContainer.nativeElement.innerHTML;
-    const popup = window.open('', '_blank', 'width=400,height=600');
-    if (popup) {
-      popup.document.write(`
-        <html><head><title>Comprobante</title>
-        <style>body{font-family:'Courier New'} .boleta{width:100%}</style>
-        </head><body>${html}</body></html>`);
-      popup.document.close();
-      popup.print();
-      popup.close();
+
+  async imprimirComprobante() {
+  try {
+    // 1) Si existe la instancia del InvoiceComponent, forzamos regenerar barcode y QR
+    if (this.invoiceComponent) {
+      await this.invoiceComponent.generateBarcode();
+      await this.invoiceComponent.generateQr();
     }
+
+    // 2) Espera corta para que las imágenes (dataURL o externas) terminen de asignarse
+    await new Promise(res => setTimeout(res, 300)); // 300ms (ajusta si hace falta)
+
+    // 3) Obtener HTML actualizado (con <img src="..."> ya en su lugar)
+    const html = this.reporteBoletaContainer.nativeElement.innerHTML;
+
+    // 4) Abrir popup y escribir HTML para imprimir
+    const popup = window.open('', '_blank', 'width=900,height=900');
+    if (!popup) {
+      alert('No se pudo abrir la ventana de impresión. Revisa bloqueadores de pop-ups.');
+      return;
+    }
+
+    popup.document.write(`
+      <html>
+        <head>
+          <meta charset="utf-8"/>
+          <title>Comprobante</title>
+          <style>
+            body{font-family:'Poppins', sans-serif; margin:8px;}
+            /* puedes inyectar estilos aquí si los necesitas */
+          </style>
+        </head>
+        <body>${html}</body>
+      </html>
+    `);
+    popup.document.close();
+
+    // 5) Esperar un momento a que el popup cargue las imágenes
+    await new Promise(res => setTimeout(res, 350));
+
+    popup.focus();
+    popup.print();
+    // popup.close(); // opcional
+  } catch (err) {
+    console.error('Error en imprimirComprobante:', err);
+    alert('Error preparando la boleta para impresión. Revisa la consola.');
   }
+}
+
 
   cancelarComprobante() {
     this.mostrarConfirmacion = false;
