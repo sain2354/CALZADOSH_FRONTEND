@@ -1,0 +1,24 @@
+[build]
+  command = "npm run build"
+  publish = "dist/CALZADOSH_FRONTEND/browser"
+
+[[plugins]]
+  package = "@netlify/angular-runtime"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Content-Type = "font/woff2"
+
+[[headers]]
+  for = "/*.ttf"
+  [headers.values]
+    Content-Type = "font/ttf"
