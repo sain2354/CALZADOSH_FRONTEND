@@ -22,8 +22,12 @@ export interface VentaDetalleResponse {
     totalIgv?: number;
 
     // Propiedades que vienen de las relaciones incluidas en el backend
-    cliente?: Cliente; // *** USAMOS LA INTERFAZ CLIENTE ***
-    direccionEntrega?: DireccionEntrega; // *** USAMOS LA INTERFAZ DIRECCIONENTREGA ***
-    detalles: DetalleVentaDetalle[]; // Usamos la nueva interfaz para los detalles
-    pagos: Pago[]; // *** USAMOS LA INTERFAZ PAGO ***
+    cliente?: Cliente; // *** Mantenido por si la API se actualiza ***
+    direccionEntrega?: DireccionEntrega; 
+    detalles: DetalleVentaDetalle[]; 
+    pagos?: Pago[]; // *** Mantenido por si la API se actualiza ***
+
+    // Propiedades que probablemente sí vienen en la respuesta de la API
+    clienteNombre?: string;
+    formaPago?: string;
 }

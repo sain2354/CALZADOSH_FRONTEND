@@ -241,4 +241,12 @@
     <app-persona-form [persona]="nuevoProveedor" (onCancelar)="cerrarModalProveedor()" (onGuardar)="manejarProveedorCreado($event)"></app-persona-form>
   </div>
 
+  <!-- Contenedor oculto para generar la boleta/factura de compra con InvoiceComponent -->
+  <div style="display:none" #reporteCompraContainer>
+    <app-invoice
+      *ngIf="compraCreadaResponse"
+      [ventaData]="compraCreadaResponse">
+    </app-invoice>
+  </div>
+
 </div>

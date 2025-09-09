@@ -95,10 +95,8 @@
 
 /* Estilos de la Tabla Principal */
 .table-encabezado {
-
-  background-color: #17a2b8; /* Azul de Bootstrap */
-  color: #fff; /* Letras blancas */
-
+  background-color: #17a2b8;
+  color: #fff;
   background-color: #17a2b8 !important;
   color: #fff !important;
 }
@@ -175,51 +173,36 @@ tbody td.text-muted {
     opacity: 0.8;
 }
 
+/* ---- BLOQUE OCULTO PARA PDF ---- */
+.hidden-print-area {
+  position: absolute;
+  left: -9999px; /* fuera de la pantalla pero renderizable */
+  top: 0;
+  width: 1100px; /* ancho de captura: ajusta si quieres más/menos */
+  background: white;
+  padding: 16px;
+  box-sizing: border-box;
+  color: #333;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+/* Asegura que las tablas dentro del área oculta se vean bien */
+.hidden-print-area table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hidden-print-area th, .hidden-print-area td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
 /* ====== Paginación ====== */
 .paginacion-contenedor {
   padding-top: 8px;
-}
-
-.texto-registros {
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.pagination-sm .page-item .page-link {
-  color: #17a2b8 !important;
-  font-size: 0.85rem;
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin: 0 1px;
-}
-
-.pagination-sm .page-item.active .page-link {
-  background-color: #17a2b8 !important;
-  border-color: #17a2b8 !important;
-  color: #fff !important;
-  border-radius: 4px;
-  width: auto;
-  height: auto;
-  display: inline-block;
-  padding: 4px 8px;
-  margin: 0 1px;
-}
-
-.pagination-sm .page-item.disabled .page-link {
-  color: #ccc !important;
-  pointer-events: none;
-}
-
-.pagination-sm .page-item .page-link:hover:not(.disabled) {
-  background-color: rgba(0, 172, 168, 0.1) !important;
-  color: #17a2b8 !important;
-  border-color: #17a2b8 !important;
-  border-radius: 4px;
-}
-
-/* ====== Modal de Detalle de Venta ====== */
-.modal-content {
-    border-radius: 8px;
 }
 
 .modal-header {
@@ -307,4 +290,135 @@ tbody td.text-muted {
 
 .modal-footer .btn-secondary {
     font-size: 0.95rem;
+}
+/* Estilos generales del componente */
+.header-titulo {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.opciones-columna {
+    min-width: 100px; /* Evita que los botones se envuelvan */
+}
+
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+}
+
+.modal-body .form-label {
+    min-width: 120px;
+}
+
+.form-control-plaintext {
+    width: 100%;
+}
+
+@media print {
+    .no-print, .no-print * {
+        display: none !important;
+    }
+
+    body.imprimiendo-listado {
+        background-color: white !important;
+    }
+
+    body.imprimiendo-listado .listado-ventas-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    body.imprimiendo-listado app-root > *:not(.listado-ventas-container),
+    body.imprimiendo-listado .card-header,
+    body.imprimiendo-listado .row.mb-3, /* Oculta filtros */
+    body.imprimiendo-listado .acciones-rapidas,
+    body.imprimiendo-listado .opciones-columna, /* Oculta columna de opciones */
+    body.imprimiendo-listado .pagination-controls,
+    body.imprimiendo-listado .modal {
+        display: none !important;
+    }
+
+    body.imprimiendo-listado .table-responsive {
+        overflow: visible !important;
+    }
+
+    body.imprimiendo-listado .table th,
+    body.imprimiendo-listado .table td {
+        font-size: 10pt !important;
+    }
+
+    /* Estilos cuando se imprime el DETALLE de la venta (modal) */
+    body.imprimiendo-detalle {
+        background-color: white !important;
+    }
+
+    body.imprimiendo-detalle > *:not(.modal), /* Oculta todo menos el modal */
+    body.imprimiendo-detalle .modal-footer { /* Oculta el pie del modal */
+        display: none !important;
+    }
+
+    body.imprimiendo-detalle .modal {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        overflow: visible !important;
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+}
+/* --- (Tu CSS existente arriba) --- */
+
+/* Asegura que el icono Excel tenga color blanco y tamaño correcto dentro del botón */
+.botones-export .excel-icon svg {
+  display: inline-block;
+  vertical-align: middle;
+  width: 14px;
+  height: 14px;
+  fill: #fff; /* icono blanco sobre fondo verde */
+}
+
+/* Si quieres un poco más de espacio dentro del botón */
+.botones-export .btn-success .excel-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ====== (el resto de tu CSS queda igual) ====== */
+
+/* (pega aquí todo tu CSS original — lo dejé sin cambios en tu archivo; solo añadí las reglas anteriores) */
+/* Agrega estos estilos al final de tu archivo CSS */
+
+/* Botones pequeños para filtros */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+
+/* Ajustar tamaño de botones de filtro */
+.col-md-2 .btn {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botón Excel con texto */
+.btn-success.btn-sm {
+  min-width: 60px;
+  font-weight: 500;
+}
+
+/* Ajustar espaciado entre botones de opciones */
+.opciones-columna .btn {
+  margin: 0 2px;
 }

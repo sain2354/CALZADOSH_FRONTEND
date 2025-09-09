@@ -1,4 +1,3 @@
-// punto-venta.component.ts  (modificado sólo en imports del decorador)
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -10,10 +9,12 @@ import { VentaService } from '../../../services/venta.service';
 import { TallaProductoService } from '../../../services/talla-producto.service';
 import { PersonaService } from '../../../services/persona.service';
 import { PersonaComponent } from '../../persona/nuevo-persona/persona.component';
-// import { BoletaVentaComponent } from '../../../boleta-venta/boleta-venta.component';
-import { InvoiceComponent } from '../../../invoice/invoice.component'; // <-- nuevo
+import { InvoiceComponent } from '../../../invoice/invoice.component';
 import { Persona } from '../../../models/persona.model';
-import { AuthService } from '../../../services/auth.service'; // <- añadir si no está
+import { AuthService } from '../../../services/auth.service';
+
+// SweetAlert2
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-punto-venta',
@@ -24,7 +25,7 @@ import { AuthService } from '../../../services/auth.service'; // <- añadir si n
     NgxPaginationModule,
     AutocompleteLibModule,
     PersonaComponent,
-    InvoiceComponent // <-- sustituye BoletaVentaComponent
+    InvoiceComponent
   ],
   templateUrl: './punto-venta.component.html',
   styleUrls: ['./punto-venta.component.css']
@@ -55,7 +56,6 @@ export class PuntoVentaComponent implements OnInit {
   tallasProducto: any[] = [];
   mostrarModalCliente = false;
 
-  // Nuevo: objeto usado para abrir el modal en modo Cliente
   nuevoCliente: Persona = {
     nombre: '',
     telefono: '',
@@ -66,8 +66,6 @@ export class PuntoVentaComponent implements OnInit {
     numeroDocumento: ''
   };
 
-  // CONFIRMACIÓN
-  mostrarConfirmacion = false;
   ventaCreadaResponse: any = null;
 
   // TOTALES
@@ -86,7 +84,6 @@ export class PuntoVentaComponent implements OnInit {
   serie = '';
   correlativo = '00000001';
 
-  // Variables para controlar correlativos (valores guardados que representan el *último* correlativo ya utilizado)
   ultimoCorrelativoBoleta = 0;
   ultimoCorrelativoFactura = 0;
 
@@ -101,7 +98,6 @@ export class PuntoVentaComponent implements OnInit {
   itemsPerPage: number = 10;
   searchTerm: string = '';
 
-  // Getter para el componente de boleta
   get boleta() {
     if (!this.ventaCreadaResponse) return null;
     const vr = this.ventaCreadaResponse;
@@ -124,45 +120,40 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   @ViewChild('reporteBoletaContainer', { static: false, read: ElementRef })
-reporteBoletaContainer!: ElementRef;
+  reporteBoletaContainer!: ElementRef;
 
-// referencia al InvoiceComponent para llamar generateQr/generateBarcode antes de imprimir
-@ViewChild(InvoiceComponent, { static: false })
-invoiceComponent!: InvoiceComponent;
+  @ViewChild(InvoiceComponent, { static: false })
+  invoiceComponent!: InvoiceComponent;
 
-// usuario actual (nombre / username) traído desde AuthService / localStorage
-usuarioActual: string | null = null;
+  usuarioActual: string | null = null;
 
 
   constructor(
-  private productoService: ProductoService,
-  private ventaService: VentaService,
-  private tallaProductoService: TallaProductoService,
-  private personaService: PersonaService,
-  private authService: AuthService // <- nuevo
-) {}
+    private productoService: ProductoService,
+    private ventaService: VentaService,
+    private tallaProductoService: TallaProductoService,
+    private personaService: PersonaService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-  this.cargarProductos();
-  this.cargarPersonas();
+    this.cargarProductos();
+    this.cargarPersonas();
 
-  // Obtener username desde AuthService (login guardó username en localStorage vía authService.loginSuccess)
-  try {
-    this.usuarioActual = this.authService.getUsername() ?? null;
-  } catch {
-    // fallback a localStorage directo por si acaso
     try {
-      const raw = localStorage.getItem('username') || localStorage.getItem('usuario');
-      this.usuarioActual = raw ? JSON.parse(raw)?.username ?? raw : null;
+      this.usuarioActual = this.authService.getUsername() ?? null;
     } catch {
-      this.usuarioActual = null;
+      try {
+        const raw = localStorage.getItem('username') || localStorage.getItem('usuario');
+        this.usuarioActual = raw ? JSON.parse(raw)?.username ?? raw : null;
+      } catch {
+        this.usuarioActual = null;
+      }
     }
-  }
 
-  // Inicializar correlativos
-  this.ultimoCorrelativoBoleta = parseInt(localStorage.getItem('ultimoCorrelativoBoleta') || '0', 10) || 0;
-  this.ultimoCorrelativoFactura = parseInt(localStorage.getItem('ultimoCorrelativoFactura') || '0', 10) || 0;
-}
+    this.ultimoCorrelativoBoleta = parseInt(localStorage.getItem('ultimoCorrelativoBoleta') || '0', 10) || 0;
+    this.ultimoCorrelativoFactura = parseInt(localStorage.getItem('ultimoCorrelativoFactura') || '0', 10) || 0;
+  }
 
 
   private cargarProductos() {
@@ -176,7 +167,6 @@ usuarioActual: string | null = null;
           stock: p.stock
         }));
         this.productosAutoComplete = [...this.allProducts];
-        // sincroniza stock en items actuales
         this.ventaItems.forEach(it => {
           const prod = this.allProducts.find(p => p.idProducto === it.idProducto);
           if (prod) it.stock = prod.stock;
@@ -189,7 +179,6 @@ usuarioActual: string | null = null;
   private cargarPersonas() {
     this.personaService.getAllPersonas().subscribe({
       next: p => {
-        // Filtrar SOLO clientes para punto de venta
         this.personas = (p || []).filter(persona => persona.tipoPersona === 'Cliente');
       },
       error: err => console.error(err)
@@ -237,27 +226,20 @@ usuarioActual: string | null = null;
   }
 
   private calcularTotal() {
-    // El precio ya incluye IGV, por lo que el subtotal es la suma de precios * cantidad
-    const sum = this.ventaItems.reduce((acc, it) => acc + it.cantidad * it.precio, 0);
-    this.subTotal = +sum.toFixed(2);
-    
-    // Calcular IGV (18% del subtotal)
-    this.iva = +(this.subTotal * 0.18).toFixed(2);
-    
-    // El total es igual al subtotal (ya que el IGV está incluido)
-    this.total = +(this.subTotal - this.descuento).toFixed(2);
-  }
+  const sum = this.ventaItems.reduce((acc, it) => acc + it.cantidad * it.precio, 0);
+  this.subTotal = +sum.toFixed(2);
 
-  /**
-   * Cuando el usuario cambia el documento (Boleta/Factura) mostramos la serie y
-   * el *preview* del correlativo sin persistirlo todavía.
-   * Nota: NO incrementamos localStorage aquí. El incremento final se hará sólo
-   * cuando la venta se registre con éxito en realizarVenta().
-   */
+  // IGV deshabilitado para Perú: lo mostramos pero con valor 0.00
+  this.iva = 0;
+
+  // Total = subtotal - descuento (sin sumar IGV)
+  this.total = +(this.subTotal - this.descuento).toFixed(2);
+}
+
+
   onDocumentoChange() {
     if (this.documentoSeleccionado === 'Boleta') {
       this.serie = 'B001';
-      // preview = ultimoCorrelativoBoleta (último usado) + 1
       this.correlativo = (this.ultimoCorrelativoBoleta + 1).toString().padStart(8, '0');
     } else if (this.documentoSeleccionado === 'Factura') {
       this.serie = 'F001';
@@ -276,7 +258,13 @@ usuarioActual: string | null = null;
         console.log('Respuesta de getTallasByProducto:', t);
         this.mostrarModalTallas = true;
       },
-      error: () => alert('Error cargando tallas')
+      error: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error cargando tallas. Intenta nuevamente.'
+        });
+      }
     });
   }
 
@@ -294,7 +282,6 @@ usuarioActual: string | null = null;
   }
 
   abrirModalCliente() {
-    // Asegurarnos que el modal abra con modo Cliente
     this.nuevoCliente = {
       nombre: '',
       telefono: '',
@@ -309,35 +296,107 @@ usuarioActual: string | null = null;
   cerrarModalCliente() { this.mostrarModalCliente = false; }
 
   manejarPersonaCreada(p: Persona) {
-  // Sólo agregar si realmente es Cliente
-  if (p && p.tipoPersona === 'Cliente') {
-    this.personas.push(p);
-    // Guardamos el objeto Persona (no su texto) para que coincida con el tipo Cliente | 'VARIOS' | null
-    this.clienteSeleccionado = p;
-  } else {
-    console.warn('Se intentó agregar una persona que no es Cliente en Punto de Venta:', p);
+    if (p && p.tipoPersona === 'Cliente') {
+      this.personas.push(p);
+      this.clienteSeleccionado = p;
+    } else {
+      console.warn('Se intentó agregar una persona que no es Cliente en Punto de Venta:', p);
+    }
+    this.cerrarModalCliente();
   }
-  this.cerrarModalCliente();
-}
 
 
-  realizarVenta(form: NgForm) {
-    // AÑADIDO: Validación para mostrar un mensaje si no hay productos
+  async realizarVenta(form: NgForm) {
     if (this.ventaItems.length === 0) {
-      alert('No hay productos en el listado.');
+      await Swal.fire({
+        icon: 'warning',
+        title: 'No hay productos',
+        text: 'No hay productos en el listado. Por favor agrega productos antes de realizar la venta.'
+      });
       console.log("DEBUG (Frontend): No hay items en la venta.");
+      return;
+    }
+
+    if (!this.documentoSeleccionado || this.documentoSeleccionado.trim() === '') {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Documento requerido',
+        text: 'Selecciona el tipo de documento (Boleta o Factura).'
+      });
+      return;
+    }
+
+    if (!this.clienteSeleccionado || (typeof this.clienteSeleccionado === 'string' && this.clienteSeleccionado !== 'VARIOS' && this.clienteSeleccionado === '')) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Cliente requerido',
+        text: 'Selecciona un cliente o agrega uno nuevo.'
+      });
+      return;
+    }
+
+    if (!this.tipoPagoSeleccionado || this.tipoPagoSeleccionado.trim() === '') {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Tipo de pago requerido',
+        text: 'Selecciona el tipo de pago.'
+      });
       return;
     }
 
     if (form.invalid) {
       console.log("DEBUG (Frontend): Formulario inválido.");
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Formulario incompleto',
+        text: 'Completa los campos obligatorios marcados en el formulario.'
+      });
       return;
     }
 
-    // Validación de efectivo exacto
     if (this.montoEfectivo !== this.total) {
-      alert('El monto recibido debe ser exactamente igual al total de la venta.');
+      await Swal.fire({
+        icon: 'error',
+        title: 'Monto recibido inválido',
+        text: 'El monto recibido debe ser exactamente igual al total de la venta.'
+      });
       console.log("DEBUG (Frontend): Monto recibido no es exacto.");
+      return;
+    }
+
+    const clienteObj = (this.clienteSeleccionado && typeof this.clienteSeleccionado === 'object') ? this.clienteSeleccionado as Persona : null;
+    const clienteNombre = clienteObj ? clienteObj.nombre : (this.clienteSeleccionado === 'VARIOS' ? 'Clientes Varios' : '');
+    const clienteDocumento = clienteObj ? clienteObj.numeroDocumento : (this.clienteSeleccionado === 'VARIOS' ? '00000000' : '');
+
+    const confirmHtml = `
+      <p>Vas a registrar una venta con <strong>${this.ventaItems.length}</strong> item(s).<br>
+      Cliente: <strong>${clienteNombre}</strong> (${clienteDocumento})<br>
+      Documento: <strong>${this.documentoSeleccionado} - ${this.correlativo}</strong><br>
+      Forma de pago: <strong>${this.tipoPagoSeleccionado}</strong><br>
+      Total: <strong>S/ ${this.total.toFixed(2)}</strong></p>
+      <div style="text-align:left; margin-top:10px;">
+        <input type="checkbox" id="confirmChkPV" /> <label for="confirmChkPV"> Confirmo que los datos de la venta son correctos</label>
+      </div>
+    `;
+
+    const confirmResult = await Swal.fire({
+      title: 'Confirmar venta',
+      html: confirmHtml,
+      showCancelButton: true,
+      confirmButtonText: 'Registrar venta',
+      cancelButtonText: 'Cancelar',
+      focusConfirm: false,
+      preConfirm: () => {
+        const chk = (document.getElementById('confirmChkPV') as HTMLInputElement | null);
+        if (!chk || !chk.checked) {
+          Swal.showValidationMessage('Debes marcar la casilla para confirmar la venta.');
+          return false;
+        }
+        return true;
+      }
+    });
+
+    if (!confirmResult || !confirmResult.isConfirmed) {
       return;
     }
 
@@ -347,35 +406,34 @@ usuarioActual: string | null = null;
     idProducto: it.idProducto,
     IdTallaUsa: it.idUnidadMedida,
     descripcion: it.nombre,
-    nombre: it.nombre,         // opcional: por si invoice usa nombre
+    nombre: it.nombre,
     cantidad: it.cantidad,
     precio: it.precio,
-    talla: it.talla ?? '',     // <-- ADICIÓN: guarda la talla del item
+    talla: it.talla ?? '',
     descuento: 0,
     total: base,
-    igv: +(base * 0.18).toFixed(2)
+    igv: 0 // IGV deshabilitado: siempre 0.00
   };
 });
 
-// EXTRAEMOS datos del cliente seleccionado (puede ser Persona, 'VARIOS' o null)
-const clienteObj = (this.clienteSeleccionado && typeof this.clienteSeleccionado === 'object') ? this.clienteSeleccionado as Persona : null;
-const clienteNombre = clienteObj ? clienteObj.nombre : (this.clienteSeleccionado === 'VARIOS' ? 'Clientes Varios' : '');
-const clienteDocumento = clienteObj ? clienteObj.numeroDocumento : (this.clienteSeleccionado === 'VARIOS' ? '00000000' : '');
-const direccion = clienteObj ? clienteObj.direccion : '';
 
-// Construimos payload incluyendo datos del cliente y forma de pago
-// obtener nombre del vendedor desde usuarioActual (AuthService)
-const vendedorNombre = this.usuarioActual || this.authService.getUsername?.() || 'PuntoVenta';
+    const direccion = clienteObj ? clienteObj.direccion : '';
+
+    const vendedorNombre = this.usuarioActual || this.authService.getUsername?.() || 'PuntoVenta';
+
+    const fechaPeruLocal = new Date().toLocaleString('sv', { timeZone: 'America/Lima' }); // "YYYY-MM-DD HH:MM:SS"
+const fechaPeruIsoWithOffset = fechaPeruLocal.replace(' ', 'T') + '-05:00';
 
 const payload: any = {
   idUsuario: 22,
+  idPersona: clienteObj ? clienteObj.idPersona : null,
   tipoComprobante: this.documentoSeleccionado,
-  fecha: new Date().toISOString(),
+  fecha: fechaPeruIsoWithOffset, // ISO aceptable por .NET
   total: this.total,
   estado: 'Emitido',
   serie: this.serie,
   numeroComprobante: this.correlativo,
-  totalIgv: this.iva,
+  totalIgv: this.iva, // 0
   detalles: detalles,
   clienteNombre: clienteNombre,
   clienteDocumento: clienteDocumento,
@@ -384,40 +442,35 @@ const payload: any = {
   vendedor: vendedorNombre
 };
 
+    this.ventaService.createVenta(payload).subscribe({
+      next: resp => {
+        if (this.documentoSeleccionado === 'Boleta') {
+          const stored = Number(localStorage.getItem('ultimoCorrelativoBoleta') || '0');
+          const newCount = Math.max(stored, this.ultimoCorrelativoBoleta) + 1;
+          this.ultimoCorrelativoBoleta = newCount;
+          localStorage.setItem('ultimoCorrelativoBoleta', String(newCount));
+        } else if (this.documentoSeleccionado === 'Factura') {
+          const stored = Number(localStorage.getItem('ultimoCorrelativoFactura') || '0');
+          const newCount = Math.max(stored, this.ultimoCorrelativoFactura) + 1;
+          this.ultimoCorrelativoFactura = newCount;
+          localStorage.setItem('ultimoCorrelativoFactura', String(newCount));
+        }
 
-this.ventaService.createVenta(payload).subscribe({
-  next: resp => {
-    // Actualizamos correlativos (misma lógica que ya tenías)
-    if (this.documentoSeleccionado === 'Boleta') {
-      const stored = Number(localStorage.getItem('ultimoCorrelativoBoleta') || '0');
-      const newCount = Math.max(stored, this.ultimoCorrelativoBoleta) + 1;
-      this.ultimoCorrelativoBoleta = newCount;
-      localStorage.setItem('ultimoCorrelativoBoleta', String(newCount));
-    } else if (this.documentoSeleccionado === 'Factura') {
-      const stored = Number(localStorage.getItem('ultimoCorrelativoFactura') || '0');
-      const newCount = Math.max(stored, this.ultimoCorrelativoFactura) + 1;
-      this.ultimoCorrelativoFactura = newCount;
-      localStorage.setItem('ultimoCorrelativoFactura', String(newCount));
-    }
-
-    // ENRIQUECEMOS la respuesta para asegurar que el Invoice reciba cliente, documento y dirección
-    const detalles = this.ventaItems.map(it => {
+        const detallesResp = this.ventaItems.map(it => {
   const base = +(it.cantidad * it.precio).toFixed(2);
   return {
     idProducto: it.idProducto,
     IdTallaUsa: it.idUnidadMedida,
     descripcion: it.nombre,
-    nombre: it.nombre,         // opcional: por si invoice usa nombre
+    nombre: it.nombre,
     cantidad: it.cantidad,
     precio: it.precio,
-    talla: it.talla ?? '',     // <-- ADICIÓN: guarda la talla del item
+    talla: it.talla ?? '',
     descuento: 0,
     total: base,
-    igv: +(base * 0.18).toFixed(2)
+    igv: 0 // IGV 0 también en la respuesta local
   };
 });
-
-// ...
 
 this.ventaCreadaResponse = Object.assign({}, resp, {
   clienteNombre,
@@ -427,106 +480,108 @@ this.ventaCreadaResponse = Object.assign({}, resp, {
   vendedor: vendedorNombre,
   serie: this.serie,
   numeroComprobante: this.correlativo,
-  fecha: new Date().toISOString(),
+  fecha: fechaPeruIsoWithOffset, // <-- usar la variable correcta
   moneda: 'S/',
-  // <-- ADICIÓN: pasamos los detalles ya normalizados al InvoiceComponent
-  detalles: (detalles || []).map(d => ({
-  cantidad: d.cantidad,
-  precio: d.precio,
-  total: d.total,
-  descripcion: d.descripcion,
-  nombre: d.nombre,
-  talla: d.talla,
-  desc: d.descuento ?? 0    // <-- usar solo la propiedad que sí existe
-}))
+  detalles: (detallesResp || []).map(d => ({
+    cantidad: d.cantidad,
+    precio: d.precio,
+    total: d.total,
+    descripcion: d.descripcion,
+    nombre: d.nombre,
+    talla: d.talla,
+    desc: d.descuento ?? 0
+  }))
 });
 
+        this.cargarProductos();
+        this.vaciarListado();
+        this.resetearFormularioVenta();
+        console.log("DEBUG (Frontend): Venta creada exitosamente.");
 
+        Swal.fire({
+          icon: 'success',
+          title: 'Venta registrada',
+          html: `<p>Venta registrada con éxito.</p>`,
+          showCancelButton: true,
+          confirmButtonText: 'Imprimir comprobante',
+          cancelButtonText: 'Cerrar'
+        }).then(choice => {
+          if (choice.isConfirmed) {
+            this.imprimirComprobante();
+          }
+        });
+      },
+      error: err => {
+        console.error("ERROR (Frontend): Error al crear la venta:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error interno al crear la venta. Revisa la consola para más detalles.'
+        });
+      }
+    });
 
-    this.mostrarConfirmacion = true;
-    this.cargarProductos();
-    this.vaciarListado();
-
-    // Resetear formulario y valores
-    this.resetearFormularioVenta();
-    console.log("DEBUG (Frontend): Venta creada exitosamente.");
-  },
-  error: err => {
-    console.error("ERROR (Frontend): Error al crear la venta:", err);
-    alert('Error interno al crear la venta.');
   }
-});
 
-  }
-
-  // Función para resetear otros campos del formulario de venta
   resetearFormularioVenta(): void {
     this.documentoSeleccionado = '';
-    this.clienteSeleccionado = null; // ahora limpiamos el objeto cliente
+    this.clienteSeleccionado = null;
     this.tipoPagoSeleccionado = '';
     this.serie = '';
-    // dejamos el correlativo en el valor por defecto; el usuario al seleccionar el documento verá el preview correcto
     this.correlativo = '00000001';
     this.montoEfectivo = 0;
-}
+  }
 
 
   async imprimirComprobante() {
-  try {
-    // 1) Si existe la instancia del InvoiceComponent, forzamos regenerar barcode y QR
-    if (this.invoiceComponent) {
-      await this.invoiceComponent.generateBarcode();
-      await this.invoiceComponent.generateQr();
+    try {
+      if (this.invoiceComponent) {
+        await this.invoiceComponent.generateBarcode();
+        await this.invoiceComponent.generateQr();
+      }
+
+      await new Promise(res => setTimeout(res, 300));
+
+      const html = this.reporteBoletaContainer.nativeElement.innerHTML;
+
+      const popup = window.open('', '_blank', 'width=900,height=900');
+      if (!popup) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'No se pudo abrir ventana',
+          text: 'No se pudo abrir la ventana de impresión. Revisa bloqueadores de pop-ups.'
+        });
+        return;
+      }
+
+      popup.document.write(`
+        <html>
+          <head>
+            <meta charset="utf-8"/>
+            <title>Comprobante</title>
+            <style>
+              body{font-family:'Poppins', sans-serif; margin:8px;}
+            </style>
+          </head>
+          <body>${html}</body>
+        </html>
+      `);
+      popup.document.close();
+
+      await new Promise(res => setTimeout(res, 350));
+
+      popup.focus();
+      popup.print();
+    } catch (err) {
+      console.error('Error en imprimirComprobante:', err);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error preparando la boleta para impresión. Revisa la consola'
+      });
     }
-
-    // 2) Espera corta para que las imágenes (dataURL o externas) terminen de asignarse
-    await new Promise(res => setTimeout(res, 300)); // 300ms (ajusta si hace falta)
-
-    // 3) Obtener HTML actualizado (con <img src="..."> ya en su lugar)
-    const html = this.reporteBoletaContainer.nativeElement.innerHTML;
-
-    // 4) Abrir popup y escribir HTML para imprimir
-    const popup = window.open('', '_blank', 'width=900,height=900');
-    if (!popup) {
-      alert('No se pudo abrir la ventana de impresión. Revisa bloqueadores de pop-ups.');
-      return;
-    }
-
-    popup.document.write(`
-      <html>
-        <head>
-          <meta charset="utf-8"/>
-          <title>Comprobante</title>
-          <style>
-            body{font-family:'Poppins', sans-serif; margin:8px;}
-            /* puedes inyectar estilos aquí si los necesitas */
-          </style>
-        </head>
-        <body>${html}</body>
-      </html>
-    `);
-    popup.document.close();
-
-    // 5) Esperar un momento a que el popup cargue las imágenes
-    await new Promise(res => setTimeout(res, 350));
-
-    popup.focus();
-    popup.print();
-    // popup.close(); // opcional
-  } catch (err) {
-    console.error('Error en imprimirComprobante:', err);
-    alert('Error preparando la boleta para impresión. Revisa la consola.');
-  }
-}
-
-
-  cancelarComprobante() {
-    this.mostrarConfirmacion = false;
   }
 
-  // -------------- PAGINACIÓN / FILTRO ----------------
-
-  // getter que devuelve la lista filtrada (sin paginar)
   get filteredVentaItems() {
     if (!this.searchTerm) return this.ventaItems;
     const term = this.searchTerm.toLowerCase();
@@ -536,7 +591,6 @@ this.ventaCreadaResponse = Object.assign({}, resp, {
     );
   }
 
-  // para mostrar rangos en el pie: displayedFrom / displayedTo (basado en currentPage & itemsPerPage)
   get displayedFrom(): number {
     const total = this.filteredVentaItems.length;
     if (total === 0) return 0;
@@ -549,7 +603,6 @@ this.ventaCreadaResponse = Object.assign({}, resp, {
     return to > total ? total : to;
   }
 
-  // función auxiliar: dado el index en la página (0..n) devuelve el índice global en ventaItems
   getGlobalIndex(indexOnPage: number): number {
     const pageItems = this.filteredVentaItems.slice((this.currentPage - 1) * this.itemsPerPage, this.currentPage * this.itemsPerPage);
     const item = pageItems[indexOnPage];
@@ -558,7 +611,6 @@ this.ventaCreadaResponse = Object.assign({}, resp, {
     return realIndex >= 0 ? realIndex : indexOnPage;
   }
 
-  // manejador de cambio de página desde pagination-controls
   pageChanged(newPage: number) {
     this.currentPage = newPage;
   }

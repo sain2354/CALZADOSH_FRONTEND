@@ -17,11 +17,10 @@ export class InvoiceComponent implements OnInit, OnChanges {
 
   company = {
     name: 'CALZADOS HUANCAYO',
-    legalName: 'CALZADOS HUANCAYO S.A.C.',
     ruc: '20611360682',
     address: 'AV. FERROCARRIL NRO. 1050 (CENTRO COMERCIAL ECONO PLAZA - STAND A4) JUNIN - HUANCAYO - HUANCAYO',
     phone: '22639 6800',
-    email: 'ventas@calzadoshuancayo.com',
+    email: 'CALZADOSHUANCAYO@gmail.com',
     logo: 'assets/logo.png'
   };
 
@@ -78,7 +77,7 @@ export class InvoiceComponent implements OnInit, OnChanges {
 
   async generateBarcode() {
     if (!this.ventaData) return;
-    this.barcodeValue = `${this.ventaData.serie || ''}-${this.ventaData.numeroComprobante || this.ventaData.numero || this.ventaData.id || ''}` || '00000000';
+    this.barcodeValue = `${this.ventaData.serie || ''}-${this.ventaData.numeroComprobante || this.ventaData.numero || this.ventaData.id || '00000000'}` || '00000000';
     try {
       const JsBarcodeModule = await import('jsbarcode');
       const JsBarcode: any = (JsBarcodeModule as any).default ?? JsBarcodeModule;
@@ -106,15 +105,15 @@ export class InvoiceComponent implements OnInit, OnChanges {
     try {
       const QRModule = await import('qrcode');
       const QR: any = (QRModule as any).default ?? QRModule;
-      const bigDataUrl = await QR.toDataURL(content, { width: 160, margin: 1 });
+      const bigDataUrl = await QR.toDataURL(content, { width: 95, margin: 1 });
       if (imgBig) { imgBig.src = bigDataUrl; imgBig.style.display = 'block'; imgBig.alt = 'QR comprobante'; }
       return;
     } catch (err) {
       // fallback
     }
 
-    const qrserverBig = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(content)}`;
-    const googleBig = `https://chart.googleapis.com/chart?cht=qr&chs=160x160&chl=${encodeURIComponent(content)}&chld=M|1`;
+    const qrserverBig = `https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(content)}`;
+    const googleBig = `https://chart.googleapis.com/chart?cht=qr&chs=95x95&chl=${encodeURIComponent(content)}&chld=M|1`;
     if (imgBig) {
       imgBig.src = qrserverBig;
       imgBig.onerror = () => { imgBig.onerror = null; imgBig.src = googleBig; };
@@ -133,7 +132,6 @@ export class InvoiceComponent implements OnInit, OnChanges {
     const qrData = qrImg ? qrImg.src : '';
 
     const content = (document.getElementById('invoice-print') as HTMLElement)?.innerHTML || '';
-    // replace canvas/qr placeholders with <img> so popup has actual images
     const contentWithImgs = content
       .replace(/<canvas[^>]*id="barcode-canvas"[^>]*>[\s\S]*?<\/canvas>/i, bcData ? `<img src="${bcData}" class="barcode-img" alt="barcode" />` : '')
       .replace(/<img[^>]*id="qrcode-img"[^>]*>/i, qrData ? `<img id="qrcode-img" src="${qrData}" class="qrcode-img" alt="qr" />` : '');
@@ -148,59 +146,27 @@ export class InvoiceComponent implements OnInit, OnChanges {
       table{width:100%;border-collapse:collapse;}
       th,td{padding:6px;border-bottom:1px solid #eaeaea;}
       body, .invoice-wrapper { -webkit-print-color-adjust: exact; }
-      /* Forzar que se respeten estas reglas en el popup */
     `;
 
-    // a4Styles ahora contiene reglas agresivas y con !important para FORZAR el centrado del título,
-    // reducir espacios y evitar que QR/footer salten a otra hoja.
     const a4Styles = `
       @page{ size:A4; margin:8mm; }
       body{font-size:11px; margin:0;}
-      /* titulo: forzado, centrado y grande */
-      .company-name-top {
-        font-size: 56px !important;
-        font-weight: 900 !important;
-        color: #b71c1c !important;
-        text-align: center !important;
-        display: block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        line-height: 0.95 !important;
-        letter-spacing: 2px !important;
-        text-shadow: 0 3px 6px rgba(0,0,0,0.12) !important;
-      }
-      /* subtítulo legal centrado */
+      .company-name-top { font-size: 56px !important; font-weight: 900 !important; color: #b71c1c !important; text-align: center !important; display: block !important; margin: 0 !important; padding: 0 !important; line-height: 0.95 !important; letter-spacing: 2px !important; text-shadow: 0 3px 6px rgba(0,0,0,0.12) !important; }
       .company-legal-top { font-size: 11px !important; text-align:center !important; margin: 2px 0 6px 0 !important; }
-
-      /* compactar header/top area para quitar huecos */
       .top-banner { margin: 0 0 4px 0 !important; padding:0 !important; }
       .rut-box { padding: 4px 6px !important; margin:0 !important; border-width:1.2px !important; }
       .inv-header { margin: 0 0 2px 0 !important; padding: 0 !important; }
       .company-meta, .company-meta.small { margin: 0 !important; padding: 0 !important; line-height: 1 !important; font-size: 10px !important; }
-
-      /* reducir separación antes del cliente */
       .section-divider { margin: 4px 0 !important; border-top-width: 1px !important; }
-
-      /* cliente más compacto */
       .client-info { margin: 0 0 4px 0 !important; padding: 0 !important; font-size: 11px !important; }
-
-      /* tabla: filas más compactas para ahorrar espacio */
       .items-table th, .items-table td { padding-top: 3px !important; padding-bottom: 3px !important; font-size: 10px !important; }
-
-      /* totals compactos */
       .totals { margin-top: 4px !important; font-size: 11px !important; }
-
-      /* QR + footer: evitar saltos y asegurar que quepan juntos */
-      .qr-section { margin-top: 6px !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+      /* Contenedor del QR: Centra su contenido en línea */
+      .qr-section { margin-top: 6px !important; page-break-inside: avoid !important; break-inside: avoid !important; text-align: center !important; }
       .inv-footer { margin-top: 8px !important; page-break-inside: avoid !important; text-align:center !important; }
-
-      /* reducir tamaño visual del QR en impresión si hace falta */
-      #qrcode-img { width: 120px !important; height: 120px !important; margin: 6px auto 0 !important; }
-
-      /* disminuir margenes del wrapper para imprimir más contenido en una sola hoja */
+      /* Imagen QR: Se comporta como bloque en línea para obedecer el centrado del padre */
+      #qrcode-img { display: inline-block !important; width: 95px !important; height: 95px !important; margin-top: 4px !important; }
       .invoice-wrapper { padding: 4px !important; max-height: 270mm !important; overflow: visible !important; }
-
-      /* seguridad: reglas muy altas de prioridad para que otros estilos no las sobreescriban */
       .company-name-top, .invoice-wrapper, .client-info, .items-table, .qr-section, .inv-footer { -webkit-print-color-adjust: exact !important; }
     `;
 
@@ -219,18 +185,16 @@ export class InvoiceComponent implements OnInit, OnChanges {
           <div class="invoice-wrapper">
             ${contentWithImgs}
             <div style="text-align:center; margin-top:6px;">
-              <small>Generado por ${this.company.legalName} - RUC ${this.company.ruc}</small>
+              
             </div>
           </div>
         </body>
       </html>`);
     popup.document.close();
 
-    // darle tiempo a que cargue imágenes/fonts
     setTimeout(() => { popup.focus(); popup.print(); }, 350);
   }
 
-  // generatePdfAutoTable (sin cambios funcionales)
   public async generatePdfAutoTable() {
     if (!this.ventaData) return;
     const doc = new jsPDF('p', 'mm', 'a4');
@@ -259,7 +223,7 @@ export class InvoiceComponent implements OnInit, OnChanges {
 
     autoTable(doc, {
       startY: 58,
-      head: [['#', 'EAN', 'DESCRIPCION', 'CANT', 'P. UNIT.', 'DESC']],
+      head: [['#', 'DESCRIPCION', 'CANT', 'P. UNIT.', 'DESC']],
       body,
       styles: { fontSize: 8 },
       headStyles: { fillColor: [200, 0, 0] }

@@ -3,15 +3,14 @@
 
   <!-- NOMBRE DE LA EMPRESA (CENTRADO Y DESTACADO) -->
   <div class="top-company">
-    <div class="company-name-top">{{ company.name }}</div>
-    <div class="company-legal-top">{{ company.legalName }} — RUC: {{ company.ruc }}</div>
+    <div class="company-name-top" style="text-align: center; font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">{{ company.name }}</div>
   </div>
 
   <!-- Top banner (rut / doc) -->
   <div class="top-banner">
     <div class="rut-box">
       <div class="rut-line">R.U.C. : <strong>{{ company.ruc }}</strong></div>
-      <div class="doc-title">FACTURA ELECTRÓNICA</div>
+      <div class="doc-title">COMPROBANTE ELECTRÓNICA</div>
       <div class="doc-number-big">Nº: <strong>{{ ventaData.serie || '' }}-{{ ventaData.numeroComprobante || ventaData.numero || '' }}</strong></div>
     </div>
   </div>
@@ -36,8 +35,6 @@
     </div>
   </header>
 
-  <hr class="section-divider" />
-
   <!-- Datos cliente -->
   <section class="client-info client-grid">
     <div><strong>Cliente:</strong> {{ ventaData.clienteNombre || '-' }}</div>
@@ -49,59 +46,61 @@
     <div *ngIf="ventaData.observaciones" style="grid-column:1 / -1;"><strong>Observaciones:</strong> {{ ventaData.observaciones }}</div>
   </section>
 
-  <hr class="section-divider" />
+  <!-- Contenedor para la tabla y los totales -->
+  <div class="items-and-totals-container">
+    <!-- Tabla de items (sin columna VALOR) -->
+    <section class="items-table">
+      <table>
+        <thead>
+          <tr>
+            <th class="center" style="width:5%;">#</th>
+            <th style="width:52%;">DESCRIPCION</th>
+            <th class="center" style="width:8%;">CANT</th>
+            <th class="right no-wrap" style="width:12%;">P. UNIT.</th>
+            <th class="right" style="width:13%;">DESC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let it of ventaData.detalles; let i = index">
+            <td class="center">{{ i + 1 }}</td>
+            <td>
+              <div class="item-title">{{ it.descripcion || it.nombre }}</div>
+              <!-- Mostrar talla si existe -->
+              <div class="item-small" *ngIf="it.talla && it.talla !== ''">Talla: {{ it.talla }}</div>
+              <div class="item-small" *ngIf="it.extra">{{ it.extra }}</div>
+            </td>
+            <td class="center">{{ it.cantidad }}</td>
+            <td class="right">{{ it.precio | number:'1.2-2' }}</td>
+            <!-- VALOR eliminado aquí (antes mostraba it.total) -->
+            <td class="right">{{ (it.desc ?? it.descuento ?? 0) | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
 
-  <!-- Tabla de items (sin columna VALOR) -->
-  <section class="items-table">
-    <table>
-      <thead>
-        <tr>
-          <th class="center" style="width:5%;">#</th>
-          <th style="width:10%;">EAN</th>
-          <th style="width:52%;">DESCRIPCION</th>
-          <th class="center" style="width:8%;">CANT</th>
-          <th class="right no-wrap" style="width:12%;">P. UNIT.</th>
-          <th class="right" style="width:13%;">DESC</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let it of ventaData.detalles; let i = index">
-          <td class="center">{{ i + 1 }}</td>
-          <td>{{ it.ean || it.codigo || '-' }}</td>
-          <td>
-            <div class="item-title">{{ it.descripcion || it.nombre }}</div>
-            <!-- Mostrar talla si existe -->
-            <div class="item-small" *ngIf="it.talla && it.talla !== ''">Talla: {{ it.talla }}</div>
-            <div class="item-small" *ngIf="it.extra">{{ it.extra }}</div>
-          </td>
-          <td class="center">{{ it.cantidad }}</td>
-          <td class="right">{{ it.precio | number:'1.2-2' }}</td>
-          <!-- VALOR eliminado aquí (antes mostraba it.total) -->
-          <td class="right">{{ (it.desc ?? it.descuento ?? 0) | number:'1.2-2' }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+    <!-- Línea divisoria interna -->
+    <hr class="internal-divider" />
 
-  <hr class="section-divider" />
-
-  <!-- Totales -->
-  <section class="totals">
-    <div class="tot-row"><span>SUB TOTAL</span><span>{{ ventaData.moneda || 'S/' }} {{ getSubTotal() | number:'1.2-2' }}</span></div>
-    <div class="tot-row"><span>IGV (18%)</span><span>{{ ventaData.moneda || 'S/' }} {{ getIgv() | number:'1.2-2' }}</span></div>
-    <div class="tot-row total"><span>TOTAL</span><span>{{ ventaData.moneda || 'S/' }} {{ getTotal() | number:'1.2-2' }}</span></div>
-  </section>
+    <!-- Totales -->
+    <section class="totals">
+      <div class="tot-row"><span>SUB TOTAL</span><span>{{ ventaData.moneda || 'S/' }} {{ getSubTotal() | number:'1.2-2' }}</span></div>
+      <div class="tot-row"><span>IGV (18%)</span><span>{{ ventaData.moneda || 'S/' }} {{ getIgv() | number:'1.2-2' }}</span></div>
+      <div class="tot-row total"><span>TOTAL</span><span>{{ ventaData.moneda || 'S/' }} {{ getTotal() | number:'1.2-2' }}</span></div>
+    </section>
+  </div>
 
   <!-- QR grande (ÚNICO QR) -->
-  <section class="qr-section" style="text-align:center; margin-top:10px;">
+  <section class="qr-section">
     <div id="qrcode-placeholder">
-      <img id="qrcode-img" alt="QR" style="display:none; margin:6px auto; width:140px; height:140px; object-fit:contain;" />
+      <img id="qrcode-img" alt="QR" />
     </div>
-    <!-- Dejamos espacio para el footer pero forzamos que no se rompa en otra hoja -->
   </section>
 
+  <!-- Footer simplificado -->
   <footer class="inv-footer">
-    <div>Gracias por su compra. ¡Vuelva pronto!</div>
-    <div style="margin-top:6px; font-size:11px; color:#666;">Documento generado según datos fiscales de la empresa.</div>
+    <div>
+      Gracias por su compra. ¡Vuelva pronto!<br>
+      <span class="footer-small-text">Documento generado según datos fiscales de la empresa.</span>
+    </div>
   </footer>
 </div>

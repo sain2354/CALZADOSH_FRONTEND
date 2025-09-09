@@ -7,9 +7,6 @@
   max-width: 1000px; /* Ajustado el ancho máximo */
   width: 95%; /* Mantenemos un ancho responsive */
   box-sizing: border-box; /* Asegurar que padding y border no afecten el ancho total */
-  /* Asegurarnos de que no tenga una altura fija que impida el scroll de la página */
-  /* height: auto; */ /* Asegurar que la altura sea automática según el contenido */
-  /* max-height: none; */ /* Remover cualquier restricción de altura máxima si existe */
   overflow: visible; /* Permitir que el contenido desborde si es necesario, confiando en el scroll de la página */
 }
 
@@ -54,10 +51,56 @@
   font-size: 0.8rem;
 }
 
-.card-body .btn.btn-primary.ms-3 {
-  /* Botón "Nuevo" */
-  padding: 5px 10px;
-  font-size: 0.8rem;
+/* --- Estilos para botones del header (Catálogo, Excel, Nuevo) --- */
+.card-header .btn {
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  border-radius: 5px;
+  margin-left: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Botón Catálogo - Color más visible (Naranja vibrante) */
+.btn-catalogo {
+  background-color: #e67e22 !important; /* Naranja vibrante */
+  border-color: #d35400 !important;
+  color: white !important;
+}
+
+.btn-catalogo:hover {
+  background-color: #d35400 !important;
+  border-color: #bf3f00 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3);
+}
+
+/* Botón Excel - Verde más visible */
+.btn-excel {
+  background-color: #27ae60 !important;
+  border-color: #229954 !important;
+  color: white !important;
+}
+
+.btn-excel:hover {
+  background-color: #229954 !important;
+  border-color: #1e8449 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+}
+
+/* Botón Nuevo - Azul más destacado */
+.btn-nuevo {
+  background-color: #3498db !important;
+  border-color: #2980b9 !important;
+  color: white !important;
+}
+
+.btn-nuevo:hover {
+  background-color: #2980b9 !important;
+  border-color: #2471a3 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
 }
 
 /* --- Estilos para el Botón de Filtros --- */
@@ -455,7 +498,29 @@ input[type="checkbox"] {
   transform: translateY(-1px);
 }
 
-/* --- Otros Estilos Existentes (Mantener o ajustar si es necesario) --- */
+/* --- Estilos para estados de producto (Activo/Inactivo) --- */
+.activo {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.inactivo {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* --- Estilos para badges y promociones --- */
+.badge {
+  font-size: 0.7rem;
+  padding: 3px 6px;
+  border-radius: 10px;
+}
+
+.bg-success {
+  background-color: #28a745 !important;
+}
+
+/* --- Otros Estilos Existentes --- */
 .form-inline .form-control {
   display: inline-block;
   width: auto;
@@ -475,10 +540,78 @@ input[type="checkbox"] {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Aseguramos que el thead y tr del tbody tengan el mismo display y layout */
-.product-table thead,
-.product-table tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
+/* --- Estilos responsivos para dispositivos móviles --- */
+@media (max-width: 768px) {
+  .card {
+    width: 98%;
+    margin: 10px auto;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .card-header .d-flex {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .product-table {
+    font-size: 0.65rem;
+  }
+  
+  .product-table th,
+  .product-table td {
+    padding: 2px;
+  }
+  
+  .modal-content {
+    width: 95%;
+    max-width: none;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Efectos hover mejorados para botones --- */
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* --- Animaciones suaves --- */
+.modal {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

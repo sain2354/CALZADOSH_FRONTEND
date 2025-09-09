@@ -5,16 +5,12 @@
     <h3 class="mb-0">Listado de Productos</h3>
 
     <div>
-      <button class="btn btn-outline-info btn-sm me-2" (click)="generarCatalogoPDF()" title="Generar catálogo PDF">
+      <button class="btn btn-warning btn-sm me-2" (click)="generarCatalogoPDF()" title="Generar catálogo PDF">
         <i class="fas fa-book-open"></i> Catálogo
       </button>
 
       <button class="btn btn-success btn-sm me-2" (click)="exportarExcel()" title="Exportar a Excel">
         <i class="fas fa-file-excel"></i> Excel
-      </button>
-
-      <button class="btn btn-primary btn-sm me-2" (click)="imprimirCatalogo()" title="Imprimir catálogo">
-        <i class="fas fa-print"></i> Imprimir
       </button>
 
       <!-- Botón Nuevo -->
@@ -50,11 +46,6 @@
       <ng-template #notFoundTemplate let-notFound>
         <div [innerHTML]="notFound"></div>
       </ng-template>
-
-      <!-- Botón Nuevo -->
-      <button class="btn btn-primary ms-3" (click)="abrirModal()">
-        <i class="fas fa-plus"></i> Nuevo
-      </button>
     </div>
 
     <!-- Botón de Filtros -->

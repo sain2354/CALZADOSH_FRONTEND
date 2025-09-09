@@ -1,13 +1,3 @@
-<div *ngIf="mostrarConfirmacion" class="modal-backdrop" (click)="cancelarComprobante()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <h4 class="text-success">✔ Venta registrada correctamente</h4>
-    <div class="mt-4 text-end">
-      <button class="btn btn-primary me-2" (click)="imprimirComprobante()">Imprimir Comprobante</button>
-      <button class="btn btn-secondary" (click)="cancelarComprobante()">Cancelar</button>
-    </div>
-  </div>
-</div>
-
 <form #ventaForm="ngForm" (ngSubmit)="realizarVenta(ventaForm)" novalidate>
   <div class="pv-wrapper">
 
@@ -204,5 +194,3 @@
     [ventaData]="ventaCreadaResponse">
   </app-invoice>
 </div>
-
-

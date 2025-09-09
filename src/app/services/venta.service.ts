@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { VentaDetalleResponse } from '../models/venta-detalle-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +16,8 @@ export class VentaService {
     return this.http.get<any[]>(this.apiUrl);
   }
 
-  getVentaById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  getVentaById(id: number): Observable<VentaDetalleResponse> {
+    return this.http.get<VentaDetalleResponse>(`${this.apiUrl}/${id}`);
   }
 
   createVenta(venta: any): Observable<any> {

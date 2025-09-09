@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompraService } from '../../../services/compra.service';
@@ -18,10 +18,16 @@ import { Subject, Observable, of } from 'rxjs';
 // Importar componente de persona para abrir modal (standalone)
 import { PersonaComponent } from '../../persona/nuevo-persona/persona.component';
 
+// InvoiceComponent (para impresión/preview de boleta/factura)
+import { InvoiceComponent } from '../../../invoice/invoice.component';
+
+// SweetAlert2
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-ingresar-compras',
   standalone: true,
-  imports: [CommonModule, FormsModule, PersonaComponent],
+  imports: [CommonModule, FormsModule, PersonaComponent, InvoiceComponent],
   templateUrl: './ingresar.component.html',
   styleUrls: ['./ingresar.component.css']
 })
@@ -85,6 +91,16 @@ export class IngresarComprasComponent implements OnInit {
     numeroDocumento: ''
   };
 
+  // --- NUEVO: respuesta preparada para impresión/preview (boleta/factura)
+  compraCreadaResponse: any = null;
+
+  // ViewChilds para renderizar e imprimir el InvoiceComponent
+  @ViewChild('reporteCompraContainer', { static: false, read: ElementRef })
+  reporteCompraContainer!: ElementRef;
+
+  @ViewChild(InvoiceComponent, { static: false })
+  invoiceComponent!: InvoiceComponent;
+
   constructor(
     private compraService: CompraService,
     private productoService: ProductoService,
@@ -106,9 +122,10 @@ export class IngresarComprasComponent implements OnInit {
       tallasMaestras: this.tallaService.getTallas()
     }).subscribe({
       next: (results: { proveedores: Persona[], formasPago: MedioPago[], tallasMaestras: Talla[] }) => {
-        this.proveedores = results.proveedores.filter(p => p.tipoPersona === 'Proveedor');
-        this.formasPago = results.formasPago;
-        this.listaTallasMaestra = results.tallasMaestras;
+        // Guardamos sólo los proveedores (tipoPersona === 'Proveedor')
+        this.proveedores = (results.proveedores || []).filter(p => (p.tipoPersona || '').toLowerCase() === 'proveedor');
+        this.formasPago = results.formasPago || [];
+        this.listaTallasMaestra = results.tallasMaestras || [];
         this.datosCargados = true;
         console.log('Datos iniciales cargados (Proveedores, Formas Pago, Tallas Maestras).');
       },
@@ -357,92 +374,277 @@ export class IngresarComprasComponent implements OnInit {
     this.tallasPorProducto = {};
   }
 
-  realizarCompra(): void {
+  // Hacemos el método async para manejar el modal de confirmación con await
+  async realizarCompra(): Promise<void> {
       console.log('Ítems de la compra antes de validación de talla:', this.compra.items);
       console.log('Array formasPago en el frontend (antes de find):', this.formasPago);
       console.log('ID de forma de pago seleccionado en compra:', this.compra.idFormaPago);
 
+    // Validaciones específicas antes de la confirmación
+    if (!this.compra.items || this.compra.items.length === 0) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Compra vacía',
+        text: 'Por favor, agrega productos a la compra y completa los datos de la cabecera (Proveedor, Forma de Pago, Documento).'
+      });
+      return;
+    }
 
-    if (this.compra.items.length > 0 && this.compra.idProveedor > 0 && this.compra.idFormaPago > 0 && this.compra.tipoDocumento && this.compra.numeroDocumento) {
+    if (!this.compra.idProveedor || Number(this.compra.idProveedor) <= 0) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Proveedor requerido',
+        text: 'Por favor selecciona un proveedor válido.'
+      });
+      return;
+    }
 
-        const itemsConTallasIncompletas = this.compra.items.filter((item: ItemCompra) => {
-             const tallasDisponibles: SizeWithStock[] = this.getTallasForItem(item);
-             return tallasDisponibles.length > 0 && item.idTalla <= 0;
+    if (!this.compra.idFormaPago || Number(this.compra.idFormaPago) <= 0) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Forma de pago requerida',
+        text: 'Por favor selecciona la Forma de Pago. (Campo obligatorio)'
+      });
+      return;
+    }
+
+    if (!this.compra.tipoDocumento || !this.compra.numeroDocumento) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Documento requerido',
+        text: 'Por favor completa el Documento (Tipo y Número). (Campo obligatorio)'
+      });
+      return;
+    }
+
+    const itemsConTallasIncompletas = this.compra.items.filter((item: ItemCompra) => {
+         const tallasDisponibles: SizeWithStock[] = this.getTallasForItem(item);
+         return tallasDisponibles.length > 0 && item.idTalla <= 0;
+    });
+
+    if(itemsConTallasIncompletas.length > 0){
+        await Swal.fire({
+          icon: 'warning',
+          title: 'Tallas incompletas',
+          text: 'Por favor, selecciona la talla para todos los productos que la requieren.'
+        });
+        return;
+    }
+
+    // Modal de confirmación con checkbox (requiere marcar para proceder)
+    const confirmResult = await Swal.fire({
+      title: 'Confirmar compra',
+      html: `
+        <p>Estás a punto de registrar la compra con ${this.compra.items.length} item(s).<br>
+        Proveedor: <strong>${this.getProveedorNombre(this.compra.idProveedor)}</strong><br>
+        Forma de pago: <strong>${this.getFormaPagoDescripcion(this.compra.idFormaPago)}</strong><br>
+        Documento: <strong>${this.compra.tipoDocumento} - ${this.compra.numeroDocumento}</strong>
+        </p>
+        <div style="text-align:left; margin-top:10px;">
+          <input type="checkbox" id="confirmChk" /> <label for="confirmChk"> Confirmo que los datos de la compra son correctos</label>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Confirmar compra',
+      cancelButtonText: 'Cancelar',
+      focusConfirm: false,
+      preConfirm: () => {
+        const chk = (document.getElementById('confirmChk') as HTMLInputElement | null);
+        if (!chk || !chk.checked) {
+          Swal.showValidationMessage('Debes marcar la casilla para confirmar la compra.');
+          return false;
+        }
+        return true;
+      }
+    });
+
+    if (!confirmResult || !confirmResult.isConfirmed) {
+      // Usuario canceló o no confirmó
+      return;
+    }
+
+    // Si llegó hasta aquí, procedemos a construir compraRequest y llamar al backend
+    const formaPagoSeleccionada = this.formasPago.find((fp: MedioPago) => String(fp.idMedioPago) === String(this.compra.idFormaPago));
+    const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.descripcion : '';
+
+    const compraRequest: any = { // Cambiamos a 'any' temporalmente para permitir 'FormaPago' como string
+        idProveedor: Number(this.compra.idProveedor),
+        tipoDocumento: this.compra.tipoDocumento,
+        numeroDocumento: this.compra.numeroDocumento,
+        FormaPago: nombreFormaPago, // Enviamos el nombre de la forma de pago con 'F' mayúscula
+        itemsCompra: this.compra.items.map((item: ItemCompra) => ({
+            idProducto: item.idProducto,
+            idTalla: item.idTalla,
+            cantidad: item.cantidad,
+            precioUnitario: item.precioUnitario
+        })),
+        serie: this.compra.serie
+    };
+
+    console.log('Datos de compra enviados al backend:', compraRequest);
+
+    this.compraService.crearCompra(compraRequest).subscribe({
+      next: async (response: any) => {
+        console.log('Compra registrada con éxito:', response);
+
+        // Si usamos fallback (sessionStorage), actualizar el contador AHORA (solo cuando la compra se realiza)
+        if (!this.ultimoCorrelativoUsadoDesdeBackend) {
+          const key = (this.compra.tipoDocumento === 'Factura') ? 'correlativo_count_factura' : 'correlativo_count_boleta';
+          const stored = Number(sessionStorage.getItem(key) || '0'); // compras ya registradas
+          const newCount = Math.max(stored, this.ultimoCorrelativoCountBeforeAsign) + 1; // asegurar coherencia
+          sessionStorage.setItem(key, String(newCount));
+        }
+
+        // --- PREPARAR respuesta para el InvoiceComponent (antes de resetear formulario)
+        // Obtenemos objeto proveedor completo para traer RUC/DIRECCION/TELEFONO
+        const proveedorObj = this.getProveedorById(this.compra.idProveedor);
+        const proveedorNombre = proveedorObj?.nombre ?? this.getProveedorNombre(this.compra.idProveedor);
+        // usar únicamente propiedades que existen: numeroDocumento y telefono
+        const proveedorDocumento = proveedorObj?.numeroDocumento ?? '';
+        const proveedorDireccion = proveedorObj?.direccion ?? '';
+        const proveedorTelefono = proveedorObj?.telefono ?? '';
+
+        const detallesParaInvoice = (this.compra.items || []).map((it: ItemCompra) => {
+          const base = +(((it.cantidad || 0) * (it.precioUnitario || 0))).toFixed(2);
+          return {
+            cantidad: it.cantidad,
+            descripcion: it.nombreProducto || '',
+            precio: it.precioUnitario,
+            total: base,
+            talla: it.nombreTalla || ''
+          };
         });
 
-        if(itemsConTallasIncompletas.length > 0){
-            alert('Por favor, selecciona la talla para todos los productos que la requieren.');
-            return;
+        // Mapear tanto con nombres propios (proveedor...) como con los que InvoiceComponent suele esperar (cliente...)
+        this.compraCreadaResponse = Object.assign({}, response, {
+          proveedorNombre,
+          proveedorDocumento,
+          proveedorDireccion,
+          proveedorTelefono,
+
+          // Campos mapeados para compatibilidad con InvoiceComponent que espera cliente*
+          clienteNombre: proveedorNombre,
+          clienteDocumento: proveedorDocumento,
+          direccion: proveedorDireccion,
+          telefono: proveedorTelefono,
+
+          numeroComprobante: this.compra.numeroDocumento,
+          serie: this.compra.serie,
+          fecha: new Date().toISOString(),
+          moneda: 'S/',
+          formaPago: nombreFormaPago,
+          detalles: detallesParaInvoice,
+          total: this.compra.total,
+          subtotal: this.compra.subtotal,
+          igv: this.compra.igv
+        });
+
+        // Si backend fue usado, reasignamos el correlativo consultando de nuevo (el backend debería reflejar la nueva compra)
+        // Si no, la asignación al fallback ya fue actualizada arriba.
+        this.resetearFormularioCompra();
+        // reasignar correlativo para el nuevo documento por defecto (será Boleta y buscará next)
+        this.asignarCorrelativoYSerie(this.compra.tipoDocumento);
+
+        // Mostrar opción de imprimir tras registrar (SweetAlert2)
+        const printChoice = await Swal.fire({
+          icon: 'success',
+          title: 'Compra registrada',
+          html: `<p>Compra registrada con éxito.</p>`,
+          showCancelButton: true,
+          confirmButtonText: 'Imprimir comprobante',
+          cancelButtonText: 'Cerrar'
+        });
+
+        if (printChoice && printChoice.isConfirmed) {
+          // Imprimir la boleta/factura de compra
+          this.imprimirComprobanteCompra();
         }
+      },
+      error: async (error: any) => {
+        console.error('Error al registrar la compra:', error);
+         if (error.error && error.error.errors) {
+              console.error('Detalles de validación del backend:', error.error.errors);
+              let errorMessages = '<ul style="text-align:left;">';
+              for (const key in error.error.errors) {
+                  if (error.error.errors.hasOwnProperty(key)) {
+                       error.error.errors[key].forEach((msg: string) => {
+                           errorMessages += `<li><strong>${key}:</strong> ${msg}</li>`;
+                       });
+                  }
+              }
+              errorMessages += '</ul>';
+              await Swal.fire({
+                icon: 'error',
+                title: 'Errores de validación del backend',
+                html: errorMessages
+              });
+         } else if (error.error) {
+              console.error('Cuerpo de respuesta del error:', error.error);
+              await Swal.fire({
+                icon: 'error',
+                title: 'Error al registrar la compra',
+                text: typeof error.error === 'string' ? error.error : JSON.stringify(error.error)
+              });
+         }
+         else {
+              await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al registrar la compra. Por favor, inténtalo de nuevo.'
+              });
+         }
+      }
+    });
+  }
 
-        const formaPagoSeleccionada = this.formasPago.find((fp: MedioPago) => String(fp.idMedioPago) === String(this.compra.idFormaPago));
-        const nombreFormaPago = formaPagoSeleccionada ? formaPagoSeleccionada.descripcion : '';
+  // Función para imprimir la boleta/factura de compra usando InvoiceComponent
+  async imprimirComprobanteCompra() {
+    try {
+      if (this.invoiceComponent && typeof this.invoiceComponent.generateBarcode === 'function') {
+        await this.invoiceComponent.generateBarcode();
+      }
+      if (this.invoiceComponent && typeof this.invoiceComponent.generateQr === 'function') {
+        await this.invoiceComponent.generateQr();
+      }
 
-        console.log('Forma de pago seleccionada encontrada:', formaPagoSeleccionada);
-        console.log('Nombre de forma de pago a enviar:', nombreFormaPago);
+      // Espera corta para que las imágenes (dataURL o externas) terminen de asignarse
+      await new Promise(res => setTimeout(res, 300));
 
-        // *** Usar la interfaz CompraRequest, pero ajustando para enviar FormaPago como string ***
-        // NOTA: Esto es una adaptación para el backend actual que espera 'FormaPago' como string.
-        // Idealmente, el backend debería esperar idFormaPago.
-        const compraRequest: any = { // Cambiamos a 'any' temporalmente para permitir 'FormaPago' como string
-            idProveedor: Number(this.compra.idProveedor),
-            tipoDocumento: this.compra.tipoDocumento,
-            numeroDocumento: this.compra.numeroDocumento,
-            FormaPago: nombreFormaPago, // Enviamos el nombre de la forma de pago con 'F' mayúscula
-            itemsCompra: this.compra.items.map((item: ItemCompra) => ({
-                idProducto: item.idProducto,
-                idTalla: item.idTalla,
-                cantidad: item.cantidad,
-                precioUnitario: item.precioUnitario
-            })),
-            serie: this.compra.serie
-        };
+      const html = this.reporteCompraContainer.nativeElement.innerHTML;
+      const popup = window.open('', '_blank', 'width=900,height=900');
+      if (!popup) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'No se pudo abrir ventana',
+          text: 'No se pudo abrir la ventana de impresión. Revisa bloqueadores de pop-ups.'
+        });
+        return;
+      }
 
-        console.log('Datos de compra enviados al backend:', compraRequest);
+      popup.document.write(`
+        <html>
+          <head>
+            <meta charset="utf-8"/>
+            <title>Comprobante de Compra</title>
+            <style>
+              body{font-family:'Poppins', sans-serif; margin:8px;}
+            </style>
+          </head>
+          <body>${html}</body>
+        </html>
+      `);
+      popup.document.close();
 
-      this.compraService.crearCompra(compraRequest).subscribe({
-        next: (response: any) => {
-          console.log('Compra registrada con éxito:', response);
-          alert('Compra registrada con éxito!');
-
-          // Si usamos fallback (sessionStorage), actualizar el contador AHORA (solo cuando la compra se realiza)
-          if (!this.ultimoCorrelativoUsadoDesdeBackend) {
-            const key = (this.compra.tipoDocumento === 'Factura') ? 'correlativo_count_factura' : 'correlativo_count_boleta';
-            const stored = Number(sessionStorage.getItem(key) || '0'); // compras ya registradas
-            const newCount = Math.max(stored, this.ultimoCorrelativoCountBeforeAsign) + 1; // asegurar coherencia
-            sessionStorage.setItem(key, String(newCount));
-          }
-
-          // Si backend fue usado, reasignamos el correlativo consultando de nuevo (el backend debería reflejar la nueva compra)
-          // Si no, la asignación al fallback ya fue actualizada arriba.
-          this.resetearFormularioCompra();
-          // reasignar correlativo para el nuevo documento por defecto (será Boleta y buscará next)
-          this.asignarCorrelativoYSerie(this.compra.tipoDocumento);
-        },
-        error: (error: any) => {
-          console.error('Error al registrar la compra:', error);
-           if (error.error && error.error.errors) {
-                console.error('Detalles de validación del backend:', error.error.errors);
-                let errorMessages = 'Errores de validación: \n';
-                for (const key in error.error.errors) {
-                    if (error.error.errors.hasOwnProperty(key)) {
-                         error.error.errors[key].forEach((msg: string) => {
-                             errorMessages += `- ${key}: ${msg}\n`;
-                         });
-                    }
-                }
-                alert('Error al registrar la compra debido a validación del backend:\n' + errorMessages);
-           } else if (error.error) {
-                console.error('Cuerpo de respuesta del error:', error.error);
-                alert('Error al registrar la compra: ' + (typeof error.error === 'string' ? error.error : JSON.stringify(error.error)));
-           }
-           else {
-                alert('Error al registrar la compra. Por favor, inténtalo de nuevo.');
-           }
-        }
+      await new Promise(res => setTimeout(res, 350));
+      popup.focus();
+      popup.print();
+    } catch (err) {
+      console.error('Error en imprimirComprobanteCompra:', err);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error preparando el comprobante para impresión. Revisa la consola.'
       });
-    } else {
-      alert('Por favor, agrega productos a la compra y completa los datos de la cabecera (Proveedor, Forma de Pago, Documento).');
     }
   }
 
@@ -471,7 +673,12 @@ export class IngresarComprasComponent implements OnInit {
   abrirModalTallas(item: ItemCompra): void {
       const tallasDisponibles: SizeWithStock[] = this.getTallasForItem(item);
       if(tallasDisponibles.length === 0){
-          alert('Este producto no tiene tallas definidas.');
+          // reemplazamos alert por Swal
+          Swal.fire({
+            icon: 'info',
+            title: 'Sin tallas',
+            text: 'Este producto no tiene tallas definidas.'
+          });
           return;
       }
 
@@ -506,7 +713,11 @@ export class IngresarComprasComponent implements OnInit {
               this.cerrarModalTallas();
           } else {
               console.error('No se encontró la talla maestra correspondiente para el valor USA:', tallaProducto.usa);
-              alert('Error: No se pudo encontrar la información completa de la talla seleccionada.');
+              Swal.fire({
+                icon: 'error',
+                title: 'Error de tallas',
+                text: 'Error: No se pudo encontrar la información completa de la talla seleccionada.'
+              });
           }
 
       }
@@ -560,5 +771,27 @@ export class IngresarComprasComponent implements OnInit {
   }
 
   // -------------------------------------------------------------------------------
+  // Helpers para mostrar nombres en el modal de confirmación
+  private getProveedorNombre(idProveedor: number | any): string {
+    const p = this.proveedores.find(pr => String(pr.idPersona) === String(idProveedor) || String((pr as any).id) === String(idProveedor));
+    return p ? p.nombre : 'N/A';
+  }
+
+  private getFormaPagoDescripcion(idFormaPago: number | any): string {
+    const fp = this.formasPago.find(f => String(f.idMedioPago) === String(idFormaPago));
+    return fp ? fp.descripcion : 'N/A';
+  }
+
+  // Nuevo helper: devolver objeto proveedor completo por id (usa las propiedades que expones en Persona)
+  private getProveedorById(idProveedor: number | any): Persona | null {
+    if (!idProveedor) return null;
+    const p = this.proveedores.find(pr =>
+      String(pr.idPersona) === String(idProveedor) ||
+      String((pr as any).id) === String(idProveedor) ||
+      String((pr as any).idProveedor) === String(idProveedor) ||
+      String(pr.numeroDocumento || '') === String(idProveedor)
+    );
+    return p ?? null;
+  }
 
 }

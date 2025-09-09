@@ -1,67 +1,48 @@
 /* src/app/invoice/invoice.component.css */
 
-/* contenedor principal: más compacto */
+/* Contenedor principal: más compacto */
 .invoice-wrapper {
   max-width: 900px;
-  margin: 4px auto;
+  margin: 2px auto;
   background: #fff;
-  padding: 6px 8px;
+  padding: 4px 6px;
   border-radius: 6px;
   color: #1b2935;
   font-family: 'Poppins', sans-serif;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-  font-size: 12.5px;
+  font-size: 12px;
   page-break-inside: avoid;
   break-inside: avoid;
 }
 
-/* TOP COMPANY NAME (centrado y muy destacado) */
+/* TOP COMPANY NAME (centrado y ajustado) */
 .top-company {
   text-align: center;
   margin: 0;
   padding: 0;
 }
 .company-name-top {
-  display: block;
-  width: 100%;
-  margin: 0 auto 4px;
-  padding: 0;
-  font-weight: 900;
-  font-size: 56px;
-  line-height: 0.95;
-  color: #b71c1c;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-align: center;
-  text-shadow: 0 3px 6px rgba(0,0,0,0.12);
-}
-.company-legal-top {
-  font-size: 11px;
-  color: #444;
-  margin: 0 0 6px 0;
-  font-weight: 600;
-  text-align: center;
+  /* Estilos ahora en línea en el HTML para máxima prioridad */
 }
 
 /* Top banner (muy compacto) */
 .top-banner {
   display:flex;
   justify-content:center;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .rut-box {
   border: 1.5px solid #b71c1c;
-  padding: 4px 8px;
+  padding: 3px 6px;
   text-align: center;
   width: 100%;
   max-width: 520px;
   color: #b71c1c;
   border-radius: 4px;
-  font-size: 11.5px;
+  font-size: 11px;
 }
-.rut-line { font-size: 11px; color: #b71c1c; margin: 0 0 2px 0; }
-.doc-title { font-size: 12.5px; font-weight: 800; color: #b71c1c; margin: 0; }
-.doc-number-big { font-size: 12px; margin-top: 2px; color: #b71c1c; }
+.rut-line { font-size: 10.5px; color: #b71c1c; margin: 0; }
+.doc-title { font-size: 12px; font-weight: 800; color: #b71c1c; margin: 0; }
+.doc-number-big { font-size: 11.5px; margin-top: 1px; color: #b71c1c; }
 
 /* header (muy compacto) */
 .inv-header {
@@ -69,117 +50,147 @@
   justify-content:space-between;
   align-items:flex-start;
   gap:8px;
-  margin: 2px 0 4px 0;
+  margin: 2px 0;
   padding: 0;
 }
-.company-left {
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
-}
-.logo { width:56px; height:auto; object-fit:contain; margin-top:2px; }
+.company-left { display:flex; gap:8px; align-items:flex-start; }
+.logo { width:50px; height:auto; object-fit:contain; margin-top:1px; }
 
-.company-meta { color:#333; font-size:11px; margin:0; line-height:1.05; }
-.small { color:#546; font-size:10.5px; margin:0; }
+.company-meta { color:#333; font-size:10.5px; margin:0; line-height:1; }
+.small { color:#546; font-size:10px; margin:0; }
 
 /* doc right (compacto) */
 .doc-right { display:flex; align-items:flex-start; gap:8px; }
 .doc-box {
   border: 1px solid #e6e6e6;
-  padding: 4px 6px;
+  padding: 3px 5px;
   border-radius:6px;
   text-align:center;
-  min-width:110px;
-  background: linear-gradient(180deg, #fff, #fbfbfb);
+  min-width:100px;
 }
-.doc-type { font-weight:800; font-size:12px; color:#1b3a57; }
-.doc-number { font-size:11px; margin-top:4px; color:#2b2b2b; }
+.doc-type { font-weight:800; font-size:11.5px; color:#1b3a57; }
+.doc-number { font-size:10.5px; margin-top:3px; color:#2b2b2b; }
 
-/* separadores de seccion: más compactos */
-.section-divider {
-  border: none;
-  border-top: 1px solid #e6e6e6;
-  margin: 6px 0;
-}
-
-/* cliente: recortar espacios en blanco al máximo */
+/* cliente: recortar espacios en blanco */
 .client-info {
-  margin: 2px 0 4px 0;
-  font-size: 12px;
-  padding: 2px 0;
-  display: block;
+  margin: 2px 0;
+  font-size: 11.5px;
+  padding: 0;
 }
 .client-grid {
   display:grid;
   grid-template-columns: repeat(2, 1fr);
-  gap:6px;
+  gap: 3px 6px;
   align-items:start;
 }
 
-/* items table (ajustada sin VALOR) */
-.items-table table {
-  width:100%;
-  border-collapse:collapse;
-  margin-top:4px;
-  font-size:12px;
-}
-.items-table th, .items-table td {
-  padding:4px 6px;
-  border-bottom:1px dashed #eee;
-  vertical-align:middle;
-}
-.items-table th {
-  background:#fafafa;
-  font-weight:700;
-  text-align:left;
-  font-size:11px;
-  white-space:nowrap;
+/* --- NUEVO CONTENEDOR PARA ITEMS Y TOTALES --- */
+.items-and-totals-container {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin: 3px 0;
+  page-break-inside: avoid;
 }
 
-/* evitar que filas y secciones se corten en impresión (QR/footer) */
-.items-table tr, .client-info, .totals, .qr-section, .inv-footer {
-  page-break-inside: avoid;
-  break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  -webkit-region-break-inside: avoid;
+.internal-divider {
+  border: none;
+  border-top: 1px dashed #ccc;
+  margin: 3px 0;
 }
+/* --------------------------------------------- */
+
+/* items table (ajustado para el contenedor) */
+.items-table {
+  margin: 0;
+  padding: 0;
+}
+.items-table table { width:100%; border-collapse:collapse; font-size:11px; } 
+.items-table th, .items-table td { padding: 2px 4px; border-bottom:1px dashed #eee; vertical-align:middle; }
+.items-table th { background:#fafafa; font-weight:700; text-align:left; font-size:10px; white-space:nowrap; } 
+.items-table table tr:last-child td { border-bottom: none; }
+
+/* Evitar cortes de página */
+.items-table tr, .client-info, .totals, .qr-section, .inv-footer { page-break-inside: avoid; break-inside: avoid; }
 
 .no-wrap { white-space:nowrap; }
 .right { text-align:right; }
 .center { text-align:center; }
 
-.item-title { font-weight:700; font-size:12px; margin:0; }
-.item-small { font-size:10.5px; color:#666; margin-top:2px; }
+.item-title { font-weight:700; font-size:11px; margin:0; } 
+.item-small { font-size:9.5px; color:#666; margin-top:1px; }
 
-.totals { max-width:360px; margin-left:auto; margin-top:6px; font-size:12px; }
-.tot-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed rgba(0,0,0,0.04); }
-.total { font-weight:900; font-size:15px; }
+/* Totales (ajustado para el contenedor) */
+.totals { max-width:100%; margin: 0; padding-top: 2px; font-size:11px; } 
+.tot-row { display:flex; justify-content:space-between; padding: 3px 0; border-bottom:1px dashed rgba(0,0,0,0.04); }
+.tot-row:last-child { border-bottom: none; }
+.total { font-weight:900; font-size:13px; }
 
-/* QR (más controlado) */
-.qr-section { margin-top:6px; text-align:center; page-break-inside: avoid; }
-#qrcode-img { display:block; margin:6px auto 0; width:140px; height:140px; object-fit:contain; }
-
-/* footer */
-.inv-footer { margin-top:10px; font-size:12px; color:#6b7880; text-align:center; page-break-inside: avoid; }
-
-/* print */
-@media print {
-  @page { size:A4; margin:8mm; }
-  body * { visibility: visible; }
-  .invoice-wrapper { box-shadow:none; margin:0; border-radius:0; padding:6px; font-size:10.5px; }
-  .company-name-top { font-size:48px; line-height:0.95; }
-  .items-table th, .items-table td { padding:3px 4px; font-size:9.5px; }
-  #qrcode-img { width:130px; height:130px; }
-  .barcode-canvas { max-width:160px; }
-  .totals { max-width:320px; }
-  .qr-section { margin-top:6px; page-break-inside: avoid; }
-  .inv-footer { margin-top:8px; page-break-inside: avoid; }
+/* QR (CENTRADO CON TEXT-ALIGN) */
+.qr-section {
+  margin: 4px 0;
+  padding: 0;
+  text-align: center; /* <<< LA CLAVE PARA CENTRAR EL QR */
+  page-break-inside: avoid;
 }
 
-/* thermal */
+#qrcode-img {
+  /* El tamaño se controla desde el TS (TypeScript) */
+  object-fit: contain;
+}
+
+/* footer */
+.inv-footer {
+  margin: 0;
+  padding: 0;
+  font-size: 9px;
+  color: #6b7880;
+  text-align: center;
+  page-break-inside: avoid;
+}
+.inv-footer div {
+  margin: 0;
+  padding: 1px 0; /* Espaciado mínimo */
+  line-height: 1.1;
+}
+.footer-small-text {
+  font-size: 8px;
+  color: #888;
+}
+
+
+/* Medios de impresión */
+@media print {
+  @page {
+    size: A4;
+    margin: 3mm; /* Mínimo margen */
+  }
+  .invoice-wrapper {
+    box-shadow: none;
+    margin: 0;
+    border-radius: 0;
+    font-size: 9px; /* Fuente pequeña para impresión */
+  }
+
+  .top-company { margin-bottom: 3px; }
+  .company-name-top { font-size: 20px !important; margin-bottom: 3px !important; }
+  .top-banner, .inv-header, .client-info, .items-and-totals-container, .qr-section, .inv-footer {
+    margin: 1px 0;
+    padding: 0;
+  }
+  .items-and-totals-container { padding: 4px; }
+  .internal-divider { margin: 2px 0; }
+  
+  #qrcode-img {
+    /* El tamaño y centrado para impresión se definen en el TS */
+  }
+  
+  .items-table th, .items-table td { padding: 1.5px; font-size: 8.5px; }
+  .footer-small-text { font-size: 8px; }
+}
+
 @media print and (max-width: 90mm) {
-  .top-banner { margin-bottom:6px; }
-  .company-name-top { font-size:20px; }
-  .items-table th, .items-table td { padding:4px; font-size:11px; }
-  #qrcode-img { width:120px; height:120px; }
+  .company-name-top { font-size:16px !important; }
+  .items-table th, .items-table td { padding:2px; font-size:9px; }
+  #qrcode-img { width:90px !important; height:90px !important; } /* Se mantiene para tickets */
 }

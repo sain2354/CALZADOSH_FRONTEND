@@ -157,6 +157,15 @@ export class ListadoProductosComponent implements OnInit {
       this.selectedEstilo === 'Todos' ? null : this.selectedEstilo
     ).subscribe({
       next: (lista) => {
+        console.log('Productos cargados (primeros 2):', lista.slice(0, 2)); // ← Añade esto
+        console.log('Campos de ejemplo:', {
+          nombre: lista[0]?.nombre,
+          articulo: lista[0]?.articulo,
+          estilo: lista[0]?.estilo,
+          genero: lista[0]?.genero,
+          precioVenta: lista[0]?.precioVenta
+        });
+        
         this.productos = lista;
         this.productosAutoComplete = this.productos.map((p) => ({
           idProducto: p.idProducto,
@@ -741,26 +750,41 @@ export class ListadoProductosComponent implements OnInit {
 
   // ------------------- INICIO: Métodos de Catálogo / Excel / Imprimir -------------------
 
-  // ---------- GENERAR CATÁLOGO PDF (mejorado, usa fetchImageAsDataURL del servicio) ----------
+  // ---------- GENERAR CATÁLOGO PDF (mejorado con diseño más elegante) ----------
   async generarCatalogoPDF() {
     try {
       const doc = new jsPDF('p', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
-      const margin = 12;
-      const cols = 2; // tarjetas por fila
-      const gapX = 8;
-      const gapY = 10;
-      const cardW = (pageWidth - margin * 2 - gapX) / cols;
-      const cardH = 60;
-      const imgW = 38;
-      const imgH = 38;
-      let x = margin;
-      let y = margin + 8;
+      const margin = 15;
 
-      doc.setFontSize(16);
-      doc.text('Catálogo de Productos', pageWidth / 2, 10, { align: 'center' });
-      doc.setFontSize(10);
+      // Encabezado con logo de empresa y título elegante
+      doc.setFillColor(41, 128, 185); // Azul elegante
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CALZADOS HUANCAYO', pageWidth / 2, 12, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Catálogo de Productos', pageWidth / 2, 19, { align: 'center' });
+
+      // Restablecer color de texto para el contenido
+      doc.setTextColor(0, 0, 0);
+
+      // Configuración de la cuadrícula mejorada
+      const cols = 2;
+      const gapX = 12;
+      const gapY = 15;
+      const cardW = (pageWidth - margin * 2 - gapX) / cols;
+      const cardH = 98;
+      const imgW = 55;
+      const imgH = 55;
+      
+      let x = margin;
+      let y = 35; // Comenzar después del encabezado
 
       const lista = (this.productosFiltrados && this.productosFiltrados.length > 0)
         ? this.productosFiltrados
@@ -769,22 +793,37 @@ export class ListadoProductosComponent implements OnInit {
       for (let i = 0; i < lista.length; i++) {
         const p = lista[i];
 
-        // nueva página si no cabe
+        // Nueva página si no cabe
         if (y + cardH > pageHeight - margin) {
           doc.addPage();
-          y = margin + 8;
+          // Repetir encabezado en nueva página
+          doc.setFillColor(41, 128, 185);
+          doc.rect(0, 0, pageWidth, 25, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(24);
+          doc.setFont('helvetica', 'bold');
+          doc.text('CALZADOS HUANCAYO', pageWidth / 2, 12, { align: 'center' });
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Catálogo de Productos', pageWidth / 2, 19, { align: 'center' });
+          doc.setTextColor(0, 0, 0);
+          
+          y = 35;
           x = margin;
         }
 
-        // Card borde
-        doc.setDrawColor(220);
+        // Tarjeta con sombra y bordes redondeados (simulado)
+        doc.setFillColor(248, 249, 250); // Fondo gris muy claro
+        doc.roundedRect(x, y, cardW, cardH, 3, 3, 'F');
+        
+        doc.setDrawColor(220, 220, 220); // Borde gris claro
+        doc.setLineWidth(0.5);
         doc.roundedRect(x, y, cardW, cardH, 3, 3, 'S');
 
-        // Obtener la URL normalizada desde el servicio
+        // Obtener imagen
         const imgUrl = this.productoService.getImageFullUrl((p as any).foto) ?? (p as any).foto ?? '';
         let imgData: string | null = null;
 
-        // Intentar convertir a dataURL usando el helper central del servicio (fetch -> blob -> FileReader)
         if (imgUrl) {
           try {
             imgData = await this.productoService.fetchImageAsDataURL(imgUrl, 7000);
@@ -793,38 +832,79 @@ export class ListadoProductosComponent implements OnInit {
           }
         }
 
-        // fallback al placeholder central del servicio
         if (!imgData) {
           imgData = this.productoService.getPlaceholderImage();
         }
 
-        // Añadir imagen con fallback entre formatos
+        // Añadir imagen con marco
+        const imgX = x + 8;
+        const imgY = y + 8;
+        
+        // Marco para la imagen
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(imgX - 2, imgY - 2, imgW + 4, imgH + 4, 2, 2, 'F');
+        doc.setDrawColor(200, 200, 200);
+        doc.roundedRect(imgX - 2, imgY - 2, imgW + 4, imgH + 4, 2, 2, 'S');
+
         try {
-          doc.addImage(imgData as string, 'JPEG', x + 6, y + 10, imgW, imgH);
+          doc.addImage(imgData as string, 'JPEG', imgX, imgY, imgW, imgH);
         } catch {
           try {
-            doc.addImage(imgData as string, 'PNG', x + 6, y + 10, imgW, imgH);
+            doc.addImage(imgData as string, 'PNG', imgX, imgY, imgW, imgH);
           } catch (e) {
-            // si falla, no bloqueamos el PDF
             console.warn('No se pudo incrustar imagen en PDF para producto', p, e);
           }
         }
 
-        // Texto: nombre, artículo, estilo, precio
-        const textX = x + 6 + imgW + 6;
-        let lineY = y + 14;
-        doc.setFontSize(11);
-        doc.text((p.nombre || 'Sin nombre').toString(), textX, lineY, { maxWidth: cardW - imgW - 18 });
-        doc.setFontSize(9);
-        lineY += 6;
-        doc.text(`Artículo: ${p.articulo ?? '-'}`, textX, lineY, { maxWidth: cardW - imgW - 18 });
-        lineY += 5;
-        doc.text(`Estilo: ${p.estilo ?? '-'}`, textX, lineY, { maxWidth: cardW - imgW - 18 });
-        lineY += 6;
-        doc.setFontSize(10);
-        doc.text(`S/ ${(p.precioVenta ?? 0).toFixed(2)}`, textX, lineY);
+        // Información del producto con mejor diseño
+        // Información del producto con mejor diseño
+const textX = x + 8;
+let lineY = y + imgH + 16; // AUMENTADO de 12 a 16 para bajar el nombre
 
-        // avanzar posición: columnas/filas
+// Nombre del producto (destacado)
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(12);
+doc.setTextColor(52, 73, 94); // Azul oscuro
+const nombreTexto = (p.nombre || 'Sin nombre').toString();
+const nombreLines = doc.splitTextToSize(nombreTexto, cardW - 16);
+doc.text(nombreLines, textX, lineY);
+
+// Calcular altura del nombre para posicionar correctamente los demás elementos
+const nombreHeight = nombreLines.length * 4; // Aproximadamente 4mm por línea
+
+// Detalles del producto
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(8);
+doc.setTextColor(127, 140, 141); // Gris
+
+lineY += nombreHeight + 4; // Espacio después del nombre
+doc.text(`Artículo: ${p.articulo || 'No especificado'}`, textX, lineY, { maxWidth: cardW - 16 });
+
+lineY += 4;
+doc.text(`Estilo: ${p.estilo || 'No especificado'}`, textX, lineY, { maxWidth: cardW - 16 });
+
+lineY += 4;
+doc.text(`Género: ${p.genero || 'No especificado'}`, textX, lineY, { maxWidth: cardW - 16 });
+
+// Precio (destacado con fondo)
+lineY += 6;
+const precioTexto = p.precioVenta ? `S/ ${(p.precioVenta || 0).toFixed(2)}` : 'Precio no disponible';
+doc.setFontSize(11);
+doc.setFont('helvetica', 'bold');
+
+if (p.precioVenta) {
+    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(46, 204, 113); // Verde
+    const precioWidth = doc.getTextWidth(precioTexto) + 6;
+    doc.roundedRect(textX, lineY - 3, precioWidth, 7, 2, 2, 'F');
+    doc.text(precioTexto, textX + 3, lineY);
+} else {
+    doc.setTextColor(127, 140, 141); // Gris
+    doc.text(precioTexto, textX, lineY);
+}
+
+
+        // Avanzar posición
         if ((i + 1) % cols === 0) {
           x = margin;
           y += cardH + gapY;
@@ -833,10 +913,20 @@ export class ListadoProductosComponent implements OnInit {
         }
       }
 
-      doc.save('catalogo_productos_con_imagenes.pdf');
+      // Pie de página
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(127, 140, 141);
+        doc.text(`Página ${i} de ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+        doc.text('CALZADOS HUANCAYO - Catálogo de Productos', margin, pageHeight - 5);
+      }
+
+      doc.save('catalogo_calzados_huancayo.pdf');
     } catch (err) {
-      console.error('Error al generar catálogo PDF (mejorado):', err);
-      alert('No se pudo generar el PDF del catálogo con imágenes. Revisa la consola.');
+      console.error('Error al generar catálogo PDF:', err);
+      alert('No se pudo generar el PDF del catálogo. Revisa la consola.');
     }
   }
 
@@ -852,6 +942,7 @@ export class ListadoProductosComponent implements OnInit {
         Nombre: p.nombre ?? '',
         Articulo: p.articulo ?? '',
         Estilo: p.estilo ?? '',
+        Genero: p.genero ?? '',
         PrecioVenta: p.precioVenta ?? 0,
         PrecioCompra: p.precioCompra ?? 0,
         Stock: p.stock ?? 0,
@@ -861,14 +952,14 @@ export class ListadoProductosComponent implements OnInit {
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Productos');
-      XLSX.writeFile(wb, 'catalogo_productos.xlsx');
+      XLSX.writeFile(wb, 'catalogo_productos_calzados_huancayo.xlsx');
     } catch (err) {
       console.error('Error exportando Excel:', err);
       alert('No se pudo exportar a Excel. Revisa la consola.');
     }
   }
 
-  // ---------- IMPRIMIR CATÁLOGO (vista en grid, con fallback de imagen) ----------
+  // ---------- IMPRIMIR CATÁLOGO (vista mejorada y más elegante) ----------
   imprimirCatalogo() {
     try {
       const lista = (this.productosFiltrados && this.productosFiltrados.length > 0)
@@ -877,57 +968,194 @@ export class ListadoProductosComponent implements OnInit {
 
       const style = `
         <style>
-          body { font-family: Arial, Helvetica, sans-serif; margin: 16px; color: #333; }
-          .catalog-header { text-align: center; margin-bottom: 12px; }
-          .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-          .card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background: #fff; display:flex; gap:8px; align-items:flex-start; }
-          .thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; background:#f6f6f6; }
-          .meta { flex:1; }
-          .meta h4 { margin: 0 0 6px 0; font-size: 14px; word-break: break-word; }
-          .meta p { margin: 3px 0; font-size: 12px; color:#555; }
-          .price { font-weight:700; color:#0a5; margin-top:4px; }
-          @media print { .page-break { page-break-after: always; } }
+          * { box-sizing: border-box; }
+          body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+          }
+          .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+          }
+          .header { 
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+            color: white; 
+            text-align: center; 
+            padding: 30px 20px;
+            position: relative;
+          }
+          .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e74c3c, #f39c12, #f1c40f, #2ecc71, #3498db, #9b59b6);
+          }
+          .header h1 { 
+            margin: 0 0 10px 0; 
+            font-size: 2.5rem; 
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+          }
+          .header p { 
+            margin: 0; 
+            font-size: 1.2rem; 
+            opacity: 0.9;
+          }
+          .catalog-content {
+            padding: 40px 20px;
+          }
+          .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; 
+          }
+          .product-card { 
+            background: white;
+            border-radius: 15px; 
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #f0f0f0;
+          }
+          .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+          }
+          .product-image { 
+            width: 100%; 
+            height: 200px; 
+            object-fit: cover; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: block;
+          }
+          .product-info { 
+            padding: 20px;
+          }
+          .product-name { 
+            margin: 0 0 12px 0; 
+            font-size: 1.3rem; 
+            font-weight: 700;
+            color: #2c3e50;
+            line-height: 1.3;
+          }
+          .product-detail { 
+            margin: 6px 0; 
+            font-size: 0.95rem; 
+            color: #7f8c8d;
+            display: flex;
+            align-items: center;
+          }
+          .detail-label {
+            font-weight: 600;
+            color: #34495e;
+            min-width: 70px;
+            margin-right: 8px;
+          }
+          .product-price { 
+            font-weight: 800; 
+            font-size: 1.4rem;
+            color: white;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            padding: 8px 15px;
+            border-radius: 25px;
+            display: inline-block;
+            margin-top: 15px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+          }
+          .no-products {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+            font-size: 1.2rem;
+          }
+          @media print { 
+            body { background: white !important; padding: 0 !important; }
+            .container { box-shadow: none !important; border-radius: 0 !important; }
+            .product-card { box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important; break-inside: avoid; }
+            .header { background: #2980b9 !important; }
+          }
+          @media (max-width: 768px) {
+            .grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+            .header h1 { font-size: 2rem; }
+            .catalog-content { padding: 20px 15px; }
+          }
         </style>
       `;
 
-      let html = `<html><head><title>Catálogo</title>${style}</head><body>`;
-      html += `<div class="catalog-header"><h2>Catálogo de Productos</h2></div>`;
-      html += `<div class="grid">`;
+      let html = `<html><head><title>Catálogo CALZADOS HUANCAYO</title><meta charset="UTF-8">${style}</head><body>`;
+      html += `<div class="container">`;
+      html += `<div class="header">
+        <h1>CALZADOS HUANCAYO</h1>
+        <p>Catálogo de Productos Premium</p>
+      </div>`;
+      html += `<div class="catalog-content">`;
 
-      lista.forEach(p => {
-        const raw = this.productoService.getImageFullUrl((p as any).foto) ?? (p as any).foto ?? '';
-        const safeImg = raw || this.productoService.getPlaceholderImage();
+      if (lista.length === 0) {
+        html += `<div class="no-products">No hay productos disponibles para mostrar</div>`;
+      } else {
+        html += `<div class="grid">`;
 
-        // Note: onerror usa placeholder embebido si la URL no carga por CORS/404.
-        html += `
-          <div class="card">
-            <img class="thumb" src="${safeImg}" onerror="this.onerror=null;this.src='${this.productoService.getPlaceholderImage()}';"/>
-            <div class="meta">
-              <h4>${(p.nombre ?? 'Sin nombre')}</h4>
-              <p>Artículo: ${p.articulo ?? '-'}</p>
-              <p>Estilo: ${p.estilo ?? '-'}</p>
-              <p class="price">S/ ${(p.precioVenta ?? 0).toFixed(2)}</p>
+        lista.forEach(p => {
+          const raw = this.productoService.getImageFullUrl((p as any).foto) ?? (p as any).foto ?? '';
+          const safeImg = raw || this.productoService.getPlaceholderImage();
+
+          html += `
+    <div class="product-card">
+        <img class="product-image" src="${safeImg}" onerror="this.onerror=null;this.src='${this.productoService.getPlaceholderImage()}';"/>
+        <div class="product-info">
+            <h3 class="product-name">${p.nombre || 'Sin nombre'}</h3>
+            <div class="product-detail">
+                <span class="detail-label">Artículo:</span>
+                <span>${p.articulo || 'No especificado'}</span>
             </div>
-          </div>
-        `;
-      });
+            <div class="product-detail">
+                <span class="detail-label">Estilo:</span>
+                <span>${p.estilo || 'No especificado'}</span>
+            </div>
+            <div class="product-detail">
+                <span class="detail-label">Género:</span>
+                <span>${p.genero || 'No especificado'}</span>
+            </div>
+            ${p.precioVenta ? 
+                `<div class="product-price">S/ ${(p.precioVenta || 0).toFixed(2)}</div>` :
+                `<div class="product-price" style="background: #e74c3c;">Precio no disponible</div>`
+            }
+        </div>
+    </div>
+`;
 
-      html += `</div></body></html>`;
+        });
+
+        html += `</div>`;
+      }
+      
+      html += `</div></div></body></html>`;
 
       const newWin = window.open('', '_blank');
-      if (!newWin) { alert('No se pudo abrir la vista de impresión. Revisa el bloqueador de popups.'); return; }
+      if (!newWin) { 
+        alert('No se pudo abrir la vista de impresión. Revisa el bloqueador de popups.'); 
+        return; 
+      }
       newWin.document.open();
       newWin.document.write(html);
       newWin.document.close();
       newWin.focus();
 
-      // Esperar a que carguen las imágenes (si las hay) y luego imprimir
       setTimeout(() => {
         newWin.print();
-        // newWin.close();
-      }, 900);
+      }, 1000);
     } catch (err) {
-      console.error('Error al imprimir catálogo (mejorado):', err);
+      console.error('Error al imprimir catálogo:', err);
       alert('No se pudo imprimir el catálogo. Revisa la consola.');
     }
   }
