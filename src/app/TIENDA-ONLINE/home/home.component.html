@@ -1,0 +1,69 @@
+<div class="home-container">
+  <!-- Banner Carousel -->
+  <section *ngIf="selectedCategoryName === 'Todos'" class="banner-carousel">
+    <div class="banner-frame">
+      <button class="banner-arrow left" (click)="prevBanner()" aria-label="Anterior banner">&#10094;</button>
+      
+      <div *ngFor="let banner of promoBanners; let i = index" 
+           class="banner-slide" 
+           [class.active]="i === carouselIndex">
+        <img [src]="banner.asset" [alt]="banner.title">
+        <div class="banner-cta">
+          <h2>{{ banner.title }}</h2>
+          <button class="btn-primary">COMPRAR AHORA</button>
+        </div>
+      </div>
+      
+      <button class="banner-arrow right" (click)="nextBanner()" aria-label="Siguiente banner">&#10095;</button>
+    </div>
+    
+    <div class="banner-dots">
+      <button *ngFor="let b of promoBanners; let i = index"
+              class="dot"
+              [class.active]="i === carouselIndex"
+              (click)="selectBanner(i)"></button>
+    </div>
+  </section>
+
+  <!-- Encabezado de filtros -->
+  <header class="filters-header">
+    <div class="filters-toolbar">
+      <div class="filters-left">
+        <!-- espacio para controles futuros -->
+      </div>
+
+      <div class="filters-right">
+        <div class="results-info" *ngIf="!isLoading">
+          <small>{{ products.length }} productos</small>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Grid -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Cargando productos...</p>
+  </div>
+
+  <div *ngIf="!isLoading && products.length === 0" class="no-products">
+    <i class="bi bi-search-heart"></i>
+    <p>No se encontraron productos con estos filtros.</p>
+    <span>Intenta ajustar tu búsqueda.</span>
+  </div>
+
+  <section *ngIf="!isLoading && products.length > 0" class="product-grid" aria-live="polite">
+    <a *ngFor="let product of products" class="product-card" [routerLink]="['/producto', product.idProducto]">
+      <div class="badge-discount">10% OFF</div>
+
+      <div class="card-image-container">
+        <img [src]="productService.getImageUrl(product.foto)" [alt]="product.nombre">
+      </div>
+      <div class="card-body">
+        <span class="product-brand">{{ product.subCategoriaDescripcion }}</span>
+        <h4 class="product-name">{{ product.nombre }}</h4>
+        <p class="product-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</p>
+      </div>
+    </a>
+  </section>
+</div>

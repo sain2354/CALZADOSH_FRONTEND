@@ -1,0 +1,276 @@
+<header class="site-header" role="banner">
+  <div class="header-container">
+    <div class="header-left">
+      <a routerLink="/" class="logo" aria-label="Ir a inicio">
+        <img src="assets/images/LOGO.png" alt="Logo de la Tienda">
+      </a>
+    </div>
+
+    <div class="header-center" (mouseleave)="onHoverCategory(null)">
+      <nav class="main-nav" aria-label="Navegación principal">
+        <button class="nav-btn"
+                (click)="selectCategory('Todos')"
+                (mouseenter)="onHoverCategory(null)"
+                [class.active]="selectedCategoryName === 'Todos'">
+          Todos
+        </button>
+
+        <!-- Hombres -->
+        <div class="nav-item-with-dropdown"
+             (mouseenter)="onHoverCategory('Hombres')"
+             (mouseleave)="onHoverCategory(null)">
+          <button class="nav-btn" (click)="selectCategory('Hombres')" [class.active]="selectedCategoryName === 'Hombres'">
+            Hombres
+          </button>
+
+          <div class="brands-dropdown" *ngIf="hoveredCategoryName === 'Hombres'">
+            <!-- Left: filtros (mismo formato para cada categoría) -->
+            <div class="dropdown-column filters-column">
+              <h4>Filtros</h4>
+
+              <div class="mini-filter">
+                <strong>Género</strong>
+                <ul>
+                  <li *ngFor="let g of filterOptions.generos">{{ g }}</li>
+                </ul>
+              </div>
+
+              <div class="mini-filter">
+                <strong>Artículo</strong>
+                <ul>
+                  <li *ngFor="let a of filterOptions.articulos">{{ a }}</li>
+                </ul>
+              </div>
+
+              <div class="mini-filter">
+                <strong>Estilo</strong>
+                <ul>
+                  <li *ngFor="let e of filterOptions.estilos">{{ e }}</li>
+                </ul>
+              </div>
+
+              <div class="mini-filter">
+                <strong>Color</strong>
+                <ul>
+                  <li *ngFor="let c of filterOptions.colores">{{ c }}</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Right: marcas/pills -->
+            <div class="dropdown-column brands-column">
+              <div *ngIf="loadingBrands" class="brands-loading">Cargando marcas...</div>
+
+              <ng-container *ngIf="!loadingBrands && hoveredBrands.length > 0">
+                <div class="brands-grid">
+                  <button *ngFor="let b of hoveredBrands; let i = index"
+                          class="brand-chip-dropdown"
+                          (click)="selectBrandFromDropdown(b.idSubCategoria)">
+                    {{ getBrandLabel(b, i) }}
+                  </button>
+                </div>
+              </ng-container>
+
+              <div *ngIf="!loadingBrands && hoveredBrands.length === 0" class="brands-empty">No hay marcas</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mujeres -->
+        <div class="nav-item-with-dropdown"
+             (mouseenter)="onHoverCategory('Mujeres')"
+             (mouseleave)="onHoverCategory(null)">
+          <button class="nav-btn" (click)="selectCategory('Mujeres')" [class.active]="selectedCategoryName === 'Mujeres'">
+            Mujeres
+          </button>
+
+          <div class="brands-dropdown" *ngIf="hoveredCategoryName === 'Mujeres'">
+            <div class="dropdown-column filters-column">
+              <h4>Filtros</h4>
+              <div class="mini-filter">
+                <strong>Tallas</strong>
+                <ul>
+                  <li *ngFor="let t of filterOptions.tallas">{{ t }}</li>
+                </ul>
+              </div>
+
+              <div class="mini-filter">
+                <strong>Artículo</strong>
+                <ul>
+                  <li *ngFor="let a of filterOptions.articulos">{{ a }}</li>
+                </ul>
+              </div>
+
+              <div class="mini-filter">
+                <strong>Color</strong>
+                <ul>
+                  <li *ngFor="let c of filterOptions.colores">{{ c }}</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="dropdown-column brands-column">
+              <div *ngIf="loadingBrands" class="brands-loading">Cargando marcas...</div>
+
+              <ng-container *ngIf="!loadingBrands && hoveredBrands.length > 0">
+                <div class="brands-grid">
+                  <button *ngFor="let b of hoveredBrands; let i = index"
+                          class="brand-chip-dropdown"
+                          (click)="selectBrandFromDropdown(b.idSubCategoria)">
+                    {{ getBrandLabel(b, i) }}
+                  </button>
+                </div>
+              </ng-container>
+
+              <div *ngIf="!loadingBrands && hoveredBrands.length === 0" class="brands-empty">No hay marcas</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Infantil -->
+        <div class="nav-item-with-dropdown"
+             (mouseenter)="onHoverCategory('Infantil')"
+             (mouseleave)="onHoverCategory(null)">
+          <button class="nav-btn" (click)="selectCategory('Infantil')" [class.active]="selectedCategoryName === 'Infantil'">
+            Infantil
+          </button>
+
+          <div class="brands-dropdown" *ngIf="hoveredCategoryName === 'Infantil'">
+            <div class="dropdown-column filters-column">
+              <h4>Filtros</h4>
+              <div class="mini-filter">
+                <strong>Artículo</strong>
+                <ul>
+                  <li *ngFor="let a of filterOptions.articulos">{{ a }}</li>
+                </ul>
+              </div>
+              <div class="mini-filter">
+                <strong>Tallas</strong>
+                <ul>
+                  <li *ngFor="let t of filterOptions.tallas">{{ t }}</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="dropdown-column brands-column">
+              <div *ngIf="loadingBrands" class="brands-loading">Cargando marcas...</div>
+
+              <ng-container *ngIf="!loadingBrands && hoveredBrands.length > 0">
+                <div class="brands-grid">
+                  <button *ngFor="let b of hoveredBrands; let i = index"
+                          class="brand-chip-dropdown"
+                          (click)="selectBrandFromDropdown(b.idSubCategoria)">
+                    {{ getBrandLabel(b, i) }}
+                  </button>
+                </div>
+              </ng-container>
+
+              <div *ngIf="!loadingBrands && hoveredBrands.length === 0" class="brands-empty">No hay marcas</div>
+            </div>
+          </div>
+        </div>
+
+      </nav>
+    </div>
+
+    <div class="header-right" role="navigation" aria-label="Acciones">
+      <!-- Buscador visible y usable (navega a /?q=...) -->
+      <form (submit)="onSearch()" class="search-form" role="search" aria-label="Buscar productos">
+        <input type="search" name="q" placeholder="BUSCAR" [(ngModel)]="searchTerm" (keydown.enter)="onSearch()" />
+        <button type="button" class="search-btn" (click)="onSearch()" aria-label="Buscar">
+          <i class="fas fa-search"></i>
+        </button>
+      </form>
+
+      <a href="#" class="header-icon" aria-label="Cuenta"><i class="fas fa-user"></i></a>
+      <a routerLink="/carrito" class="header-icon cart-icon-link" aria-label="Ir al carrito">
+        <i class="fas fa-shopping-bag"></i>
+        <ng-container *ngIf="cartItemCount$ | async as count">
+          <span *ngIf="count > 0" class="cart-badge">{{ count }}</span>
+        </ng-container>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="main-content content-shell" role="main">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-main">
+    <div class="footer-container">
+      <!-- Tiendas -->
+      <div class="footer-section">
+        <h3>TIENDAS</h3>
+        <ul>
+          <li>FLAGSHIP ACACIAS</li>
+          <li>Miraflores - Lima</li>
+        </ul>
+        <ul>
+          <li>TIENDA JOCKEY PLAZA</li>
+          <li>Surco - Lima</li>
+        </ul>
+        <ul>
+          <li>TIENDA SAN BORJA</li>
+          <li>San Borja - Lima</li>
+        </ul>
+      </div>
+
+      <!-- Cuenta -->
+      <div class="footer-section">
+        <h3>CUENTA</h3>
+        <ul>
+          <li><a href="#">MI CUENTA</a></li>
+          <li><a href="#">REGISTRARME</a></li>
+          <li><a href="#">SOPORTE</a></li>
+          <li><a href="#">ESTADO DE PEDIDO</a></li>
+        </ul>
+      </div>
+
+      <!-- Información -->
+      <div class="footer-section">
+        <h3>INFORMACIÓN</h3>
+        <ul>
+          <li><a href="#">NOSOTROS</a></li>
+          <li><a href="#">POLÍTICAS</a></li>
+          <li><a href="#">TÉRMINOS Y CONDICIONES</a></li>
+          <li><a href="#">CONTACTANOS</a></li>
+          <li><a href="#">LIBRO DE RECLAMACIONES</a></li>
+          <li><a href="#">PREGUNTAS FREQUENTES</a></li>
+        </ul>
+      </div>
+
+      <!-- Redes Sociales -->
+      <div class="footer-section">
+        <h3>REDES SOCIALES</h3>
+        <div class="social-links">
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i> INSTAGRAM</a>
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i> FACEBOOK</a>
+          <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i> YOUTUBE</a>
+        </div>
+      </div>
+
+      <!-- Únete a nuestro equipo -->
+      <div class="footer-section">
+        <h3>ÚNETE A NUESTRO EQUIPO</h3>
+        <ul>
+          <li><a href="#">TRABAJA CON NOSOTROS</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-container">
+      <div class="company-info">
+        <h4>FUTURE VISIONS</h4>
+        <p>RUC: 2006250858</p>
+        <p>Razón Social: FUTURE VISIONS GALAXY S.C.R.L.</p>
+      </div>
+      <div class="copyright">
+        <p>FUTURE VISIONS © 2024, ALL RIGHTS RESERVED</p>
+      </div>
+    </div>
+  </div>
+</footer>

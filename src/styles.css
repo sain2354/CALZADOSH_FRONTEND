@@ -1,12 +1,30 @@
-/* You can add global styles to this file, and also import other style files */
+/* styles.css (reemplazar el contenido actual) */
+/* Estilos globales — permitir scroll del navegador y evitar reglas que bloqueen la altura */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden; /* Evita scroll vertical en toda la página */
-    box-sizing: border-box;
-  }
+html, body, app-root {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* No fijar height:100% ni overflow:hidden aquí */
+  min-height: 100%;
+  height: auto;
+  overflow-y: auto; /* permite la barra de desplazamiento vertical del navegador */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
+/* Normalizar cajas para todo el proyecto */
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* Opcional: estilo ligero para el scroll en navegadores que lo soporten */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 999px;
+}

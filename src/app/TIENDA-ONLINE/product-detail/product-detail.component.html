@@ -1,0 +1,72 @@
+<!-- src/app/TIENDA-ONLINE/product-detail/product-detail.component.html -->
+
+<div class="back-button-container">
+  <button (click)="goBack()" class="back-button">
+    <i class="fas fa-arrow-left"></i>
+    Volver
+  </button>
+</div>
+
+<div *ngIf="isLoading" class="loading-indicator">
+  <!-- ... contenido de carga ... -->
+</div>
+
+<div *ngIf="error" class="error-message">
+  <!-- ... contenido de error ... -->
+</div>
+
+<div *ngIf="!isLoading && product" class="product-detail-container">
+
+  <!-- Columna Izquierda: Imagen del Producto -->
+  <div class="product-image-section">
+    <!-- ... contenido de la imagen ... -->
+  </div>
+
+  <!-- Columna Derecha: Información y Acciones -->
+  <div class="product-info-section">
+    <h1 class="product-name">{{ product.nombre }}</h1>
+    <p class="product-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</p>
+    <div class="divider"></div>
+
+    <!-- Sección de Tallas -->
+    <div *ngIf="product.tallas && product.tallas.length > 0" class="size-section">
+      <label for="size-select">Talla:</label>
+      <select id="size-select" class="size-selector" #sizeSelect (change)="onSizeSelected(sizeSelect.value)">
+        <option value="" disabled selected>Seleccione una talla</option>
+        <option *ngFor="let talla of product.tallas" [value]="talla.usa" [disabled]="talla.stock <= 0">
+          {{ getSizeLabel(talla) }} {{ talla.stock <= 0 ? '(Sin stock)' : '' }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Botones de Acción (MODIFICADO) -->
+    <div class="action-buttons">
+      <button 
+        class="add-to-cart-btn" 
+        [disabled]="(product.tallas && product.tallas.length > 0) && !selectedTalla"
+        (click)="addToCart()"> <!-- PASO 1: Añadido (click) -->
+        <i class="fas fa-shopping-cart"></i>
+        AGREGAR AL CARRITO
+      </button>
+      <button class="size-guide-btn">GUÍA DE TALLAS</button>
+    </div>
+
+    <!-- PASO 2: Mensaje de confirmación -->
+    <div *ngIf="showAddedToCartMessage" class="added-to-cart-message">
+      <i class="fas fa-check-circle"></i>
+      <span>¡Agregado al carrito!</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Sección de Características -->
+    <div class="features-section">
+      <h3 class="features-title">Características</h3>
+      <ul class="features-list">
+        <li *ngIf="product.marca"><strong>Marca:</strong> {{ product.marca }}</li>
+        <li *ngIf="product.categoriaDescripcion"><strong>Categoría:</strong> {{ product.categoriaDescripcion }}</li>
+        <li><strong>Sub-Categoría:</strong> {{ product.subCategoriaDescripcion }}</li>
+      </ul>
+    </div>
+  </div>
+</div>

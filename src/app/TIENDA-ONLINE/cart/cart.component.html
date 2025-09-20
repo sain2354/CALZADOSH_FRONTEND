@@ -1,0 +1,78 @@
+<!-- src/app/TIENDA-ONLINE/cart/cart.component.html -->
+
+<div class="cart-page-container">
+  <h1>Mi Carrito</h1>
+
+  <!-- Usamos el pipe async para suscribirnos a los items del carrito -->
+  <ng-container *ngIf="cartItems$ | async as cartItems">
+    
+    <!-- ESTADO: Carrito Vacío -->
+    <div *ngIf="cartItems.length === 0; else cartHasItems" class="empty-cart-container">
+      <div class="empty-cart-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <h2>Tu carrito está vacío</h2>
+      <p>Añade productos para verlos aquí.</p>
+      <a routerLink="/" class="start-shopping-btn">Comenzar a Comprar</a>
+    </div>
+
+    <!-- ESTADO: Carrito con Items -->
+    <ng-template #cartHasItems>
+      <div class="cart-layout-container">
+        
+        <!-- Columna Izquierda: Lista de Productos -->
+        <div class="cart-items-list">
+          <div *ngFor="let item of cartItems; trackBy: trackByCartItemId" class="cart-item-card">
+            <!-- Imagen -->
+            <div class="item-image">
+              <img [src]="productService.getImageUrl(item.product?.foto)" [alt]="item.product?.nombre">
+
+            </div>
+            
+            <!-- Detalles del Item -->
+            <div class="item-details">
+              <span class="item-name">{{ item.product.nombre }}</span>
+              <span class="item-size">Talla: {{ item.selectedSize.usa }} (USA)</span>
+              <span class="item-price">{{ item.product.precioVenta | currency:'S/' }}</span>
+            </div>
+
+            <!-- Acciones del Item -->
+            <div class="item-actions">
+              <!-- Selector de Cantidad -->
+              <div class="quantity-selector">
+                <button (click)="onUpdateQuantity(item.id, item.quantity - 1)" [disabled]="item.quantity <= 1">-</button>
+                <span>{{ item.quantity }}</span>
+                <button (click)="onUpdateQuantity(item.id, item.quantity + 1)" [disabled]="item.quantity >= item.selectedSize.stock">+</button>
+              </div>
+              <!-- Botón Eliminar -->
+              <button (click)="onRemoveItem(item.id)" class="remove-btn">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Resumen de Compra -->
+        <div class="order-summary">
+          <h2>Resumen de Compra</h2>
+          <div class="summary-row">
+            <span>Subtotal ({{ cartItems.length }} productos)</span>
+            <!-- Usamos el pipe async para el precio total -->
+            <span>{{ totalPrice$ | async | currency:'S/' }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Envío</span>
+            <span>Por calcular</span>
+          </div>
+          <div class="summary-total">
+            <span>Total</span>
+            <span>{{ totalPrice$ | async | currency:'S/' }}</span>
+          </div>
+          <button class="checkout-btn" routerLink="/checkout">Continuar Compra</button>
+        </div>
+
+      </div>
+    </ng-template>
+
+  </ng-container>
+</div>

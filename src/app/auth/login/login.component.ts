@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../services/usuario.service';
 import { AuthService } from '../../services/auth.service'; // Import AuthService
-import { LoginResponse } from '../../models/login-response.model'; // Import LoginResponse model
 
 @Component({
   selector: 'app-login',
@@ -44,22 +43,26 @@ export class LoginComponent {
 
         if (response && response.usuario) {
           const userLoginInfo = response.usuario;
+          const userRole = userLoginInfo.nombreRol || ''; // Ensure userRole is a string
 
-          // === CORRECCIÓN ===
-          // Aseguramos que nombreRol sea un string (proporcionando un valor por defecto si es undefined)
-          const userRole = userLoginInfo.nombreRol || ''; // Use '' if nombreRol is undefined
-          // === FIN CORRECCIÓN ===
+          // Store session information
+          this.authService.loginSuccess(userLoginInfo.username, userRole);
 
-          // Call authService.loginSuccess with username and the guaranteed string role
-          this.authService.loginSuccess(userLoginInfo.username, userRole); // Pass the 'userRole' variable
-
-          this.router.navigate(['/dashboard']);
+          // --- REDIRECCIÓN INTELIGENTE ---
+          // Comprueba el rol del usuario para decidir a dónde redirigir.
+          if (userRole.toLowerCase() === 'admin') {
+            // Si es administrador, va al panel de administración.
+            this.router.navigate(['/admin/dashboard']);
+          } else {
+            // Si es cualquier otro rol (cliente, etc.), va a la página principal de la tienda.
+            this.router.navigate(['/']); // Redirige a la raíz (la futura tienda)
+          }
+          // --- FIN DE LA REDIRECCIÓN ---
 
         } else {
           this.errorMessage = 'Inicio de sesión exitoso, pero la información del usuario no está disponible.';
           console.error('Login successful, but user information is missing in the backend response.');
-
-          this.router.navigate(['/dashboard']);
+          // No redirigir si no hay información del usuario, solo mostrar el error.
         }
       },
       error: (error) => {
