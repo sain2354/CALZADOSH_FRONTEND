@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
-import { CartService } from '../services/cart.service';
-import { CategoryService } from '../services/category.service';
-import { SubcategoryService } from '../services/subcategory.service';
-import { Subcategory } from '../models/subcategory';
+import { CartService } from '../../services/cart.service';
+import { CategoryService } from '../../services/category.service';
+import { SubcategoryService } from '../../services/subcategory.service';
+import { Subcategory } from '../../models/subcategory';
 
 @Component({
   selector: 'app-layout-tienda',

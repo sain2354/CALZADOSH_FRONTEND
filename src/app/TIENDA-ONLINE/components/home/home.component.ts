@@ -4,11 +4,11 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription, forkJoin } from 'rxjs';
 
-import { ProductService, FilterParams } from '../services/product.service';
-import { SubcategoryService } from '../services/subcategory.service';
-import { ProductoTienda } from '../models/producto-tienda.model';
-import { Subcategory } from '../models/subcategory';
-import { CategoryService } from '../services/category.service';
+import { ProductService, FilterParams } from '../../services/product.service';
+import { SubcategoryService } from '../../services/subcategory.service';
+import { ProductoTienda } from '../../models/producto-tienda.model';
+import { Subcategory } from '../../models/subcategory';
+import { CategoryService } from '../../services/category.service';
 
 // Mapeo de nombres de categoría a IDs
 const CATEGORY_ID_MAP: { [key: string]: number } = {

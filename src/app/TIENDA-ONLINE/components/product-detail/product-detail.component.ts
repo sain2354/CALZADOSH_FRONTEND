@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ProductService } from '../services/product.service';
-import { CartService } from '../services/cart.service'; // PASO 1: Importar CartService
-import { ProductoTienda, SizeOption } from '../models/producto-tienda.model';
+import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service'; // PASO 1: Importar CartService
+import { ProductoTienda, SizeOption } from '../../models/producto-tienda.model';
 
 @Component({
   selector: 'app-product-detail',

@@ -5,8 +5,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 
-import { CartService, CartItem } from '../services/cart.service';
-import { ProductService } from '../services/product.service';
+import { CartService, CartItem } from '../../services/cart.service';
+import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-cart',

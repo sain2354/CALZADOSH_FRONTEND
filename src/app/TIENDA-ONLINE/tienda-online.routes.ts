@@ -1,8 +1,8 @@
 // src/app/TIENDA-ONLINE/tienda-online.routes.ts
 import { Routes } from '@angular/router';
-import { LayoutTiendaComponent } from './layout-tienda/layout-tienda.component';
-import { HomeComponent } from './home/home.component';
-import { ProductDetailComponent } from './product-detail/product-detail.component'; // IMPORTAMOS EL NUEVO COMPONENTE
+import { LayoutTiendaComponent } from './components/layout-tienda/layout-tienda.component';
+import { HomeComponent } from './components/home/home.component';
+import { ProductDetailComponent } from './components/product-detail/product-detail.component'; // IMPORTAMOS EL NUEVO COMPONENTE
 
 // Estas son las rutas para la sección pública de la tienda online
 export const TIENDA_ROUTES: Routes = [
