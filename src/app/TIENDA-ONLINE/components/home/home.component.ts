@@ -1,16 +1,17 @@
+// home.component.ts (Recreado)
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { ProductService, FilterParams } from '../../services/product.service';
 import { SubcategoryService } from '../../services/subcategory.service';
+import { FavoritesService } from '../../services/favorites.service';
 import { ProductoTienda } from '../../models/producto-tienda.model';
 import { Subcategory } from '../../models/subcategory';
 import { CategoryService } from '../../services/category.service';
 
-// Mapeo de nombres de categoría a IDs
 const CATEGORY_ID_MAP: { [key: string]: number } = {
   'Hombres': 1,
   'Mujeres': 2,
@@ -30,14 +31,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   allSubcategories: Subcategory[] = [];
   filteredSubcategories: Subcategory[] = [];
   isLoading = true;
+  favoriteProductIds: number[] = []; // Para guardar los IDs de favoritos
 
-  // ahora incluimos banner2 (asegúrate que el archivo exista en assets/images/banner2.png)
   promoBanners: { asset: string; title?: string; link?: string }[] = [
-    { asset: 'assets/images/Banner-hombre2.png', title: 'Promoción 1', link: '' },
-    { asset: 'assets/images/banner2.png', title: 'Promoción 2', link: '' }
+    { asset: 'assets/images/Banner-hombre2.png', link: '' },
+    { asset: 'assets/images/banner2.png', link: '' }
   ];
 
-  // carousel index para banner desplazable
   carouselIndex = 0;
   private carouselInterval: any;
 
@@ -62,37 +62,57 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     public productService: ProductService,
     private subcategoryService: SubcategoryService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private favoritesService: FavoritesService // Inyección del servicio de favoritos
   ) { }
 
   ngOnInit(): void {
+    this.isLoading = true;
+
+    this.subs.push(
+      this.productService.products$.subscribe(prods => {
+        this.products = prods || [];
+        this.isLoading = false;
+      })
+    );
+
+    this.subs.push(
+      this.productService.filters$.subscribe((f) => {
+        this.activeFilters = f || {};
+        if (f && f.cat) {
+          const id = f.cat as number;
+          const name = Object.keys(CATEGORY_ID_MAP).find(k => CATEGORY_ID_MAP[k] === id);
+          if (name) this.selectedCategoryName = name;
+        } else {
+          this.selectedCategoryName = 'Todos';
+        }
+      })
+    );
+
+    this.subs.push(
+      this.favoritesService.favorites$.subscribe(favIds => {
+        this.favoriteProductIds = favIds;
+      })
+    );
+
     this.loadInitialData();
 
-    // Escuchar cambios de categoría desde layout
     this.subs.push(
       this.categoryService.selectedCategory$.subscribe(name => {
-        if (name && name !== this.selectedCategoryName) {
-          this.applyCategoryFromService(name);
+        if (name) {
+          const map: { [k: string]: number } = { 'Hombres': 1, 'Mujeres': 2, 'Infantil': 3 };
+          const id = map[name];
+          this.productService.setCategory(id || undefined);
         }
       })
     );
 
-    // Escuchar cambios de marca desde layout
     this.subs.push(
       this.categoryService.selectedBrand$.subscribe(brandId => {
-        if (brandId) {
-          this.selectedBrandId = brandId;
-          this.activeFilters.subCate = brandId;
-          this.applyFiltersAndReload();
-        } else {
-          this.selectedBrandId = undefined;
-          delete this.activeFilters.subCate;
-          this.applyFiltersAndReload();
-        }
+        this.productService.setSubCate(brandId || undefined);
       })
     );
 
-    // Iniciar carousel automático
     this.startCarousel();
   }
 
@@ -101,64 +121,54 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.stopCarousel();
   }
 
+  // Métodos para manejar favoritos
+  isFavorite(productId: number): boolean {
+    return this.favoriteProductIds.includes(productId);
+  }
+
+  toggleFavorite(product: ProductoTienda, event: MouseEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.favoritesService.toggleFavorite(product.idProducto);
+  }
+
   loadInitialData(): void {
     this.isLoading = true;
-    forkJoin({
-      products: this.productService.fetchProducts(),
-      subcategories: this.subcategoryService.getSubcategories()
-    }).subscribe({
-      next: ({ products, subcategories }) => {
-        this.products = products;
-        this.allSubcategories = subcategories;
-        this.filterBrandsForCategory();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar datos iniciales:', err);
-        this.isLoading = false;
-      }
-    });
+    this.subs.push(
+      this.subcategoryService.getSubcategories().subscribe({
+        next: (subcategories) => {
+          this.allSubcategories = subcategories || [];
+          this.filterBrandsForCategory();
+          this.productService.loadProducts();
+        },
+        error: err => {
+          console.error('Error al precargar subcategorías:', err);
+          this.productService.loadProducts();
+        }
+      })
+    );
   }
 
   applyFiltersAndReload(): void {
     this.isLoading = true;
-    this.products = [];
-    this.productService.fetchProducts(this.activeFilters).subscribe({
-      next: (data) => {
-        this.products = data;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error al recargar productos:', err);
-        this.isLoading = false;
-      }
-    });
+    this.productService.loadProducts();
   }
 
   private applyCategoryFromService(categoryName: string): void {
     this.selectedCategoryName = categoryName;
     this.selectedBrandId = undefined;
-
-    if (categoryName === 'Todos') {
-      delete this.activeFilters.cat;
-    } else {
-      this.activeFilters.cat = CATEGORY_ID_MAP[categoryName];
-    }
-    delete this.activeFilters.subCate;
-
+    this.productService.setCategory(categoryName === 'Todos' ? undefined : CATEGORY_ID_MAP[categoryName]);
+    this.productService.setSubCate(undefined);
     this.filterBrandsForCategory();
-    this.applyFiltersAndReload();
   }
 
-  // Si alguna vista local usa selectCategory
   selectCategory(categoryName: string): void {
     this.categoryService.setCategory(categoryName);
   }
 
   selectBrand(brandId: number): void {
     this.selectedBrandId = brandId;
-    this.activeFilters.subCate = brandId;
-    this.applyFiltersAndReload();
+    this.productService.setSubCate(brandId);
   }
 
   private filterBrandsForCategory(): void {
@@ -171,8 +181,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   performSearch(term: string): void {
-    console.log('Búsqueda intentada con el término:', term);
-    // no modificamos funcionalidad real: dejamos un log (el layout navega con query param)
+    const q = (term || '').trim();
+    if (!q) {
+      this.productService.loadProducts();
+      return;
+    }
+    const cur = this.productService.getCurrentFilters();
+    this.productService.loadProducts({ ...cur, q });
   }
 
   toggleFilterPanel(open?: boolean): void {
@@ -180,36 +195,23 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onSideFilterChange(): void {
-    this.activeFilters.precioMin = this.priceRange.min;
-    this.activeFilters.precioMax = this.priceRange.max;
-    this.applyFiltersAndReload();
+    this.productService.setPriceRange(this.priceRange.min, this.priceRange.max);
   }
 
   resetSideFilters(): void {
-    this.activeFilters.genero = [];
-    this.activeFilters.articulo = [];
-    this.activeFilters.estilo = [];
-    this.activeFilters.color = [];
-    this.activeFilters.tallaU = [];
+    this.productService.clearAllFilters();
     this.priceRange = { min: 0, max: 500 };
-    delete this.activeFilters.precioMin;
-    delete this.activeFilters.precioMax;
-
-    this.onSideFilterChange();
     this.toggleFilterPanel(false);
   }
 
-  /* ---------- Carousel controls para banners ---------- */
   startCarousel(): void {
     this.carouselInterval = setInterval(() => {
       this.nextBanner();
-    }, 5000); // Cambia cada 5 segundos
+    }, 5000);
   }
 
   stopCarousel(): void {
-    if (this.carouselInterval) {
-      clearInterval(this.carouselInterval);
-    }
+    if (this.carouselInterval) clearInterval(this.carouselInterval);
   }
 
   nextBanner(): void {
@@ -224,7 +226,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   selectBanner(i: number): void {
     if (i >= 0 && i < this.promoBanners.length) {
-      // Reiniciar el intervalo al seleccionar manualmente
       this.stopCarousel();
       this.carouselIndex = i;
       this.startCarousel();

@@ -1,3 +1,4 @@
+// layout-tienda.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -7,6 +8,7 @@ import { CartService } from '../../services/cart.service';
 import { CategoryService } from '../../services/category.service';
 import { SubcategoryService } from '../../services/subcategory.service';
 import { Subcategory } from '../../models/subcategory';
+import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-layout-tienda',
@@ -30,17 +32,24 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
   hoveredCategoryName: string | null = null;
   loadingBrands = false;
 
-  // se agrega búsqueda visual en header
+  // búsqueda visual en header
   searchTerm = '';
 
-  // mostramos mini-filtros en el dropdown (visual solamente)
+  // filtros solicitados (exactamente como pediste)
   filterOptions = {
     generos: ['Masculino', 'Femenino', 'Unisex'],
     articulos: ['Botas', 'Zapatillas', 'Sandalias', 'Zapatos'],
-    tallas: ['35', '36', '37', '38', '39', '40', '41', '42'],
-    estilos: ['Casual', 'Urbano', 'Deportivo', 'Fiesta'],   // <-- agregado
-    colores: ['Negro', 'Blanco', 'Gris', 'Marrón', 'Multicolor'] // <-- agregado
+    estilos: ['Casual', 'Urbano', 'Deportivo', 'Fiesta'],
+    colores: ['Negro', 'Blanco', 'Gris', 'Azul', 'Rojo'],
+    tallas: [] as string[]
   };
+
+  // Marcas (botón "Marcas" al lado de las categorías)
+  marcasList: string[] = ['Nike', 'Adidas', 'Puma', 'I-Run'];
+  selectedBrandName: string | null = null;
+
+  // para reflejar selección visual
+  activeFilters: any = {};
 
   private subs: Subscription[] = [];
 
@@ -48,18 +57,33 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private categoryService: CategoryService,
     private subcategoryService: SubcategoryService,
+    private productService: ProductService,
     private router: Router
   ) {
     this.cartItemCount$ = this.cartService.getCartItemCount();
+
+    // generar tallas desde 30 a 45
+    for (let s = 30; s <= 45; s++) {
+      this.filterOptions.tallas.push(String(s));
+    }
   }
 
   ngOnInit(): void {
+    // escucha cambios de filtros para marcar chips activos
     this.subs.push(
-      this.categoryService.selectedCategory$.subscribe(name => {
-        this.selectedCategoryName = name;
+      this.productService.filters$.subscribe(f => {
+        this.activeFilters = f || {};
       })
     );
 
+    // escucha cambios de categoría global para reflejar selección visual (por si se cambia fuera)
+    this.subs.push(
+      this.categoryService.selectedCategory$.subscribe(name => {
+        if (name) this.selectedCategoryName = name;
+      })
+    );
+
+    // precargar subcategorías para mapear marcas a id (si disponible)
     const prec = this.subcategoryService.getSubcategories().subscribe({
       next: list => {
         this.subcategories = list || [];
@@ -78,6 +102,12 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
 
   selectCategory(name: string): void {
     this.categoryService.setCategory(name);
+    this.selectedCategoryName = name;
+    const map: { [k: string]: number } = { 'Hombres': 1, 'Mujeres': 2, 'Infantil': 3 };
+    const id = map[name];
+    if (id) this.productService.setCategory(id);
+    else this.productService.setCategory(undefined);
+    // cerrar dropdown visual
     this.hoveredCategoryName = null;
     this.hoveredBrands = [];
     this.loadingBrands = false;
@@ -103,7 +133,6 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
 
     if (this.subcategories && this.subcategories.length > 0) {
       this.hoveredBrands = this.subcategories.filter(s => s.idCategoria === idCategoria);
-      console.log('hoveredBrands (filtradas de cache):', this.hoveredBrands);
       this.loadingBrands = false;
       return;
     }
@@ -113,7 +142,6 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
       next: list => {
         this.subcategories = list || [];
         this.hoveredBrands = this.subcategories.filter(sc => sc.idCategoria === idCategoria);
-        console.log('hoveredBrands (cargadas desde API):', this.hoveredBrands);
         this.loadingBrands = false;
       },
       error: err => {
@@ -126,39 +154,60 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
     this.subs.push(s);
   }
 
-  selectBrandFromDropdown(brandId: number): void {
-    if (this.hoveredCategoryName) {
-      this.categoryService.setCategory(this.hoveredCategoryName);
+  // Al hacer click en una marca pequeña (dropdown "Marcas"), tratamos de mapear a idSubCategoria; si lo encontramos lo aplicamos; si no, navegamos con query param brand
+  selectBrandByName(name: string): void {
+    this.selectedBrandName = name;
+    const found = this.subcategories.find(s => {
+      const candidates = [s.nombre, (s as any).Nombre, (s as any).marca, (s as any).descripcion, (s as any).name];
+      return candidates.some(c => typeof c === 'string' && c.toLowerCase().includes(name.toLowerCase()));
+    });
+
+    if (found) {
+      this.productService.setSubCate(found.idSubCategoria);
+      // además notificar CategoryService por compatibilidad
+      this.categoryService.setBrand(found.idSubCategoria);
+    } else {
+      // si no hay id, navegamos con query param brand
+      this.router.navigate(['/'], { queryParams: { brand: name } });
     }
-    this.categoryService.setBrand(brandId);
-    this.hoveredCategoryName = null;
-    this.hoveredBrands = [];
-    this.loadingBrands = false;
   }
 
-  getBrandLabel(b: any, idx?: number): string {
-    if (!b) return idx !== undefined ? `Marca ${idx + 1}` : 'Marca';
-    const candidates = [
-      b.nombre,
-      (b as any).Nombre,
-      (b as any).descripcion,
-      (b as any).marca,
-      (b as any).name,
-      (b as any).titulo,
-      (b as any).label
-    ];
-    for (const c of candidates) {
-      if (typeof c === 'string' && c.trim().length > 0) {
-        return c.trim();
-      }
-    }
-    return `Marca ${idx !== undefined ? (idx + 1) : ''}`.trim();
+  // Toggle un chip (ej: genero, articulo, estilo, color, tallaU)
+  toggleChip(key: 'generos'|'articulos'|'estilos'|'colores'|'tallas', value: string) {
+    const mapKey: { [k: string]: keyof import('../../services/product.service').FilterParams } = {
+      generos: 'genero',
+      articulos: 'articulo',
+      estilos: 'estilo',
+      colores: 'color',
+      tallas: 'tallaU'
+    };
+    const backendKey = mapKey[key];
+    this.productService.toggleArrayItem(backendKey, value);
   }
 
-  // búsqueda header (visual): navegamos a home con query param q
+  isChipActive(key: 'generos'|'articulos'|'estilos'|'colores'|'tallas', value: string): boolean {
+    const mapKey: { [k: string]: keyof import('../../services/product.service').FilterParams } = {
+      generos: 'genero',
+      articulos: 'articulo',
+      estilos: 'estilo',
+      colores: 'color',
+      tallas: 'tallaU'
+    };
+    const backendKey = mapKey[key];
+    const arr = this.activeFilters[backendKey] as string[] | undefined;
+    return Array.isArray(arr) && arr.indexOf(value) >= 0;
+  }
+
+  // search header: navegamos por q
   onSearch(): void {
     const q = (this.searchTerm || '').trim();
-    this.router.navigate(['/'], { queryParams: { q } });
-    console.log('Buscar ->', q);
+    if (q) {
+      // añadimos 'q' temporalmente y cargamos (sin alterar permanentemente otros filtros)
+      const cur = this.productService.getCurrentFilters();
+      this.productService.loadProducts({...cur, q});
+    } else {
+      // vacio: recargar con filtros actuales
+      this.productService.loadProducts();
+    }
   }
 }

@@ -1,36 +1,51 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
-import { CartService } from '../../services/cart.service'; // PASO 1: Importar CartService
+import { CartService } from '../../services/cart.service';
+import { FavoritesService } from '../../services/favorites.service';
 import { ProductoTienda, SizeOption } from '../../models/producto-tienda.model';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.css']
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, OnDestroy {
 
   product: ProductoTienda | null = null;
+  selectedSize: SizeOption | null = null;
   isLoading = true;
   error: string | null = null;
-  selectedTalla: SizeOption | null = null;
-  showAddedToCartMessage = false; // Para mostrar una notificación
+  isFavorite = false;
+  private favoritesSub!: Subscription;
+
+  accordion: { [key: string]: boolean } = {
+    caracteristicas: true,
+    envio: false
+  };
 
   constructor(
     private route: ActivatedRoute,
     public productService: ProductService,
-    private cartService: CartService, // PASO 2: Inyectar CartService
+    private cartService: CartService,
+    private favoritesService: FavoritesService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
     this.loadProductData();
+  }
+
+  ngOnDestroy(): void {
+    if (this.favoritesSub) {
+      this.favoritesSub.unsubscribe();
+    }
   }
 
   private loadProductData(): void {
@@ -51,44 +66,50 @@ export class ProductDetailComponent implements OnInit {
       this.isLoading = false;
       if (productData) {
         this.product = productData;
+        this.isFavorite = this.favoritesService.isFavorite(this.product.idProducto);
+        this.favoritesSub = this.favoritesService.favorites$.subscribe(favs => {
+          this.isFavorite = favs.includes(this.product!.idProducto);
+        });
       } else if (!this.error) {
         this.error = 'No se pudieron cargar los datos del producto.';
       }
     });
   }
 
-  onSizeSelected(tallaUsaValue: string): void {
-    const selectedUsa = +tallaUsaValue;
-    this.selectedTalla = this.product?.tallas.find(t => t.usa === selectedUsa) || null;
+  toggleFavorite(): void {
+    if (this.product) {
+      this.favoritesService.toggleFavorite(this.product.idProducto);
+    }
   }
   
-  // PASO 3: Método para añadir al carrito
-  addToCart(): void {
-    if (this.product && this.selectedTalla) {
-      this.cartService.addToCart(this.product, this.selectedTalla);
-      
-      // Muestra un mensaje de confirmación y lo oculta después de 2 segundos
-      this.showAddedToCartMessage = true;
-      setTimeout(() => {
-        this.showAddedToCartMessage = false;
-      }, 2000);
+  onSizeChange(): void {
+    console.log('Talla seleccionada:', this.selectedSize);
+  }
 
+  isAddToCartEnabled(): boolean {
+    if (!this.product) return false;
+    if (this.product.tallas && this.product.tallas.length > 0) {
+      return !!this.selectedSize && this.selectedSize.stock > 0;
+    }
+    return false;
+  }
+
+  addToCart(): void {
+    if (this.product && this.selectedSize && this.isAddToCartEnabled()) {
+      this.cartService.addToCart(this.product, this.selectedSize);
+      // CORRECCIÓN DEFINITIVA: Usar la propiedad correcta `usa`
+      alert(`${this.product.nombre} (Talla USA ${this.selectedSize.usa}) fue agregado al carrito.`);
     } else {
-      // Esto no debería pasar si el botón está bien deshabilitado, pero es una buena práctica.
-      console.warn('Intento de añadir al carrito sin producto o talla seleccionada.');
+      alert('Por favor, seleccione una talla con stock disponible.');
     }
   }
 
-  goBack(): void {
-    window.history.back();
+  showSizeGuide(): void {
+    alert('FUNCIONALIDAD PENDIENTE: Aquí se mostrará la guía de tallas.');
   }
 
-  getSizeLabel(talla: SizeOption): string {
-    const parts: string[] = [];
-    if (talla.usa) parts.push(`USA ${talla.usa}`);
-    if (talla.eur) parts.push(`EUR ${talla.eur}`);
-    if (talla.cm) parts.push(`CM ${talla.cm}`);
-    return parts.join(' / ');
+  toggleAccordion(section: 'caracteristicas' | 'envio'): void {
+    this.accordion[section] = !this.accordion[section];
   }
 
   private handleInvalidId(): void {

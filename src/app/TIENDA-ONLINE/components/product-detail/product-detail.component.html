@@ -1,72 +1,104 @@
-<!-- src/app/TIENDA-ONLINE/product-detail/product-detail.component.html -->
+<div class="detail-container" *ngIf="product; else loading">
+  <div class="main-content">
+    <!-- Columna de la Imagen -->
+    <div class="image-column">
+      <div class="image-card">
+        <img [src]="productService.getImageUrl(product.foto)" [alt]="product.nombre" class="product-image">
+      </div>
+    </div>
 
-<div class="back-button-container">
-  <button (click)="goBack()" class="back-button">
-    <i class="fas fa-arrow-left"></i>
-    Volver
-  </button>
-</div>
+    <!-- Columna de Detalles -->
+    <div class="details-column">
+      <div class="details-card">
+        <!-- Botón de Favorito -->
+        <button (click)="toggleFavorite()" class="favorite-btn" [class.favorited]="isFavorite">
+          <i class="bi" [class.bi-heart-fill]="isFavorite" [class.bi-heart]="!isFavorite"></i>
+        </button>
 
-<div *ngIf="isLoading" class="loading-indicator">
-  <!-- ... contenido de carga ... -->
-</div>
+        <!-- Marca y Categoría -->
+        <div class="product-meta">
+          <span>{{ product.subCategoriaDescripcion }}</span>
+        </div>
 
-<div *ngIf="error" class="error-message">
-  <!-- ... contenido de error ... -->
-</div>
+        <!-- Nombre del Producto -->
+        <h1 class="product-name">{{ product.nombre }}</h1>
 
-<div *ngIf="!isLoading && product" class="product-detail-container">
+        <!-- Precio -->
+        <p class="product-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</p>
 
-  <!-- Columna Izquierda: Imagen del Producto -->
-  <div class="product-image-section">
-    <!-- ... contenido de la imagen ... -->
+        <!-- Selector de Tallas (CORRECCIÓN DEFINITIVA) -->
+        <div class="size-selector" *ngIf="product.tallas && product.tallas.length > 0">
+          <label for="size-dropdown" class="size-label">Tallas disponibles:</label>
+          <select id="size-dropdown" [(ngModel)]="selectedSize" (change)="onSizeChange()" class="size-dropdown">
+            <option [ngValue]="null" disabled>Seleccione una talla</option>
+            <!-- CORRECCIÓN: Usar talla.usa, talla.eur y talla.cm -->
+            <option *ngFor="let talla of product.tallas" [ngValue]="talla" [disabled]="talla.stock <= 0">
+              {{ 'USA ' + talla.usa + '  ·  EUR ' + talla.eur + '  ·  CM ' + talla.cm }}
+              <span *ngIf="talla.stock <= 0"> (Agotado)</span>
+            </option>
+          </select>
+          <div *ngIf="selectedSize" class="stock-info">
+            <p>Stock disponible: {{ selectedSize.stock }}</p>
+          </div>
+        </div>
+        <!-- Mensaje si no hay tallas -->
+        <div *ngIf="!product.tallas || product.tallas.length === 0" class="no-stock-message">
+          <p>Este producto no tiene tallas disponibles actualmente.</p>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="action-buttons">
+          <button class="btn-add-to-cart" (click)="addToCart()" [disabled]="!isAddToCartEnabled()">
+            <i class="bi bi-cart-plus-fill"></i> AGREGAR AL CARRITO
+          </button>
+          <button class="btn-size-guide" (click)="showSizeGuide()">
+            GUÍA DE TALLAS
+          </button>
+        </div>
+      </div>
+
+      <!-- Acordeón de Características -->
+      <div class="features-accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" (click)="toggleAccordion('caracteristicas')">
+            <button class="accordion-button" [class.collapsed]="!accordion['caracteristicas']">
+              Características
+            </button>
+          </h2>
+          <div class="accordion-collapse" [class.show]="accordion['caracteristicas']">
+            <div class="accordion-body">
+              <ul>
+                <li><strong>Marca:</strong> {{ product.subCategoriaDescripcion }}</li>
+                <li><strong>Categoría:</strong> {{ product.categoriaDescripcion }}</li>
+                <li><strong>Material:</strong> {{ product.material || 'No especificado' }}</li>
+                <li><strong>Color:</strong> {{ product.color || 'No especificado' }}</li>
+                <li><strong>MPN:</strong> {{ product.mpn || 'No disponible' }}</li>
+                <li><strong>Envío:</strong> {{ product.shippingInfo || 'Consultar' }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" (click)="toggleAccordion('envio')">
+            <button class="accordion-button" [class.collapsed]="!accordion['envio']">
+              Envíos y Devoluciones
+            </button>
+          </h2>
+          <div class="accordion-collapse" [class.show]="accordion['envio']">
+            <div class="accordion-body">
+              <p>Información sobre envíos y devoluciones aquí.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <!-- Columna Derecha: Información y Acciones -->
-  <div class="product-info-section">
-    <h1 class="product-name">{{ product.nombre }}</h1>
-    <p class="product-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</p>
-    <div class="divider"></div>
-
-    <!-- Sección de Tallas -->
-    <div *ngIf="product.tallas && product.tallas.length > 0" class="size-section">
-      <label for="size-select">Talla:</label>
-      <select id="size-select" class="size-selector" #sizeSelect (change)="onSizeSelected(sizeSelect.value)">
-        <option value="" disabled selected>Seleccione una talla</option>
-        <option *ngFor="let talla of product.tallas" [value]="talla.usa" [disabled]="talla.stock <= 0">
-          {{ getSizeLabel(talla) }} {{ talla.stock <= 0 ? '(Sin stock)' : '' }}
-        </option>
-      </select>
-    </div>
-
-    <!-- Botones de Acción (MODIFICADO) -->
-    <div class="action-buttons">
-      <button 
-        class="add-to-cart-btn" 
-        [disabled]="(product.tallas && product.tallas.length > 0) && !selectedTalla"
-        (click)="addToCart()"> <!-- PASO 1: Añadido (click) -->
-        <i class="fas fa-shopping-cart"></i>
-        AGREGAR AL CARRITO
-      </button>
-      <button class="size-guide-btn">GUÍA DE TALLAS</button>
-    </div>
-
-    <!-- PASO 2: Mensaje de confirmación -->
-    <div *ngIf="showAddedToCartMessage" class="added-to-cart-message">
-      <i class="fas fa-check-circle"></i>
-      <span>¡Agregado al carrito!</span>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- Sección de Características -->
-    <div class="features-section">
-      <h3 class="features-title">Características</h3>
-      <ul class="features-list">
-        <li *ngIf="product.marca"><strong>Marca:</strong> {{ product.marca }}</li>
-        <li *ngIf="product.categoriaDescripcion"><strong>Categoría:</strong> {{ product.categoriaDescripcion }}</li>
-        <li><strong>Sub-Categoría:</strong> {{ product.subCategoriaDescripcion }}</li>
-      </ul>
-    </div>
-  </div>
 </div>
+
+<!-- Estado de Carga -->
+<ng-template #loading>
+  <div class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando detalles del producto...</p>
+  </div>
+</ng-template>

@@ -2,13 +2,15 @@
 
 /**
  * Define la estructura de las opciones de talla para un producto de la tienda.
+ * CORRECCIÓN DEFINITIVA: Las propiedades coinciden con la respuesta de la API (usa, eur, cm).
  */
 export interface SizeOption {
-  idTallaUsa?: number;
+  idTalla?: number;
+  idProducto?: number;
   usa?: number;
   eur?: number;
   cm?: number;
-  stock: number; // El stock es importante aquí, lo hacemos no opcional.
+  stock: number;
 }
 
 /**
@@ -23,14 +25,14 @@ export interface ProductoTienda {
   stock: number; // Stock general del producto (si no tiene tallas)
   foto: string;
   
-  // Campos de Categoría y Marca (NUEVO: Añadidos para corregir errores)
+  // Campos de Categoría y Marca
   idCategoria: number;
-  categoriaDescripcion?: string; // NUEVO
+  categoriaDescripcion?: string;
   idSubCategoria?: number;
   subCategoriaDescripcion: string;
-  marca?: string; // NUEVO
+  marca?: string;
 
-  // Tallas del producto (NUEVO: Renombrado de tallaProducto a tallas para consistencia)
+  // Tallas del producto (el servicio mapea "sizes" de la API a esta propiedad)
   tallas: SizeOption[];
   
   // Otros campos detallados
