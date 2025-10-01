@@ -15,6 +15,7 @@ export interface CartItem {
 export class CartService {
 
   private cartItems = new BehaviorSubject<CartItem[]>([]);
+  public idUsuario: number | null = null; // ID del usuario asociado al carrito
 
   constructor() {
     const storedCart = localStorage.getItem('shopping_cart');
@@ -45,6 +46,19 @@ export class CartService {
   }
 
   // ========= ACCIONES DEL CARRITO =========
+
+  /**
+   * Asocia el carrito actual a un ID de usuario.
+   * Esto es crucial para guardar/recuperar el carrito desde un backend.
+   * Por ahora, solo lo guardamos en memoria.
+   * @param idUsuario El ID del usuario que ha iniciado sesión.
+   */
+  asociarUsuarioAlCarrito(idUsuario: number): void {
+    this.idUsuario = idUsuario;
+    console.log(`Carrito asociado al usuario con ID: ${idUsuario}.`);
+    // Aquí se podría añadir lógica para guardar el carrito en el backend
+    // o moverlo de un localStorage de "invitado" a uno de "usuario".
+  }
 
   /**
    * Añade un producto y su talla al carrito. Si ya existe, incrementa la cantidad.

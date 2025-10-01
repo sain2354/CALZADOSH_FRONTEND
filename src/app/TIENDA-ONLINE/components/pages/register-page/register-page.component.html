@@ -1,0 +1,35 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Crear una cuenta</h2>
+
+    <!-- CAMPO NUEVO PARA EL NOMBRE -->
+    <div class="form-group">
+      <label for="displayName">Nombre completo</label>
+      <input type="text" id="displayName" placeholder="Tu nombre y apellido" #nameInput />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" placeholder="tucorreo@ejemplo.com" #emailInput />
+    </div>
+
+    <div class="form-group">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" placeholder="Crea una contraseña segura" #passwordInput />
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+
+    <!-- El botón ahora llama a la función de registro -->
+    <button class="btn btn-primary" (click)="handleRegister(nameInput.value, emailInput.value, passwordInput.value)" [disabled]="isLoading">
+      <span *ngIf="!isLoading">CREAR CUENTA</span>
+      <span *ngIf="isLoading">Creando...</span>
+    </button>
+
+    <div class="login-link">
+      <p>¿Ya tienes una cuenta? <a routerLink="/auth">INICIAR SESIÓN</a></p>
+    </div>
+  </div>
+</div>

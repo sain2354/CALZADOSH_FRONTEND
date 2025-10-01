@@ -1,0 +1,65 @@
+<!-- src/app/TIENDA-ONLINE/pages/order-summary-page/order-summary-page.component.html -->
+<div class="summary-container">
+
+  <div class="flow-indicator">
+    <span>Carrito</span> &gt; <span>Envío</span> &gt; <span class="current">Resumen y Pago</span>
+  </div>
+
+  <h2>Resumen del Pedido</h2>
+
+  <!-- Futuro: Aquí irá un resumen de los productos en el carrito -->
+  <div class="order-items-summary">
+    <h4>Productos en tu Pedido</h4>
+    <p>(Componente de resumen de productos pendiente de implementación)</p>
+  </div>
+
+  <!-- Detalles del Envío -->
+  <div class="shipping-summary-card">
+    <h3>Detalles de la Entrega</h3>
+    <div *ngIf="checkoutData" class="details-content">
+
+      <!-- Caso 1: Recojo en Tienda -->
+      <div *ngIf="checkoutData.shippingOption === 'tienda'" class="shipping-option-view">
+        <p class="option-title"><strong>Opción Elegida:</strong> Recojo en Tienda</p>
+        <div class="store-info">
+          <p><strong>Dirección:</strong> Av. Principal 123, Centro, Tu Ciudad</p>
+          <p><strong>Indicación:</strong> Recibirás una notificación cuando tu pedido esté listo.</p>
+        </div>
+      </div>
+
+      <!-- Caso 2: Envío a Domicilio -->
+      <div *ngIf="checkoutData.shippingOption === 'domicilio' && checkoutData.shippingDetails" class="shipping-option-view">
+        <p class="option-title"><strong>Opción Elegida:</strong> Envío a Domicilio</p>
+        <div class="address-details">
+          <p><strong>Destinatario:</strong> {{ checkoutData.shippingDetails.nombre }} {{ checkoutData.shippingDetails.apellido }} (DNI: {{ checkoutData.shippingDetails.dni }})</p>
+          <p><strong>Dirección:</strong> {{ checkoutData.shippingDetails.direccion }}, {{ checkoutData.shippingDetails.distrito }}, {{ checkoutData.shippingDetails.provincia }}, {{ checkoutData.shippingDetails.departamento }}</p>
+          <p *ngIf="checkoutData.shippingDetails.referencia"><strong>Referencia:</strong> {{ checkoutData.shippingDetails.referencia }}</p>
+          <p><strong>Teléfono de Contacto:</strong> {{ checkoutData.shippingDetails.telefono }}</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Total y Botón de Pago -->
+  <div class="payment-section">
+    <div class="total-summary">
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>S/ 0.00</span> <!-- Placeholder -->
+        </div>
+        <div class="summary-row">
+            <span>Costo de Envío:</span>
+            <span>S/ 0.00</span> <!-- Placeholder -->
+        </div>
+        <div class="summary-row total">
+            <span>Total a Pagar:</span>
+            <span class="total-amount">S/ 0.00</span> <!-- Placeholder -->
+        </div>
+    </div>
+
+    <!-- Este será el botón que nos llevará a la pasarela de pago -->
+    <button (click)="proceedToPayment()" class="payment-btn">Confirmar y Pagar</button>
+  </div>
+
+</div>

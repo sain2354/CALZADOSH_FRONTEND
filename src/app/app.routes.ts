@@ -2,28 +2,15 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
     {
+        // La ruta raíz de la aplicación (ej: /)
         path: '',
-        loadComponent: () => import('./TIENDA-ONLINE/components/layout-tienda/layout-tienda.component').then(m => m.LayoutTiendaComponent),
-        children: [
-            {
-                path: '',
-                loadComponent: () => import('./TIENDA-ONLINE/components/home/home.component').then(m => m.HomeComponent),
-            },
-            {
-                path: 'producto/:id',
-                loadComponent: () => import('./TIENDA-ONLINE/components/product-detail/product-detail.component').then(m => m.ProductDetailComponent),
-            },
-            {
-                path: 'carrito',
-                loadComponent: () => import('./TIENDA-ONLINE/components/cart/cart.component').then(m => m.CartComponent),
-            },
-            {
-                path: '**',
-                redirectTo: '' 
-            }
-        ]
+        // En lugar de cargar solo el Layout, le decimos que cargue 
+        // un conjunto completo de rutas hijas desde otro archivo.
+        loadChildren: () => import('./TIENDA-ONLINE/tienda-online.routes').then(m => m.TIENDA_ROUTES),
     },
     {
+        // Ruta comodín de nivel superior. Si ninguna otra ruta coincide,
+        // redirige a la página de inicio.
         path: '**', 
         redirectTo: ''
     }

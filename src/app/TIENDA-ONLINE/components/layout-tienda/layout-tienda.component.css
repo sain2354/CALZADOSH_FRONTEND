@@ -1,3 +1,5 @@
+/* layout-tienda.component.css - ESTILOS EXISTENTES NO MODIFICADOS */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
@@ -9,22 +11,32 @@
 
 :host { display:block; font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, Arial; color:#0b1220; background:var(--bg); }
 
-/* Header */
-.site-header { background:#fff; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:1400; box-shadow:0 4px 12px rgba(0,0,0,0.05); }
-.header-container { max-width:var(--max-width); margin:0 auto; padding:1rem; display:flex; align-items:center; gap:1rem; justify-content:space-between; }
-.header-left .logo img { height:45px; width:auto; }
+.site-header {
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--header-height);
+  z-index: 1400;
+}
 
-/* Main navigation */
+.main-content::before {
+  content: '';
+  display: block;
+  height: var(--header-height);
+}
+
+.header-container { max-width:var(--max-width); margin:0 auto; padding:1rem; display:flex; align-items:center; gap:1rem; justify-content:space-between; height: 100%;}
+.header-left .logo img { height:45px; width:auto; }
 .main-nav { display:flex; gap:1.25rem; align-items:center; justify-content:center; z-index:var(--dropdown-z); }
 .nav-btn { appearance:none; border:none; background:transparent; padding:0.6rem 1rem; font-weight:600; cursor:pointer; color:#374151; letter-spacing:0.02em; transition:color .2s; position:relative; font-size:1rem; text-transform:uppercase; }
 .nav-btn:hover { color:var(--primary); }
 .nav-btn.active { color:var(--primary); }
 .nav-btn.active::after { content:''; position:absolute; bottom:-8px; left:0; width:100%; height:2px; background-color:var(--primary); }
-
-/* Nav item wrapper */
 .nav-item-with-dropdown { position:relative; }
-
-/* DROPDOWN fullwidth (para Hombres / Mujeres / Infantil) */
 .brands-dropdown.fullwidth {
   position: fixed;
   top: var(--header-height);
@@ -39,8 +51,6 @@
   border-top: 1px solid rgba(0,0,0,0.04);
   overflow: auto;
 }
-
-/* FILTROS: fila completa */
 .filters-fullwidth {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
@@ -53,8 +63,6 @@
 .filter-block h4 { margin: 0 0 8px 0; font-size: 0.85rem; font-weight:700; text-transform:uppercase; color:#0f172a; letter-spacing:0.4px; }
 .filter-chips { display:flex; flex-wrap:wrap; gap:0.5rem; }
 .filter-chips.wrap { max-height:140px; overflow:auto; }
-
-/* Chips estilo */
 .chip {
   padding: 0.5rem 0.85rem;
   border-radius: 22px;
@@ -66,8 +74,6 @@
   transition: all .14s;
 }
 .chip:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateY(-2px); }
-
-/* BOTÓN MARCAS (dropdown pequeño) */
 .nav-item-brands { position: relative; }
 .nav-item-brands .brand-dropdown {
   display: none;
@@ -83,14 +89,10 @@
   z-index: calc(var(--dropdown-z) + 20);
 }
 .nav-item-brands:hover .brand-dropdown { display: block; }
-
-/* marcas list */
 .brand-short-btn {
   appearance:none; border:none; background:transparent; padding:8px 10px; width:100%; text-align:left; font-weight:600; cursor:pointer; border-radius:6px; transition:background .12s, color .12s; color:#1f2937;
 }
 .brand-short-btn:hover { background:#f3f4f6; color:var(--primary); }
-
-/* Header right - BUSCADOR e iconos */
 .header-right { display:flex; align-items:center; gap:1.5rem; }
 .search-form { position:relative; display:flex; align-items:center; }
 .search-form input { padding:0.75rem 1.25rem; padding-right:3rem; border:1px solid #e5e7eb; border-radius:25px; font-size:1rem; width:220px; transition:all .3s; }
@@ -98,21 +100,25 @@
 .search-btn { position:absolute; right:12px; background:none; border:none; color:#6b7280; cursor:pointer; font-size:1.1rem; }
 .header-icon { color:#4b5563; font-size:1.5rem; transition:color .2s; position:relative; }
 .header-icon:hover { color:var(--primary); }
-.cart-icon-link { display:flex; align-items:center; }
+.cart-icon-link {
+  display: flex;
+  align-items: center;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  cursor: pointer;
+}
 .cart-badge { position:absolute; top:-8px; right:-8px; background:var(--primary); color:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:600; }
 
-/* Footer: sin cambios funcionales */
 .site-footer { background:#000; color:#fff; margin-top:3rem; }
 .footer-main { padding:3rem 1rem; border-bottom:1px solid #333; }
 .footer-container { max-width:var(--max-width); margin:0 auto; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:2rem; }
 
-/* Responsive */
 @media (max-width: 1100px) {
   .filters-fullwidth { grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); padding-left:18px; padding-right:18px; }
   .brands-dropdown.fullwidth { top: var(--header-height); }
   .nav-item-brands .brand-dropdown { right: -6px; }
 }
-
 @media (max-width: 680px) {
   .filters-fullwidth { grid-template-columns: 1fr; gap:0.5rem; padding:12px; }
   .chip { font-size:0.85rem; padding:0.45rem 0.7rem; }
@@ -121,10 +127,7 @@
   .search-form input { width:140px; }
   .search-form input:focus { width:180px; }
 }
-
-/* pequeña animación */
 @keyframes fadeIn { from { opacity:0; transform:translateY(6px);} to { opacity:1; transform:translateY(0);} }
-/* estado activo para chips */
 .chip-active {
   background: var(--primary);
   color: #fff;
@@ -132,10 +135,93 @@
   box-shadow: 0 6px 18px rgba(201,56,46,0.12);
   transform: translateY(-2px);
 }
-
-/* wrap para tallas: permite scroll si hay muchas tallas */
 .filter-chips.wrap {
   max-height: 140px;
   overflow-y: auto;
   padding-right: 6px;
 }
+
+/* ====== INICIO DE ESTILOS AÑADIDOS/MODIFICADOS (VERSIÓN CLICK) ====== */
+
+.user-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Se convierte el botón en un icono para mantener el estilo visual */
+.user-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #4b5563; /* Mismo color que .header-icon */
+    font-size: 1.5rem; /* Mismo tamaño que .header-icon */
+    transition: color .2s;
+}
+
+.user-icon-btn:hover {
+    color: var(--primary);
+}
+
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    right: 0;
+    background-color: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--drop-shadow);
+    min-width: 240px;
+    z-index: var(--dropdown-z);
+    padding: 0.5rem 0;
+    animation: fadeIn 0.2s ease-out;
+    /* La visibilidad es controlada por *ngIf, no por display:none/block */
+}
+
+.user-info {
+    padding: 0.75rem 1.25rem;
+    text-align: left;
+}
+
+.user-info p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.user-info strong {
+    font-size: 0.9rem;
+    color: #111;
+    word-break: break-all;
+}
+
+.user-dropdown hr {
+    margin: 0.5rem 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+}
+
+.user-dropdown-btn {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.user-dropdown-btn:hover {
+    background-color: #f3f4f6;
+    color: var(--primary);
+}
+
+.fa-user-check {
+    color: #28a745; /* Verde para usuario verificado */
+}
+
+/* ====== FIN DE ESTILOS ====== */

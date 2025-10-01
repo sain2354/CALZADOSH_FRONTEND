@@ -1,0 +1,81 @@
+/* Se usan los mismos estilos que auth-page.component.css para mantener la coherencia visual */
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: #121212; /* Fondo oscuro */
+}
+
+.auth-card {
+  background-color: #1e1e1e; /* Tarjeta un poco más clara */
+  color: #ffffff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+}
+
+.form-group {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #b3b3b3; /* Color de texto más suave */
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #333;
+  background-color: #2c2c2c;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+.error-message {
+  color: #ff5555; /* Rojo para errores */
+  margin-bottom: 1rem;
+}
+
+.btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-primary {
+  background-color: #1db954; /* Verde similar a Spotify/éxito */
+  color: #ffffff;
+}
+
+.btn-primary:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+/* Se renombra la clase para el enlace de login */
+.login-link {
+  margin-top: 1.5rem;
+}
+
+.login-link a {
+  color: #1db954; /* Mismo verde que el botón primario */
+  text-decoration: none;
+  font-weight: bold;
+}

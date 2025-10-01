@@ -1,0 +1,169 @@
+.checkout-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.flow-indicator {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.flow-indicator .current {
+  font-weight: bold;
+  color: #007bff;
+}
+
+h2 {
+  text-align: center;
+  color: #343a40;
+  margin-bottom: 2rem;
+}
+
+.shipping-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.option:hover {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.option input[type="radio"] {
+  margin-top: 5px;
+  margin-right: 1.5rem;
+  width: 20px;
+  height: 20px;
+}
+
+.option label {
+  cursor: pointer;
+  flex-grow: 1;
+}
+
+.option label strong {
+  display: block;
+  font-size: 1.1rem;
+  color: #495057;
+  margin-bottom: 0.25rem;
+}
+
+.option label p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.shipping-form-container, .store-pickup-container {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e9ecef;
+}
+
+h3 {
+  color: #343a40;
+  margin-bottom: 1.5rem;
+}
+
+.shipping-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.address-group {
+  flex-basis: 100%;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+.submit-btn:disabled {
+  background-color: #a0c3e6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .checkout-container {
+    padding: 1rem;
+  }
+}

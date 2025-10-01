@@ -27,10 +27,10 @@
   padding: 0 1rem;
 }
 
-/* Banner Carousel - AUMENTADO DE TAMAÑO */
+/* Banner Carousel - CORRECCIÓN DE POSICIÓN */
 .banner-carousel {
   position: relative;
-  margin: 1.5rem 0 2.5rem;
+  margin: 100px 0 2.5rem; /* Margen superior aumentado para bajar el banner */
   border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow-2);

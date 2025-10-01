@@ -1,0 +1,102 @@
+<div class="checkout-container">
+
+  <div class="flow-indicator">
+    <span>Carrito</span> &gt; <span class="current">Envío</span> &gt; <span>Pago</span>
+  </div>
+
+  <h2>Elige una opción de entrega</h2>
+
+  <!-- Opciones de Envío -->
+  <div class="shipping-options">
+    <div class="option">
+      <input type="radio" id="recojo" name="shipping" value="tienda" (change)="selectShippingOption('tienda')">
+      <label for="recojo">
+        <strong>Recojo en Tienda</strong>
+        <p>Recoge tu pedido sin costo adicional.</p>
+      </label>
+    </div>
+    <div class="option">
+      <input type="radio" id="domicilio" name="shipping" value="domicilio" (change)="selectShippingOption('domicilio')" checked>
+      <label for="domicilio">
+        <strong>Envío a Domicilio</strong>
+        <p>Envíos vía Shalom (Costo adicional por definir).</p>
+      </label>
+    </div>
+  </div>
+
+  <!-- SECCIÓN PARA RECOJO EN TIENDA (NUEVO) -->
+  <div *ngIf="selectedShippingOption === 'tienda'" class="store-pickup-info">
+    <h3>Información para el Recojo</h3>
+    <div class="store-details">
+      <p><strong>Dirección:</strong> Av. Principal 123, Centro, Tu Ciudad</p>
+      <p><strong>Horario:</strong> Lunes a Sábado de 9:00 AM - 7:00 PM</p>
+      <p>Recibirás una notificación cuando tu pedido esté listo para ser recogido.</p>
+    </div>
+    <button (click)="handleSubmit()" class="submit-btn">
+      Confirmar Recojo y Continuar con el Pago
+    </button>
+  </div>
+
+  <!-- FORMULARIO PARA ENVÍO A DOMICILIO (MODIFICADO) -->
+  <div *ngIf="selectedShippingOption === 'domicilio'" class="shipping-form-container">
+    <h3>Completa tus datos para el envío</h3>
+    <form [formGroup]="shippingForm" (ngSubmit)="handleSubmit()" class="shipping-form">
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre">Nombres</label>
+          <input id="nombre" type="text" formControlName="nombre">
+        </div>
+        <div class="form-group">
+          <label for="apellido">Apellidos</label>
+          <input id="apellido" type="text" formControlName="apellido">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dni">DNI</label>
+          <input id="dni" type="text" formControlName="dni">
+        </div>
+        <div class="form-group">
+          <label for="telefono">Número de Teléfono</label>
+          <input id="telefono" type="tel" formControlName="telefono">
+        </div>
+      </div>
+
+      <div class="form-group address-group">
+        <label for="direccion">Dirección</label>
+        <input id="direccion" type="text" formControlName="direccion" placeholder="Ej: Av. El Sol 456">
+      </div>
+
+      <div class="form-group address-group">
+        <label for="referencia">Referencia (Opcional)</label>
+        <textarea id="referencia" formControlName="referencia" rows="3" placeholder="Ej: Frente a la plaza, casa de color azul"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="distrito">Distrito</label>
+          <input id="distrito" type="text" formControlName="distrito">
+        </div>
+        <div class="form-group">
+          <label for="provincia">Provincia</label>
+          <input id="provincia" type="text" formControlName="provincia">
+        </div>
+        <div class="form-group">
+          <label for="departamento">Departamento</label>
+          <input id="departamento" type="text" formControlName="departamento">
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="shippingForm.invalid">
+        Continuar con el Pago
+      </button>
+      <div *ngIf="shippingForm.invalid && (shippingForm.dirty || shippingForm.touched)" class="error-message">
+        Por favor, completa todos los campos requeridos.
+      </div>
+
+    </form>
+  </div>
+
+</div>

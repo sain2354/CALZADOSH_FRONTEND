@@ -1,0 +1,112 @@
+/* src/app/TIENDA-ONLINE/pages/order-summary-page/order-summary-page.component.css */
+
+.summary-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.flow-indicator {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.flow-indicator .current {
+  font-weight: bold;
+  color: #007bff;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.order-items-summary,
+.shipping-summary-card {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+  color: #34495e;
+  font-size: 1.25rem;
+}
+
+.shipping-option-view .option-title {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.store-info p,
+.address-details p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.store-info strong,
+.address-details strong {
+  color: #555;
+}
+
+.payment-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.total-summary {
+  margin-bottom: 1.5rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.summary-row.total {
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-top: 2px solid #ccc;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+.total-amount {
+  color: #007bff;
+}
+
+.payment-btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #28a745; /* Verde para confirmar */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.payment-btn:hover {
+  background-color: #218838;
+}

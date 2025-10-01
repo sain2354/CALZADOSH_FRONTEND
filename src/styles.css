@@ -1,25 +1,24 @@
-/* styles.css (reemplazar el contenido actual) */
-/* Estilos globales — permitir scroll del navegador y evitar reglas que bloqueen la altura */
+/* styles.css - Contenido Corregido */
 
 html, body, app-root {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* No fijar height:100% ni overflow:hidden aquí */
+  /* Se elimina cualquier height:100% u overflow:hidden que pueda romper el scroll */
   min-height: 100%;
-  height: auto;
-  overflow-y: auto; /* permite la barra de desplazamiento vertical del navegador */
+  height: auto; /* Permite que el contenido crezca */
+  overflow-y: auto; /* Usa la barra de scroll nativa del navegador */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-/* Normalizar cajas para todo el proyecto */
+/* Normalización de caja para todo el proyecto */
 *, *::before, *::after {
   box-sizing: inherit;
 }
 
-/* Opcional: estilo ligero para el scroll en navegadores que lo soporten */
+/* Estilo opcional para la barra de scroll */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

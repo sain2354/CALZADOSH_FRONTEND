@@ -244,26 +244,51 @@
         </button>
       </form>
 
-      <a href="#" class="header-icon" aria-label="Cuenta"><i class="fas fa-user"></i></a>
-      <a routerLink="/carrito" class="header-icon cart-icon-link" aria-label="Ir al carrito">
+      <!-- ====== INICIO DE LA MODIFICACIÓN PRECISA (VERSIÓN CLICK) ====== -->
+      <div class="user-menu-container">
+        <button class="header-icon user-icon-btn" (click)="toggleUserMenu()" aria-label="Menú de usuario">
+          <i class="fas" [class.fa-user]="!(currentUser$ | async)" [class.fa-user-check]="!!(currentUser$ | async)"></i>
+        </button>
+        
+        <div class="user-dropdown" *ngIf="isUserMenuOpen">
+          <ng-container *ngIf="currentUser$ | async as user; else showLoginButton">
+            <!-- Contenido para usuario LOGUEADO -->
+            <div class="user-info">
+              <p>Conectado como:</p>
+              <strong>{{ user.email }}</strong>
+            </div>
+            <hr>
+            <button class="user-dropdown-btn" (click)="goToMyOrders()">Mis Pedidos</button>
+            <button class="user-dropdown-btn" (click)="onSignOut()">Cerrar Sesión</button>
+          </ng-container>
+
+          <ng-template #showLoginButton>
+            <!-- Contenido para usuario NO logueado -->
+            <button class="user-dropdown-btn" (click)="goToLogin()">Iniciar Sesión</button>
+          </ng-template>
+        </div>
+      </div>
+      <!-- ====== FIN DE LA MODIFICACIÓN PRECISA ====== -->
+      
+      <button (click)="setCartVisible(!isCartVisible)" class="header-icon cart-icon-link" aria-label="Abrir o cerrar carrito">
         <i class="fas fa-shopping-bag"></i>
         <ng-container *ngIf="cartItemCount$ | async as count">
           <span *ngIf="count > 0" class="cart-badge">{{ count }}</span>
         </ng-container>
-      </a>
+      </button>
     </div>
   </div>
 </header>
 
-<main class="main-content content-shell" role="main">
+<!-- === MODIFICACIÓN: Se elimina la clase 'content-shell' para arreglar el scroll === -->
+<main class="main-content" role="main">
   <router-outlet></router-outlet>
 </main>
 
 <footer class="site-footer" role="contentinfo">
-  <!-- footer: no modificado -->
   <div class="footer-main">
     <div class="footer-container">
-      <!-- contenido del footer (igual a como lo tenías) -->
+      <!-- contenido del footer -->
     </div>
   </div>
   <div class="footer-bottom">
@@ -273,3 +298,5 @@
     </div>
   </div>
 </footer>
+
+<app-cart *ngIf="isCartVisible" (close)="setCartVisible(false)"></app-cart>

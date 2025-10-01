@@ -1,0 +1,35 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Iniciar sesión</h2>
+
+    <div class="form-group">
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" placeholder="tucorreo@ejemplo.com" #emailInput />
+    </div>
+
+    <div class="form-group">
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" placeholder="Tu contraseña" #passwordInput />
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+
+    <button class="btn btn-primary" (click)="handleLogin(emailInput.value, passwordInput.value)" [disabled]="isLoading">
+      <span *ngIf="!isLoading">INICIAR SESIÓN</span>
+      <span *ngIf="isLoading">Cargando...</span>
+    </button>
+
+    <div class="divider">o</div>
+
+    <button class="btn btn-secondary btn-google" (click)="handleGoogleLogin()" [disabled]="isLoading">
+      <img src="https://www.google.com/favicon.ico" alt="Google logo"/>
+      <span>CONTINUAR CON GOOGLE</span>
+    </button>
+
+    <div class="register-link">
+      <p>¿Aún no tienes una cuenta? <a routerLink="/register">CREAR UNA CUENTA</a></p>
+    </div>
+  </div>
+</div>
