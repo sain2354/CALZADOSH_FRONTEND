@@ -12,15 +12,24 @@ import { IngresarComprasComponent } from './components/compras/ingresar/ingresar
 import { ListadoComprasComponent } from './components/compras/listado-compras/listado-compras.component';
 import { EntradaSalidaComponent } from './components/inventario/entrada-salida/entrada-salida.component';
 import { ListaUsuarioComponent } from './components/usuarios/lista-usuario/lista-usuario.component';
+import { LoginComponent } from './auth/login/login.component';
+import { authGuard } from './auth/auth.guard';
 
 // Estas son las rutas del panel de administración
 export const ADMIN_ROUTES: Routes = [
   {
+    path: 'login',
+    component: LoginComponent
+  },
+  {
     path: '',
     component: LayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: DashboardComponent },
-      { path: 'caja', component: PedidoComponent },
+      // --- CORREGIDO: La ruta ahora es 'pedidos' ---
+      { path: 'pedidos', component: PedidoComponent },
+      // -----------------------------------------
       {
         path: 'productos',
         children: [

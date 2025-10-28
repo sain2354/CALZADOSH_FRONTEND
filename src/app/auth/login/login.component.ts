@@ -48,21 +48,20 @@ export class LoginComponent {
           // Store session information
           this.authService.loginSuccess(userLoginInfo.username, userRole);
 
-          // --- REDIRECCIÓN INTELIGENTE ---
+          // --- REDIRECCIÓN INTELIGENTE (CORREGIDA) ---
           // Comprueba el rol del usuario para decidir a dónde redirigir.
-          if (userRole.toLowerCase() === 'admin') {
+          if (userRole.toLowerCase() === 'administrador') { // CORREGIDO: de 'admin' a 'administrador'
             // Si es administrador, va al panel de administración.
             this.router.navigate(['/admin/dashboard']);
           } else {
             // Si es cualquier otro rol (cliente, etc.), va a la página principal de la tienda.
-            this.router.navigate(['/']); // Redirige a la raíz (la futura tienda)
+            this.router.navigate(['/']); // Redirige a la raíz
           }
           // --- FIN DE LA REDIRECCIÓN ---
 
         } else {
           this.errorMessage = 'Inicio de sesión exitoso, pero la información del usuario no está disponible.';
           console.error('Login successful, but user information is missing in the backend response.');
-          // No redirigir si no hay información del usuario, solo mostrar el error.
         }
       },
       error: (error) => {

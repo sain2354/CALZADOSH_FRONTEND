@@ -5,10 +5,10 @@ import { HomeComponent } from './components/home/home.component';
 import { ProductDetailComponent } from './components/product-detail/product-detail.component';
 import { AuthPageComponent } from './components/auth-page/auth-page.component'; 
 import { RegisterPageComponent } from './components/pages/register-page/register-page.component';
-
-// --- INICIO DE LA MODIFICACIÓN ---
-// 1. Se importa el nuevo componente para la página de checkout.
 import { CheckoutPageComponent } from './components/checkout-page/checkout-page.component';
+// --- INICIO DE LA MODIFICACIÓN ---
+// 1. Se importa el nuevo componente para la página de pago.
+import { PagoPageComponent } from './components/pago-page/pago-page.component';
 // --- FIN DE LA MODIFICACIÓN ---
 
 // Estas son las rutas para la sección pública de la tienda online
@@ -21,12 +21,11 @@ export const TIENDA_ROUTES: Routes = [
       { path: 'producto/:id', component: ProductDetailComponent },
       { path: 'auth', component: AuthPageComponent },
       { path: 'register', component: RegisterPageComponent },
+      { path: 'checkout', component: CheckoutPageComponent },
 
       // --- INICIO DE LA MODIFICACIÓN ---
-      // 2. Se añade la ruta para la página de checkout y una ruta provisional para el pago.
-      { path: 'checkout', component: CheckoutPageComponent },
-      // Nota: La página de pago real se implementará más adelante.
-      { path: 'pago', redirectTo: 'home', pathMatch: 'full' }, // Redirección temporal
+      // 2. Se reemplaza la redirección temporal por la ruta real a la página de pago.
+      { path: 'pago', component: PagoPageComponent },
       // --- FIN DE LA MODIFICACIÓN ---
       
       { path: '', redirectTo: 'home', pathMatch: 'full' }

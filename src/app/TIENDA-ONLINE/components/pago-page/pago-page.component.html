@@ -1,0 +1,22 @@
+<div class="pago-container">
+  <div *ngIf="isLoading" class="loading-container">
+    <p>Preparando tu pago, por favor espera...</p>
+    <div class="spinner"></div>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <h2>Ocurrió un error</h2>
+    <p>{{ error }}</p>
+    <a routerLink="/">Volver a la tienda</a>
+  </div>
+
+  <div *ngIf="!isLoading && !error">
+    <h2>Finaliza tu Compra</h2>
+    <p>Estás a punto de pagar por el pedido con ID: <strong>{{ ventaId }}</strong></p>
+    <p>Serás redirigido al portal de Mercado Pago para completar la transacción de forma segura.</p>
+    
+    <!-- Este div es el contenedor donde se renderizará el botón de pago de Mercado Pago -->
+    <div id="wallet_container"></div>
+
+  </div>
+</div>

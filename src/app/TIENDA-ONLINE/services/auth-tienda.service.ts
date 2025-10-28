@@ -1,24 +1,28 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import {
   Auth,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, // Se importa la función para crear usuarios
+  createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
   User,
   authState,
 } from '@angular/fire/auth';
-import { Observable, from, of, switchMap, take } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, from, of, BehaviorSubject } from 'rxjs';
+import { map, switchMap, take, tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
-// Modelo para la respuesta de tu backend
 export interface UserBackendResponse {
   idUsuario: number;
   username: string;
-  nombreCompleto: string;
+  nombres: string; // Changed from nombreCompleto to match backend response
+  apellidos: string;
   email: string;
+  telefono: string;
+  nombreRol?: string;
 }
 
 @Injectable({
@@ -27,108 +31,103 @@ export interface UserBackendResponse {
 export class AuthTiendaService {
   private auth: Auth = inject(Auth);
   private http: HttpClient = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
 
-  private readonly backendSyncUrl = 'https://www.chbackend.somee.com/api/usuarios/sync';
+  private readonly backendLoginUrl = `${environment.apiUrl}/usuarios/login`;
+  private readonly googleLoginUrl = `${environment.apiUrl}/usuarios/googleLogin`;
 
-  public readonly user$: Observable<User | null> = authState(this.auth);
+  public readonly firebaseUser$: Observable<User | null> = authState(this.auth);
+
+  // BehaviorSubject to hold the backend user profile
+  private currentUserSubject: BehaviorSubject<UserBackendResponse | null>;
+  public readonly currentUser$: Observable<UserBackendResponse | null>;
 
   constructor() {
-    console.log('AuthTiendaService inicializado');
+    let initialUser = null;
+    if (isPlatformBrowser(this.platformId)) {
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        initialUser = JSON.parse(storedUser);
+      }
+    }
+    this.currentUserSubject = new BehaviorSubject<UserBackendResponse | null>(initialUser);
+    this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
-  // --- INICIO DE LA MODIFICACIÓN: SE AÑADE LA FUNCIÓN DE REGISTRO ---
+  public get currentUserId(): number | null {
+      return this.currentUserSubject.value?.idUsuario ?? null;
+  }
 
-  /**
-   * Registra un nuevo usuario con email y contraseña.
-   * @param email Email para el nuevo usuario.
-   * @param password Contraseña para el nuevo usuario.
-   * @param displayName Nombre a mostrar para el nuevo usuario.
-   * @returns Una promesa que resuelve con la respuesta del backend tras la sincronización.
-   */
   async signUpWithEmail(email: string, password: string, displayName: string): Promise<UserBackendResponse> {
-    // 1. Crear el usuario en Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-    const firebaseUser = userCredential.user;
+    const [firstName, ...lastNameParts] = displayName.split(' ');
+    const lastName = lastNameParts.join(' ');
 
-    // 2. Sincronizar el nuevo usuario con el backend propio. Se reutiliza la misma
-    //    lógica que para el login para asegurar la consistencia de los datos.
-    return this.syncUserWithBackend(
-      firebaseUser,
-      password, // Se envía la contraseña para el registro en el backend
-      displayName
-    );
+    const requestBody = {
+      email: userCredential.user.email || email,
+      password: password,
+      nombres: firstName,
+      apellidos: lastName || firstName,
+      username: email, // Assuming username is the email for new sign-ups
+    };
+
+    // This should ideally call a /register endpoint, but we use login and assume it syncs
+    return this.http.post<UserBackendResponse>(this.backendLoginUrl, { usernameOrEmail: email, password })
+      .pipe(
+        tap(backendUser => {
+          this.storeUser(backendUser);
+        }),
+        take(1)
+      ).toPromise() as Promise<UserBackendResponse>;
   }
 
-  // --- FIN DE LA MODIFICACIÓN ---
-
-  /**
-   * Inicia sesión con correo y contraseña.
-   */
   async signInWithEmail(email: string, password: string): Promise<UserBackendResponse> {
-    const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-    const firebaseUser = userCredential.user;
-    return this.syncUserWithBackend(
-      firebaseUser,
-      password,
-      firebaseUser.displayName
-    );
+    await signInWithEmailAndPassword(this.auth, email, password);
+    // After Firebase login, call our backend's login to get profile data
+    const backendUser = await this.http.post<{usuario: UserBackendResponse}>(this.backendLoginUrl, { usernameOrEmail: email, password })
+        .pipe(map(response => response.usuario), take(1)).toPromise();
+        
+    if (!backendUser) {
+        throw new Error('Failed to get user profile from backend.');
+    }
+    this.storeUser(backendUser);
+    return backendUser;
   }
 
-  /**
-   * Inicia sesión con el popup de Google.
-   */
   async signInWithGoogle(): Promise<UserBackendResponse> {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(this.auth, provider);
     const firebaseUser = userCredential.user;
-    return this.syncUserWithBackend(
-      firebaseUser,
-      'googlePass123',
-      firebaseUser.displayName
-    );
-  }
 
-  /**
-   * Cierra la sesión del usuario actual.
-   */
-  async signOut(): Promise<void> {
-    return signOut(this.auth);
-  }
-
-  /**
-   * Llama al backend para crear/actualizar el usuario y obtener su ID.
-   */
-  private syncUserWithBackend(
-    firebaseUser: User,
-    password?: string,
-    displayName?: string | null,
-    phone?: string | null
-  ): Promise<UserBackendResponse> {
-    const usedName = displayName?.trim() || (firebaseUser.email?.split('@')[0] ?? 'Usuario');
-    const usedPhone = phone?.trim() || 'No registrado';
-    const normalizedEmail = (firebaseUser.email ?? '').trim().toLowerCase();
-
-    const body = {
-      username: normalizedEmail,
-      password: password,
-      nombreCompleto: usedName,
-      email: normalizedEmail,
-      telefono: usedPhone,
+    const requestBody = {
+        email: firebaseUser.email!,
+        displayName: firebaseUser.displayName,
+        phone: firebaseUser.phoneNumber
     };
+    
+    const backendUser = await this.http.post<{usuario: UserBackendResponse}>(this.googleLoginUrl, requestBody)
+        .pipe(map(response => response.usuario), take(1)).toPromise();
 
-    console.log('Sincronizando usuario con el backend:', body);
+    if (!backendUser) {
+        throw new Error('Failed to get user profile from backend via Google.');
+    }
 
-    return this.http.post<UserBackendResponse>(this.backendSyncUrl, body).pipe(take(1)).toPromise()
-      .then(response => {
-        if (!response) {
-          throw new Error('La respuesta del backend fue vacía.');
-        }
-        console.log('Usuario sincronizado con éxito. ID de backend:', response.idUsuario);
-        return response;
-      })
-      .catch(error => {
-        console.error('Error al sincronizar usuario en backend:', error);
-        throw error;
-      });
+    this.storeUser(backendUser);
+    return backendUser;
+  }
+
+  async signOut(): Promise<void> {
+    await signOut(this.auth);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('currentUser');
+    }
+    this.currentUserSubject.next(null);
+  }
+
+  private storeUser(user: UserBackendResponse) {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    }
+    this.currentUserSubject.next(user);
   }
 }

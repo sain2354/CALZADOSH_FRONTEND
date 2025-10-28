@@ -8,8 +8,8 @@ import { CartService, CartItem } from '../../services/cart.service';
 import { ProductService } from '../../services/product.service';
 
 // --- INICIO DE LA MODIFICACIÓN ---
-// 1. Importamos el servicio de autenticación para saber si el usuario está logueado.
-import { AuthTiendaService } from '../../services/auth-tienda.service';
+// Se importa también el tipo de respuesta del usuario del backend
+import { AuthTiendaService, UserBackendResponse } from '../../services/auth-tienda.service';
 // --- FIN DE LA MODIFICACIÓN ---
 
 @Component({
@@ -27,10 +27,7 @@ export class CartComponent {
   totalPrice$: Observable<number>;
 
   private router = inject(Router);
-  // --- INICIO DE LA MODIFICACIÓN ---
-  // 2. Inyectamos el servicio de autenticación.
   private authService = inject(AuthTiendaService);
-  // --- FIN DE LA MODIFICACIÓN ---
 
   constructor(
     public cartService: CartService,
@@ -46,18 +43,16 @@ export class CartComponent {
    */
   proceedToCheckout(): void {
     // --- INICIO DE LA MODIFICACIÓN ---
-    // 3. Usamos el servicio de autenticación para tomar una decisión.
-    this.authService.user$.pipe(
-      take(1) // Tomamos solo el valor actual y nos desuscribimos.
-    ).subscribe(user => {
-      this.onClose(); // Cerramos el panel del carrito en cualquier caso.
+    // Se usa `currentUser$` en lugar de `user$` y se añade el tipo explícito al callback.
+    this.authService.currentUser$.pipe(
+      take(1)
+    ).subscribe((user: UserBackendResponse | null) => {
+      this.onClose();
 
       if (user) {
-        // Si hay un usuario, está logueado. Lo llevamos a la página de checkout.
         console.log('Usuario autenticado. Navegando a /checkout');
         this.router.navigate(['/checkout']);
       } else {
-        // Si no hay usuario, lo llevamos a la página de autenticación.
         console.log('Usuario no autenticado. Navegando a /auth');
         this.router.navigate(['/auth']);
       }

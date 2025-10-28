@@ -26,10 +26,15 @@ export interface Cliente {
   nombreCompleto: string;
   telefono: string;
   email: string;
+  // --- CAMPO AÑADIDO PARA EL DNI ---
+  dni?: string; // Se pone como opcional para no romper vistas antiguas
 }
 
 export interface DireccionEntrega {
   idDireccion: number;
+  departamento: string;
+  provincia: string;
+  distrito: string;
   direccion: string;
   referencia?: string;
 }

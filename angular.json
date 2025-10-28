@@ -65,7 +65,8 @@
               "buildTarget": "CH_FRONTEND:build:production"
             },
             "development": {
-              "buildTarget": "CH_FRONTEND:build:development"
+              "buildTarget": "CH_FRONTEND:build:development",
+              "proxyConfig": "src/proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

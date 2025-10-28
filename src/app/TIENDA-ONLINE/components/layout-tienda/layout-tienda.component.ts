@@ -11,7 +11,7 @@ import { CartService } from '../../services/cart.service';
 import { CategoryService } from '../../services/category.service';
 import { SubcategoryService } from '../../services/subcategory.service';
 import { ProductService } from '../../services/product.service';
-import { AuthTiendaService } from '../../services/auth-tienda.service';
+import { AuthTiendaService, UserBackendResponse } from '../../services/auth-tienda.service';
 
 // Modelos y Componentes
 import { Subcategory } from '../../models/subcategory';
@@ -47,7 +47,7 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
   isCartVisible = false;
   private subs: Subscription[] = [];
   
-  currentUser$: Observable<User | null>;
+  public currentUser$: Observable<UserBackendResponse | null>;
   isUserMenuOpen = false;
 
   constructor(
@@ -59,7 +59,7 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
     private authService: AuthTiendaService
   ) {
     this.cartItemCount$ = this.cartService.getCartItemCount();
-    this.currentUser$ = this.authService.user$;
+    this.currentUser$ = this.authService.currentUser$;
 
     for (let s = 30; s <= 45; s++) {
       this.filterOptions.tallas.push(String(s));

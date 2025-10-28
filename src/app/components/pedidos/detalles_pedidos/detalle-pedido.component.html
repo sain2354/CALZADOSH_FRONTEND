@@ -1,3 +1,4 @@
+<!-- detalle-pedido.component.html (VERSIÓN FINAL) -->
 <div class="contenedor-detalle">
   <div class="cabecera-detalle">
     <h3>Pedido #{{ pedido.idVenta }}</h3>
@@ -5,73 +6,77 @@
       <i class="fas fa-times"></i>
     </button>
   </div>
+
   <div class="cuerpo-detalle">
-    <section class="informacion-cliente">
-      <h4><i class="fas fa-user-circle"></i> Información del Cliente</h4>
-      <p><strong>Nombre:</strong> {{ pedido.cliente.nombreCompleto }}</p>
-      <p><strong>Teléfono:</strong> {{ pedido.cliente.telefono || 'No registrado' }}</p>
-      <p><strong>Email:</strong> {{ pedido.cliente.email }}</p>
-      <p *ngIf="pedido.direccionEntrega">
-        <strong>Dirección:</strong> {{ pedido.direccionEntrega.direccion }}
-        <span *ngIf="pedido.direccionEntrega.referencia">
-          ({{ pedido.direccionEntrega.referencia }})
-        </span>
-      </p>
+    
+    <!-- ===================================================== -->
+    <!--           NUEVA SECCIÓN DE DATOS DE ENVÍO           -->
+    <!-- ===================================================== -->
+    <section class="datos-envio">
+      <h4><i class="fas fa-shipping-fast"></i> Datos para el Envío</h4>
+      <div class="info-grid">
+        <p><strong>Recibe:</strong> {{ pedido.cliente?.nombreCompleto || 'No especificado' }}</p>
+        
+        <!-- AQUÍ SE MUESTRA EL DNI -->
+        <p><strong>DNI:</strong> {{ pedido.cliente?.dni || 'No especificado' }}</p>
+
+        <p><strong>Teléfono:</strong> {{ pedido.cliente?.telefono || 'No especificado' }}</p>
+      </div>
+      <div *ngIf="pedido.direccionEntrega" class="direccion-completa">
+        <p><strong>Departamento:</strong> {{ pedido.direccionEntrega.departamento || 'No especificado' }}</p>
+        <p><strong>Provincia:</strong> {{ pedido.direccionEntrega.provincia || 'No especificado' }}</p>
+        <p><strong>Distrito:</strong> {{ pedido.direccionEntrega.distrito || 'No especificado' }}</p>
+        <p><strong>Dirección:</strong> {{ pedido.direccionEntrega.direccion || 'No especificado' }}</p>
+        <p><strong>Referencia:</strong> {{ pedido.direccionEntrega.referencia || 'Ninguna' }}</p>
+      </div>
+      <p *ngIf="!pedido.direccionEntrega"><em>Este pedido no tiene una dirección de entrega especificada.</em></p>
     </section>
 
+    <!-- ===================================================== -->
+    <!--         SECCIÓN DE RESUMEN DEL PEDIDO (Productos)      -->
+    <!-- ===================================================== -->
     <section class="informacion-pedido">
-      <h4><i class="fas fa-shopping-cart"></i> Detalles del Pedido</h4>
+      <h4><i class="fas fa-shopping-cart"></i> Resumen del Pedido</h4>
       <div class="lista-productos">
         <div class="producto-card" *ngFor="let d of pedido.detalles">
           <img *ngIf="d.imagenUrl" [src]="d.imagenUrl" [alt]="d.nombreProducto" class="producto-imagen" />
           <div class="producto-info">
-            <p class="prod-nombre">{{ d.nombreProducto }}</p>
-            <p><strong>Talla:</strong> {{ d.talla }}</p>
+            <p class="prod-nombre">{{ d.nombreProducto }} (Talla: {{ d.talla }})</p>
             <p><strong>Cantidad:</strong> {{ d.cantidad }}</p>
-            <p><strong>Precio U.:</strong> S/ {{ d.precio.toFixed(2) }}</p>
+            <p><strong>Precio Unitario:</strong> S/ {{ d.precio.toFixed(2) }}</p>
           </div>
         </div>
       </div>
       <div class="resumen-pedido">
-        <p><strong>Costo envío:</strong> S/ {{ pedido.costoEnvio.toFixed(2) }}</p>
-        <p class="total"><strong>Total pedido:</strong> S/ {{ pedido.total.toFixed(2) }}</p>
+        <p><strong>Costo Envío:</strong> S/ {{ pedido.costoEnvio.toFixed(2) }}</p>
+        <p class="total"><strong>Total Pagado:</strong> S/ {{ pedido.total.toFixed(2) }}</p>
       </div>
     </section>
 
-    <section class="informacion-pago">
-      <h4><i class="fas fa-credit-card"></i> Información de Pago</h4>
-      <ng-container *ngIf="pedido.pagos.length; else sinPago">
-        <div *ngFor="let p of pedido.pagos" class="pago-item">
-          <p><strong>Método:</strong> {{ p.idMedioPago === 1 ? 'Yape' : 'Plin' }}</p>
-          <p>
-            <strong>Estado:</strong>
-            <span class="estado-badge" [ngClass]="p.estadoPago.toLowerCase()">
-              {{ p.estadoPago }}
-            </span>
-          </p>
-          <p *ngIf="p.idTransaccionMP">
-            <strong>Código Validación:</strong> {{ p.idTransaccionMP }}
-          </p>
-          <p><strong>Fecha Validación:</strong> {{ formatearFechaIso(p.fechaPago) }}</p>
-          <div class="validacion-pago">
-            <button class="btn-validar success" (click)="validarPago(p)" [disabled]="p.estadoPago !== 'Pendiente'">
-              <i class="fas fa-check"></i> Validar pago
-            </button>
-            <button class="btn-validar danger" (click)="rechazarPago(p)" [disabled]="p.estadoPago !== 'Pendiente'">
-              <i class="fas fa-times"></i> Rechazar pago
-            </button>
-            <button class="btn-comprobante" *ngIf="p.comprobanteUrl" (click)="abrirComprobante(p)">
-              <i class="fas fa-file-invoice"></i> Ver comprobante
-            </button>
-          </div>
-        </div>
-      </ng-container>
-      <ng-template #sinPago>
-        <p><em>No hay información de pago disponible.</em></p>
-      </ng-template>
+    <!-- ===================================================== -->
+    <!-- SECCIÓN DE PAGO (SIMPLIFICADA, SOLO INFORMATIVA) -->
+    <!-- ===================================================== -->
+    <section class="informacion-pago-simple">
+        <h4><i class="fas fa-credit-card"></i> Información de Pago</h4>
+        <ng-container *ngIf="pedido.pagos.length; else sinPago">
+            <div *ngFor="let p of pedido.pagos" class="pago-item-simple">
+                <p><strong>Método:</strong> 
+                    <span [ngSwitch]="p.idMedioPago">
+                        <span *ngSwitchCase="4">Mercado Pago</span>
+                        <span *ngSwitchCase="1">Yape</span>
+                        <span *ngSwitchCase="2">Plin</span>
+                        <span *ngSwitchCase="3">Transferencia</span>
+                        <span *ngSwitchDefault>Otro</span>
+                    </span>
+                </p>
+                <p *ngIf="p.idTransaccionMP"><strong>ID Transacción:</strong> {{ p.idTransaccionMP }}</p>
+                <p><strong>Fecha de Pago:</strong> {{ formatearFechaIso(p.fechaPago) }}</p>
+            </div>
+        </ng-container>
+        <ng-template #sinPago>
+            <p><em>No hay información de pago registrada.</em></p>
+        </ng-template>
     </section>
-  </div>
 
-  <app-comprobante-pago *ngIf="mostrarComprobante" [comprobante]="comprobanteUrl!" [metodo]="metodoPago!" (cerrar)="mostrarComprobante = false">
-  </app-comprobante-pago>
+  </div>
 </div>

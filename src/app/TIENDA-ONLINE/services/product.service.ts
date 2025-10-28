@@ -69,16 +69,44 @@ export class ProductService {
     return this.http.get<any>(url).pipe(
       map(response => {
         if (!response) {
+          console.error(`fetchProductById: No se recibió respuesta para el id=${id}`);
           return null;
         }
 
-        // CORRECCIÓN DEFINITIVA: Usar la propiedad "sizes" que viene de la API.
-        const tallas = response.sizes || response.tallas || response.tallaProducto || [];
-
+        // --- MAPEO FINAL Y CORRECTO ---
+        // Se mapean únicamente las propiedades que existen en el modelo ProductoTienda.
         const product: ProductoTienda = {
-          ...response,
-          tallas: tallas as SizeOption[]
+          idProducto: response.idProducto,
+          nombre: response.nombre,
+          precioVenta: response.precioVenta,
+          stock: response.stock,
+          foto: response.foto,
+          idCategoria: response.idCategoria,
+          categoriaDescripcion: response.categoriaDescripcion,
+          idSubCategoria: response.idSubCategoria,
+          subCategoriaDescripcion: response.subCategoriaDescripcion,
+          marca: response.marca,
+          mpn: response.mpn,
+          shippingInfo: response.shippingInfo,
+          material: response.material,
+          color: response.color,
+
+          // Mapeo de tallas
+          tallas: (response.sizes || response.tallas || response.tallaProducto || []).map((t: any) => ({
+            idTalla: t.idTalla,
+            idProducto: t.idProducto,
+            usa: t.usa,
+            eur: t.eur,
+            cm: t.cm,
+            stock: t.stock
+          }))
         };
+
+        if (!product.idProducto) {
+          console.error("CRÍTICO: El 'idProducto' no fue encontrado en la respuesta de la API para el producto con id consultado:", id);
+          console.error("Respuesta de la API recibida:", response);
+          return null;
+        }
 
         return product;
       }),
