@@ -1,0 +1,60 @@
+.mis-pedidos-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.loading, .error, .no-pedidos {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #d9534f;
+}
+
+.pedidos-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.pedido-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.fecha {
+  color: #666;
+}
+
+.pedido-body p {
+  margin: 0.5rem 0;
+}
+
+.pedido-footer {
+  margin-top: 1rem;
+  text-align: right;
+}
+
+.btn-ver-detalle {
+  background-color: #007bff;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.btn-ver-detalle:hover {
+  background-color: #0056b3;
+}

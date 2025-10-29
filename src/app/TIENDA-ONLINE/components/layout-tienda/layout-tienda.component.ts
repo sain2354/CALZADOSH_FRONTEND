@@ -92,11 +92,6 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
     this.router.navigate(['/auth']); 
   }
 
-  goToMyOrders(): void {
-    this.isUserMenuOpen = false;
-    this.router.navigate(['/mis-pedidos']);
-  }
-
   async onSignOut(): Promise<void> {
     try {
       this.isUserMenuOpen = false;

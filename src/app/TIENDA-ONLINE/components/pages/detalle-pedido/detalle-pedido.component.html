@@ -1,0 +1,54 @@
+<div class="detalle-pedido-container" *ngIf="pedido && !cargando">
+  <div class="header">
+    <h2>Detalle del Pedido #{{ pedido.idVenta }}</h2>
+    <a routerLink="/mis-pedidos" class="btn-volver">Volver a Mis Pedidos</a>
+  </div>
+
+  <div class="info-section">
+    <h4>Datos de Envío</h4>
+    <p><strong>Recibe:</strong> {{ pedido.cliente?.nombreCompleto }}</p>
+    <p><strong>DNI:</strong> {{ pedido.cliente?.dni }}</p>
+    <p><strong>Teléfono:</strong> {{ pedido.cliente?.telefono }}</p>
+    <div *ngIf="pedido.direccionEntrega">
+      <p><strong>Departamento:</strong> {{ pedido.direccionEntrega.departamento }}</p>
+      <p><strong>Provincia:</strong> {{ pedido.direccionEntrega.provincia }}</p>
+      <p><strong>Distrito:</strong> {{ pedido.direccionEntrega.distrito }}</p>
+      <p><strong>Dirección:</strong> {{ pedido.direccionEntrega.direccion }}</p>
+      <p><strong>Referencia:</strong> {{ pedido.direccionEntrega.referencia }}</p>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h4>Resumen del Pedido</h4>
+    <div *ngFor="let item of pedido.detalles" class="producto-item">
+      <img [src]="item.imagenUrl" alt="{{ item.nombreProducto }}">
+      <div class="producto-info">
+        <p class="nombre">{{ item.nombreProducto }} (Talla: {{ item.talla }})</p>
+        <p><strong>Cantidad:</strong> {{ item.cantidad }}</p>
+        <p><strong>Precio:</strong> S/ {{ item.precio.toFixed(2) }}</p>
+      </div>
+    </div>
+    <div class="totales">
+        <p><strong>Costo de Envío:</strong> S/ {{ pedido.costoEnvio.toFixed(2) }}</p>
+        <p class="total-pagado"><strong>Total Pagado:</strong> S/ {{ pedido.total.toFixed(2) }}</p>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h4>Información de Pago</h4>
+    <div *ngFor="let pago of pedido.pagos">
+        <p><strong>Método:</strong> {{ pago.idMedioPago === 1 ? 'Yape' : (pago.idMedioPago === 2 ? 'Plin' : 'Otro') }}</p>
+        <p><strong>Estado:</strong> {{ pago.estadoPago }}</p>
+        <p><strong>Fecha de Pago:</strong> {{ pago.fechaPago | date:'dd/MM/yyyy h:mm a' }}</p>
+    </div>
+  </div>
+
+</div>
+
+<div *ngIf="cargando" class="loading">
+  <p>Cargando detalle del pedido...</p>
+</div>
+
+<div *ngIf="error" class="error">
+  <p>{{ error }}</p>
+</div>

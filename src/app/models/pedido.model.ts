@@ -14,6 +14,7 @@ export interface DetallePedido {
 export interface Pago {
   idPago: number;
   idMedioPago: number;
+  nombreMedioPago?: string; // CAMPO AÑADIDO PARA EL NOMBRE DEL MÉTODO
   montoPagado: number;
   fechaPago: string;
   idTransaccionMP?: string;
@@ -26,8 +27,7 @@ export interface Cliente {
   nombreCompleto: string;
   telefono: string;
   email: string;
-  // --- CAMPO AÑADIDO PARA EL DNI ---
-  dni?: string; // Se pone como opcional para no romper vistas antiguas
+  dni?: string;
 }
 
 export interface DireccionEntrega {

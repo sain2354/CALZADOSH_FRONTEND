@@ -1,25 +1,60 @@
-<!-- detalle-pedido.component.html (VERSIÓN FINAL) -->
+<!-- detalle-pedido.component.html -->
 <div class="contenedor-detalle">
   <div class="cabecera-detalle">
-    <h3>Pedido #{{ pedido.idVenta }}</h3>
+    <div class="titulo-y-boleta">
+      <h3>Pedido #{{ pedido.idVenta }}</h3>
+      <!-- ===================================================== -->
+      <!--           NUEVO BOTÓN PARA GENERAR BOLETA           -->
+      <!-- ===================================================== -->
+      <button (click)="generarBoletaPDF()" class="btn-generar-boleta">
+        <i class="fas fa-file-pdf"></i> Generar Boleta de Envío
+      </button>
+    </div>
     <button (click)="cerrar.emit()" class="btn-cerrar">
       <i class="fas fa-times"></i>
     </button>
   </div>
 
+  <!-- Estilos rápidos para el nuevo botón y layout -->
+  <style>
+    .cabecera-detalle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .titulo-y-boleta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .btn-generar-boleta {
+      background-color: #28a745; /* Verde éxito */
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-generar-boleta:hover {
+      background-color: #218838;
+    }
+    .btn-generar-boleta .fa-file-pdf {
+      font-size: 16px;
+    }
+  </style>
+
   <div class="cuerpo-detalle">
+    <!-- ... (El resto del contenido permanece igual) ... -->
     
-    <!-- ===================================================== -->
-    <!--           NUEVA SECCIÓN DE DATOS DE ENVÍO           -->
-    <!-- ===================================================== -->
     <section class="datos-envio">
       <h4><i class="fas fa-shipping-fast"></i> Datos para el Envío</h4>
       <div class="info-grid">
         <p><strong>Recibe:</strong> {{ pedido.cliente?.nombreCompleto || 'No especificado' }}</p>
-        
-        <!-- AQUÍ SE MUESTRA EL DNI -->
         <p><strong>DNI:</strong> {{ pedido.cliente?.dni || 'No especificado' }}</p>
-
         <p><strong>Teléfono:</strong> {{ pedido.cliente?.telefono || 'No especificado' }}</p>
       </div>
       <div *ngIf="pedido.direccionEntrega" class="direccion-completa">
@@ -32,9 +67,6 @@
       <p *ngIf="!pedido.direccionEntrega"><em>Este pedido no tiene una dirección de entrega especificada.</em></p>
     </section>
 
-    <!-- ===================================================== -->
-    <!--         SECCIÓN DE RESUMEN DEL PEDIDO (Productos)      -->
-    <!-- ===================================================== -->
     <section class="informacion-pedido">
       <h4><i class="fas fa-shopping-cart"></i> Resumen del Pedido</h4>
       <div class="lista-productos">
@@ -53,9 +85,6 @@
       </div>
     </section>
 
-    <!-- ===================================================== -->
-    <!-- SECCIÓN DE PAGO (SIMPLIFICADA, SOLO INFORMATIVA) -->
-    <!-- ===================================================== -->
     <section class="informacion-pago-simple">
         <h4><i class="fas fa-credit-card"></i> Información de Pago</h4>
         <ng-container *ngIf="pedido.pagos.length; else sinPago">

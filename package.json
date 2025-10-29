@@ -33,7 +33,7 @@
     "firebase": "^10.14.1",
     "html2canvas": "^1.4.1",
     "jsbarcode": "^3.12.1",
-    "jspdf": "^3.0.2",
+    "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "ngx-pagination": "^6.0.3",
     "numero-a-letras": "^1.0.6",

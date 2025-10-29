@@ -258,7 +258,7 @@
               <strong>{{ user.email }}</strong>
             </div>
             <hr>
-            <button class="user-dropdown-btn" (click)="goToMyOrders()">Mis Pedidos</button>
+            <a routerLink="/mis-pedidos" class="user-dropdown-btn" (click)="toggleUserMenu()">Mis Pedidos</a>
             <button class="user-dropdown-btn" (click)="onSignOut()">Cerrar Sesión</button>
           </ng-container>
 
