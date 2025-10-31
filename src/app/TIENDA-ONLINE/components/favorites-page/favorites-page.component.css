@@ -1,0 +1,75 @@
+.favorites-container {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.favorite-item {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.favorite-item:hover {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.favorite-item img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.favorite-item-info {
+  padding: 1.5rem;
+}
+
+.favorite-item-info h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.favorite-item-info p {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+.favorite-item-info button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.favorite-item-info button:hover {
+  background-color: #c0392b;
+}
+
+ng-template p {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #777;
+  margin-top: 3rem;
+}

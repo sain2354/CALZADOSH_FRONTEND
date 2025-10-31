@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
@@ -12,7 +12,7 @@ import { ProductoTienda, SizeOption } from '../../models/producto-tienda.model';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.css']
 })
@@ -66,19 +66,32 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       this.isLoading = false;
       if (productData) {
         this.product = productData;
-        this.isFavorite = this.favoritesService.isFavorite(this.product.idProducto);
-        this.favoritesSub = this.favoritesService.favorites$.subscribe(favs => {
-          this.isFavorite = favs.includes(this.product!.idProducto);
-        });
+        this.setupFavoriteStatusListener();
       } else if (!this.error) {
         this.error = 'No se pudieron cargar los datos del producto.';
       }
     });
   }
 
+  private setupFavoriteStatusListener(): void {
+    this.isFavorite = this.favoritesService.esFavorito(this.product!.idProducto);
+    this.favoritesSub = this.favoritesService.favoritos$.subscribe(favoritos => {
+        this.isFavorite = this.favoritesService.esFavorito(this.product!.idProducto);
+    });
+  }
+
   toggleFavorite(): void {
-    if (this.product) {
-      this.favoritesService.toggleFavorite(this.product.idProducto);
+    if (!this.product) return;
+
+    const productId = this.product.idProducto;
+    if (this.isFavorite) {
+      this.favoritesService.quitarFavorito(productId).subscribe(() => {
+        console.log('Producto quitado de favoritos');
+      });
+    } else {
+      this.favoritesService.agregarFavorito(productId).subscribe(() => {
+        console.log('Producto agregado a favoritos');
+      });
     }
   }
   
@@ -97,7 +110,6 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   addToCart(): void {
     if (this.product && this.selectedSize && this.isAddToCartEnabled()) {
       this.cartService.addToCart(this.product, this.selectedSize);
-      // CORRECCIÓN DEFINITIVA: Usar la propiedad correcta `usa`
       alert(`${this.product.nombre} (Talla USA ${this.selectedSize.usa}) fue agregado al carrito.`);
     } else {
       alert('Por favor, seleccione una talla con stock disponible.');

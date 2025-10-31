@@ -1,51 +1,72 @@
+
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { switchMap, tap, catchError } from 'rxjs/operators';
+import { AuthTiendaService } from './auth-tienda.service';
+import { ProductoFavorito } from '../models/favorito.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FavoritesService {
-  private readonly FAVORITES_KEY = 'tienda_favoritos';
-  private favoritesSubject = new BehaviorSubject<number[]>(this.getFavoritesFromStorage());
-  
-  // Observable para que los componentes se suscriban a los cambios
-  favorites$ = this.favoritesSubject.asObservable();
+  private apiUrl = 'http://localhost:3000/api/tienda/favoritos';
+  private favoritosSubject = new BehaviorSubject<ProductoFavorito[]>([]);
+  public favoritos$ = this.favoritosSubject.asObservable();
+  private idUsuario: number | null = null;
 
-  constructor() { }
-
-  private getFavoritesFromStorage(): number[] {
-    const favoritesJson = localStorage.getItem(this.FAVORITES_KEY);
-    return favoritesJson ? JSON.parse(favoritesJson) : [];
+  constructor(
+    private http: HttpClient,
+    private authService: AuthTiendaService
+  ) {
+    this.authService.currentUser$.pipe(
+      switchMap(user => {
+        if (user && user.idUsuario) {
+          this.idUsuario = user.idUsuario;
+          return this.http.get<ProductoFavorito[]>(`${this.apiUrl}/usuario/${this.idUsuario}`);
+        } else {
+          this.idUsuario = null;
+          return of([]);
+        }
+      }),
+      catchError(() => of([])) // Manejo de errores, devuelve un array vacío
+    ).subscribe((favoritos: ProductoFavorito[]) => {
+      this.favoritosSubject.next(favoritos);
+    });
   }
 
-  private saveFavoritesToStorage(favorites: number[]): void {
-    localStorage.setItem(this.FAVORITES_KEY, JSON.stringify(favorites));
-    this.favoritesSubject.next(favorites); // Notificar a los suscriptores
-  }
-
-  isFavorite(productId: number): boolean {
-    return this.getFavoritesFromStorage().includes(productId);
-  }
-
-  toggleFavorite(productId: number): void {
-    if (this.isFavorite(productId)) {
-      this.removeFavorite(productId);
-    } else {
-      this.addFavorite(productId);
+  getFavoritos(): Observable<ProductoFavorito[]> {
+    if (!this.idUsuario) {
+      return of([]);
     }
+    return this.http.get<ProductoFavorito[]>(`${this.apiUrl}/usuario/${this.idUsuario}`).pipe(
+      tap(favoritos => this.favoritosSubject.next(favoritos))
+    );
   }
 
-  private addFavorite(productId: number): void {
-    const favorites = this.getFavoritesFromStorage();
-    if (!favorites.includes(productId)) {
-      favorites.push(productId);
-      this.saveFavoritesToStorage(favorites);
+  agregarFavorito(idProducto: number): Observable<any> {
+    if (!this.idUsuario) {
+      return of(null); // O podrías emitir un error
     }
+    return this.http.post(this.apiUrl, { idUsuario: this.idUsuario, idProducto }).pipe(
+      tap(() => {
+        this.getFavoritos().subscribe(); // Recargar la lista de favoritos
+      })
+    );
   }
 
-  private removeFavorite(productId: number): void {
-    let favorites = this.getFavoritesFromStorage();
-    favorites = favorites.filter(id => id !== productId);
-    this.saveFavoritesToStorage(favorites);
+  quitarFavorito(idProducto: number): Observable<any> {
+    if (!this.idUsuario) {
+      return of(null);
+    }
+    return this.http.delete(`${this.apiUrl}/usuario/${this.idUsuario}/producto/${idProducto}`).pipe(
+      tap(() => {
+        this.getFavoritos().subscribe(); // Recargar la lista de favoritos
+      })
+    );
+  }
+
+  esFavorito(idProducto: number): boolean {
+    return this.favoritosSubject.getValue().some(p => p.idProducto === idProducto);
   }
 }

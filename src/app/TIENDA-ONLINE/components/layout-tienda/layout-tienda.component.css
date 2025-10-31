@@ -1,4 +1,4 @@
-/* layout-tienda.component.css - ESTILOS EXISTENTES NO MODIFICADOS */
+/* layout-tienda.component.css - ESTILOS CORREGIDOS */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
@@ -23,11 +23,12 @@
   z-index: 1400;
 }
 
-.main-content::before {
-  content: '';
-  display: block;
-  height: var(--header-height);
+/* === INICIO DE LA CORRECCIÓN === */
+/* Se cambia a margin-top para empujar todo el contenido hacia abajo */
+.main-content {
+  margin-top: var(--header-height);
 }
+/* === FIN DE LA CORRECCIÓN === */
 
 .header-container { max-width:var(--max-width); margin:0 auto; padding:1rem; display:flex; align-items:center; gap:1rem; justify-content:space-between; height: 100%;}
 .header-left .logo img { height:45px; width:auto; }
@@ -141,14 +142,11 @@
   padding-right: 6px;
 }
 
-/* ====== INICIO DE ESTILOS AÑADIDOS/MODIFICADOS (VERSIÓN CLICK) ====== */
-
 .user-menu-container {
     position: relative;
     display: inline-block;
 }
 
-/* Se convierte el botón en un icono para mantener el estilo visual */
 .user-icon-btn {
     background: none;
     border: none;
@@ -175,7 +173,6 @@
     z-index: var(--dropdown-z);
     padding: 0.5rem 0;
     animation: fadeIn 0.2s ease-out;
-    /* La visibilidad es controlada por *ngIf, no por display:none/block */
 }
 
 .user-info {
@@ -223,5 +220,3 @@
 .fa-user-check {
     color: #28a745; /* Verde para usuario verificado */
 }
-
-/* ====== FIN DE ESTILOS ====== */

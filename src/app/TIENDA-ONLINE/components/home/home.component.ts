@@ -1,4 +1,4 @@
-// home.component.ts (Recreado)
+// home.component.ts (con la función para calcular el precio original)
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -11,6 +11,7 @@ import { FavoritesService } from '../../services/favorites.service';
 import { ProductoTienda } from '../../models/producto-tienda.model';
 import { Subcategory } from '../../models/subcategory';
 import { CategoryService } from '../../services/category.service';
+import { ProductoFavorito } from '../../models/favorito.model';
 
 const CATEGORY_ID_MAP: { [key: string]: number } = {
   'Hombres': 1,
@@ -31,7 +32,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   allSubcategories: Subcategory[] = [];
   filteredSubcategories: Subcategory[] = [];
   isLoading = true;
-  favoriteProductIds: number[] = []; // Para guardar los IDs de favoritos
+  favoriteProductIds: number[] = [];
 
   promoBanners: { asset: string; title?: string; link?: string }[] = [
     { asset: 'assets/images/Banner-hombre2.png', link: '' },
@@ -63,7 +64,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     public productService: ProductService,
     private subcategoryService: SubcategoryService,
     private categoryService: CategoryService,
-    private favoritesService: FavoritesService // Inyección del servicio de favoritos
+    private favoritesService: FavoritesService
   ) { }
 
   ngOnInit(): void {
@@ -90,8 +91,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
 
     this.subs.push(
-      this.favoritesService.favorites$.subscribe(favIds => {
-        this.favoriteProductIds = favIds;
+      this.favoritesService.favoritos$.subscribe((favoritos: ProductoFavorito[]) => {
+        this.favoriteProductIds = favoritos.map(fav => fav.idProducto);
       })
     );
 
@@ -120,8 +121,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.subs.forEach(s => s.unsubscribe());
     this.stopCarousel();
   }
+  
+  // === INICIO DE LA MODIFICACIÓN ===
+  /**
+   * Calcula un precio original "falso" basado en el precio de venta y un descuento fijo.
+   * @param salePrice El precio de venta real del producto.
+   * @returns El precio original calculado para mostrarlo tachado.
+   */
+  calculateOriginalPrice(salePrice: number): number {
+    const discountPercentage = 0.28; // 28% de descuento
+    // Fórmula: PrecioOriginal = PrecioVenta / (1 - PorcentajeDescuento)
+    const originalPrice = salePrice / (1 - discountPercentage);
+    return originalPrice;
+  }
+  // === FIN DE LA MODIFICACIÓN ===
 
-  // Métodos para manejar favoritos
   isFavorite(productId: number): boolean {
     return this.favoriteProductIds.includes(productId);
   }
@@ -129,7 +143,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleFavorite(product: ProductoTienda, event: MouseEvent): void {
     event.stopPropagation();
     event.preventDefault();
-    this.favoritesService.toggleFavorite(product.idProducto);
+    const productId = product.idProducto;
+    if (this.isFavorite(productId)) {
+      this.favoritesService.quitarFavorito(productId).subscribe();
+    } else {
+      this.favoritesService.agregarFavorito(productId).subscribe();
+    }
   }
 
   loadInitialData(): void {

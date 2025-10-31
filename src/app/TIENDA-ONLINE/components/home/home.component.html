@@ -1,5 +1,6 @@
+<!-- home.component.html (Texto del badge actualizado) -->
 <div class="home-container">
-  <!-- Banner Carousel -->
+
   <section *ngIf="selectedCategoryName === 'Todos'" class="banner-carousel">
     <div class="banner-frame">
       <button class="banner-arrow left" (click)="prevBanner()" aria-label="Anterior banner">&#10094;</button>
@@ -25,20 +26,13 @@
     </div>
   </section>
 
-  <!-- Encabezado de filtros -->
   <header class="filters-header">
     <div class="filters-toolbar">
-      <div class="filters-left">
-        <!-- espacio para controles futuros -->
-      </div>
-
-      <div class="filters-right">
-        
-      </div>
+      <div class="filters-left"></div>
+      <div class="filters-right"></div>
     </div>
   </header>
 
-  <!-- Product Grid -->
   <div *ngIf="isLoading" class="loading-indicator">
     <div class="spinner" aria-hidden="true"></div>
     <p>Cargando productos...</p>
@@ -52,16 +46,28 @@
 
   <section *ngIf="!isLoading && products.length > 0" class="product-grid" aria-live="polite">
     <a *ngFor="let product of products" class="product-card" [routerLink]="['/producto', product.idProducto]">
-      <div class="badge-discount">10% OFF</div>
+      
+      <!-- === TEXTO DEL BADGE MODIFICADO === -->
+      <div class="badge-discount">-28%</div>
+      
+      <button (click)="toggleFavorite(product, $event)" class="favorite-btn" [class.favorited]="isFavorite(product.idProducto)">
+        <i class="bi" [class.bi-heart-fill]="isFavorite(product.idProducto)" [class.bi-heart]="!isFavorite(product.idProducto)"></i>
+      </button>
 
       <div class="card-image-container">
         <img [src]="productService.getImageUrl(product.foto)" [alt]="product.nombre">
       </div>
+      
       <div class="card-body">
         <span class="product-brand">{{ product.subCategoriaDescripcion }}</span>
         <h4 class="product-name">{{ product.nombre }}</h4>
-        <p class="product-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</p>
+        
+        <div class="price-container">
+          <span class="original-price">{{ calculateOriginalPrice(product.precioVenta) | currency:'S/':'symbol':'1.2-2' }}</span>
+          <span class="sale-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</span>
+        </div>
       </div>
     </a>
   </section>
+
 </div>
