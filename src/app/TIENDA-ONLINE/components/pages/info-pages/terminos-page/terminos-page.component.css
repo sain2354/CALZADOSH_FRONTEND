@@ -1,0 +1,49 @@
+
+.info-page-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 1rem;
+}
+
+.content-section {
+  color: #374151;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+}
+
+strong {
+  font-weight: 600;
+  color: #000000;
+}
+
+.last-updated {
+  margin-top: 3rem;
+  text-align: right;
+  font-size: 0.9rem;
+  color: #6b7280;
+}

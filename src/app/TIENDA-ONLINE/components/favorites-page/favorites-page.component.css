@@ -148,7 +148,7 @@ h2 {
 }
 
 /* =========================================== */
-/* ESTILOS PARA EL MODAL DE CONFIRMACIÓN     */
+/* ESTILOS PARA EL MODAL DE CONFIRMACIÓN (CORREGIDO) */
 /* =========================================== */
 .modal-overlay {
   position: fixed;
@@ -160,7 +160,8 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999; /* Z-index elevado */
+  pointer-events: none; /* Permite que los clics pasen a través */
 }
 
 .modal-dialog {
@@ -171,6 +172,7 @@ h2 {
   text-align: center;
   max-width: 400px;
   width: 90%;
+  pointer-events: auto; /* Captura los clics en el diálogo */
 }
 
 .modal-message {
@@ -212,4 +214,24 @@ h2 {
 .modal-button.confirm:hover {
   background-color: #a12b23;
   transform: scale(1.02);
+}
+
+/* ====================================================================== */
+/* SOLUCIÓN DE EMERGENCIA PARA ESTILOS DEL MODAL (SOBREESCRIBIR)           */
+/* ====================================================================== */
+.modal-button.cancel,
+.modal-button.confirm {
+  color: #fff !important; /* Letra blanca para ambos */
+}
+
+.modal-button.cancel {
+  background-color: #6c757d !important; /* Fondo gris para Cancelar */
+}
+
+.modal-button.confirm {
+  background-color: #c9382e !important; /* Fondo rojo para Confirmar */
+}
+
+.modal-button:hover {
+  opacity: 0.85 !important;
 }

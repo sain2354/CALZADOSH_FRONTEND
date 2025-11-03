@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router'; // Se importa ActivatedRoute
 import { Observable } from 'rxjs';
 import { FavoritesService } from '../../services/favorites.service';
 import { ProductService } from '../../services/product.service';
@@ -10,69 +10,7 @@ import { ProductoTienda } from '../../models/producto-tienda.model';
   selector: 'app-favorites-page',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  // =================================================================================
-  // SOLUCIÓN NUCLEAR: Se elimina 'templateUrl' y se incrusta el HTML directamente.
-  // Esto fuerza al compilador a usar la plantilla correcta.
-  // =================================================================================
-  template: `
-    <!-- favorites-page.component.html - VERSIÓN FINAL Y LIMPIA -->
-
-    <div class="favorites-container">
-      <h2>Mis Favoritos</h2>
-      <div *ngIf="(favoritos$ | async) as favoritos; else loading">
-        <div *ngIf="favoritos.length > 0; else emptyFavorites" class="favorites-grid">
-          
-          <div *ngFor="let favorito of favoritos" 
-               class="product-card" 
-               (click)="verDetalles(favorito)" 
-               role="button" 
-               tabindex="0" 
-               [attr.aria-label]="'Ver detalles de ' + favorito.nombre">
-            
-            <div class="badge-discount">-28%</div>
-
-            <div class="product-image-container">
-              <img [src]="productService.getImageUrl(favorito.foto)" alt="{{ favorito.nombre }}" class="product-image">
-            </div>
-
-            <div class="product-info">
-              <h4 class="product-brand">{{ favorito.subCategoriaDescripcion | uppercase }}</h4>
-              <h3 class="product-name">{{ favorito.nombre }}</h3>
-              <div class="price-container">
-                <span class="original-price">{{ calculateOriginalPrice(favorito.precioVenta) | currency:'S/ ' }}</span>
-                <span class="sale-price">{{ favorito.precioVenta | currency:'S/ ' }}</span>
-              </div>
-            </div>
-            
-            <div class="product-actions">
-              <button class="remove-button" (click)="solicitarConfirmacion($event, favorito)">Quitar</button>
-            </div>
-          </div>
-
-        </div>
-        <ng-template #emptyFavorites>
-          <div class="empty-favorites-container">
-            <p>Aún no tienes productos favoritos.</p>
-            <a routerLink="/tienda/home" class="explore-link">¡Explora nuestros productos!</a>
-          </div>
-        </ng-template>
-      </div>
-      <ng-template #loading>
-        <p class="loading-indicator">Cargando favoritos...</p>
-      </ng-template>
-    </div>
-
-    <!-- MODAL DE CONFIRMACIÓN (EL CORRECTO) -->
-    <div *ngIf="modalAbierto" class="modal-overlay">
-      <div class="modal-dialog">
-        <p class="modal-message">{{ mensajeConfirmacion }}</p>
-        <div class="modal-actions">
-          <button class="modal-button cancel" (click)="cerrarModal()">Cancelar</button>
-          <button class="modal-button confirm" (click)="confirmarEliminacion()">Confirmar</button>
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './favorites-page.component.html',
   styleUrls: ['./favorites-page.component.css']
 })
 export class FavoritesPageComponent implements OnInit {
@@ -85,23 +23,28 @@ export class FavoritesPageComponent implements OnInit {
   constructor(
     private favoritesService: FavoritesService,
     public productService: ProductService,
-    private router: Router 
+    private router: Router, 
+    private route: ActivatedRoute // Se inyecta ActivatedRoute
   ) {
     this.favoritos$ = this.favoritesService.favoritos$;
   }
 
   ngOnInit(): void {}
 
+  // ==========================================================================================
+  // SOLUCIÓN DEFINITIVA: Se corrige la navegación a detalles del producto.
+  // Se utiliza navegación relativa (relativeTo) para evitar conflictos con el router.
+  // Esto asegura que la app navegue a '../producto/:id' desde la ruta actual ('/favoritos').
+  // ==========================================================================================
   verDetalles(favorito: ProductoTienda): void {
-    this.router.navigate(['/tienda/producto', favorito.idProducto]);
+    this.router.navigate(['../producto', favorito.idProducto], { relativeTo: this.route });
   }
 
   solicitarConfirmacion(event: MouseEvent, favorito: ProductoTienda): void {
     event.stopPropagation(); 
     
     this.productoParaEliminar = favorito;
-    // Se restaura el mensaje original
-    this.mensajeConfirmacion = `¿Estás seguro de que deseas eliminar "${favorito.nombre}" de tus favoritos?`;
+    this.mensajeConfirmacion = `¿Estás seguro de que deseas eliminar \"${favorito.nombre}\" de tus favoritos?`;
     this.modalAbierto = true;
   }
 

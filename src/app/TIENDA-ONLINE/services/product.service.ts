@@ -140,14 +140,27 @@ export class ProductService {
   }
 
   setCategory(catId?: number | null): void {
-    const cur = this.getCurrentFilters();
+    // Si se selecciona "Todos" (catId es nulo/undefined), limpiar todos los filtros.
     if (catId === undefined || catId === null) {
-      delete cur.cat;
-    } else {
-      cur.cat = catId;
+      this.filterSubject.next({});
+      this.loadProducts();
+      return;
     }
-    delete cur.subCate;
-    this.filterSubject.next(cur);
+
+    const currentFilters = this.getCurrentFilters();
+    
+    // Al hacer clic en una categoría, creamos un nuevo objeto de filtros para limpiar 
+    // filtros previos (como color, talla, etc.) y evitar inconsistencias.
+    const newFilters: FilterParams = {
+      cat: catId
+    };
+
+    // Si ya había una marca (subcategoría) seleccionada, la conservamos.
+    if (currentFilters.subCate) {
+      newFilters.subCate = currentFilters.subCate;
+    }
+    
+    this.filterSubject.next(newFilters);
     this.loadProducts();
   }
 
