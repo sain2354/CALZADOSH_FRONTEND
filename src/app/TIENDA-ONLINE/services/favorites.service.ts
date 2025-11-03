@@ -1,69 +1,79 @@
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { switchMap, tap, catchError } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { AuthTiendaService } from './auth-tienda.service';
-import { ProductoFavorito } from '../models/favorito.model';
+import { ProductoTienda } from '../models/producto-tienda.model';
+
+// Usamos ProductoTienda directamente en lugar de un modelo intermedio
+// ya que no tenemos un backend que nos devuelva una estructura diferente.
 
 @Injectable({
   providedIn: 'root'
 })
 export class FavoritesService {
-  private apiUrl = 'http://localhost:3000/api/tienda/favoritos';
-  private favoritosSubject = new BehaviorSubject<ProductoFavorito[]>([]);
+  private favoritosSubject = new BehaviorSubject<ProductoTienda[]>([]);
   public favoritos$ = this.favoritosSubject.asObservable();
   private idUsuario: number | null = null;
+  private storageKey = '';
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthTiendaService
-  ) {
-    this.authService.currentUser$.pipe(
-      switchMap(user => {
-        if (user && user.idUsuario) {
-          this.idUsuario = user.idUsuario;
-          return this.http.get<ProductoFavorito[]>(`${this.apiUrl}/usuario/${this.idUsuario}`);
-        } else {
-          this.idUsuario = null;
-          return of([]);
-        }
-      }),
-      catchError(() => of([])) // Manejo de errores, devuelve un array vacío
-    ).subscribe((favoritos: ProductoFavorito[]) => {
-      this.favoritosSubject.next(favoritos);
+  constructor(private authService: AuthTiendaService) {
+    this.authService.currentUser$.subscribe(user => {
+      if (user && user.idUsuario) {
+        this.idUsuario = user.idUsuario;
+        this.storageKey = `favoritos_${this.idUsuario}`;
+        this.loadFavoritosFromStorage();
+      } else {
+        this.idUsuario = null;
+        this.storageKey = '';
+        this.favoritosSubject.next([]); // Limpiar favoritos al cerrar sesión
+      }
     });
   }
 
-  getFavoritos(): Observable<ProductoFavorito[]> {
+  private loadFavoritosFromStorage() {
     if (!this.idUsuario) {
-      return of([]);
+      this.favoritosSubject.next([]);
+      return;
     }
-    return this.http.get<ProductoFavorito[]>(`${this.apiUrl}/usuario/${this.idUsuario}`).pipe(
-      tap(favoritos => this.favoritosSubject.next(favoritos))
-    );
+    const favoritosGuardados = localStorage.getItem(this.storageKey);
+    const favoritos = favoritosGuardados ? JSON.parse(favoritosGuardados) : [];
+    this.favoritosSubject.next(favoritos);
   }
 
-  agregarFavorito(idProducto: number): Observable<any> {
-    if (!this.idUsuario) {
-      return of(null); // O podrías emitir un error
-    }
-    return this.http.post(this.apiUrl, { idUsuario: this.idUsuario, idProducto }).pipe(
-      tap(() => {
-        this.getFavoritos().subscribe(); // Recargar la lista de favoritos
-      })
-    );
+  private saveFavoritosToStorage(favoritos: ProductoTienda[]) {
+    if (!this.idUsuario) return;
+    localStorage.setItem(this.storageKey, JSON.stringify(favoritos));
+    this.favoritosSubject.next(favoritos);
   }
 
-  quitarFavorito(idProducto: number): Observable<any> {
+  getFavoritos(): Observable<ProductoTienda[]> {
+    return this.favoritos$;
+  }
+
+  // Se necesita el producto completo para guardarlo en localStorage
+  agregarFavorito(producto: ProductoTienda): void {
     if (!this.idUsuario) {
-      return of(null);
+      console.error('Usuario no logueado. No se puede añadir a favoritos.');
+      // Opcional: podrías redirigir al login o mostrar una notificación
+      return;
     }
-    return this.http.delete(`${this.apiUrl}/usuario/${this.idUsuario}/producto/${idProducto}`).pipe(
-      tap(() => {
-        this.getFavoritos().subscribe(); // Recargar la lista de favoritos
-      })
-    );
+
+    const favoritosActuales = this.favoritosSubject.getValue();
+    if (!favoritosActuales.some(p => p.idProducto === producto.idProducto)) {
+      const nuevosFavoritos = [...favoritosActuales, producto];
+      this.saveFavoritosToStorage(nuevosFavoritos);
+    }
+  }
+
+  quitarFavorito(idProducto: number): void {
+    if (!this.idUsuario) {
+      return;
+    }
+
+    const favoritosActuales = this.favoritosSubject.getValue();
+    const nuevosFavoritos = favoritosActuales.filter(p => p.idProducto !== idProducto);
+    this.saveFavoritosToStorage(nuevosFavoritos);
   }
 
   esFavorito(idProducto: number): boolean {

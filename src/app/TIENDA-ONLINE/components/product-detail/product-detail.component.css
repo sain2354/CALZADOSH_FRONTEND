@@ -2,7 +2,6 @@
 .detail-container {
   padding: 20px;
   max-width: 1200px;
-  /* CORRECCIÓN: Se añade un margen superior para evitar la superposición con el header */
   margin: 100px auto 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -15,11 +14,11 @@
 
 .image-column, .details-column {
   flex: 1;
-  min-width: 320px; /* Asegura que las columnas no se encojan demasiado */
+  min-width: 320px;
 }
 
 /* Tarjetas para imagen y detalles */
-.image-card {
+.image-card, .details-card {
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -27,11 +26,7 @@
 }
 
 .details-card {
-  position: relative; /* Añadido para posicionar el botón de favorito */
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  position: relative;
   padding: 25px;
 }
 
@@ -39,30 +34,89 @@
   width: 100%;
   height: auto;
   display: block;
-  aspect-ratio: 1 / 1; /* Mantiene la imagen cuadrada */
+  aspect-ratio: 1 / 1;
   object-fit: cover;
 }
 
 /* Tipografía y textos */
 .product-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 0.9em;
   color: #666;
   margin-bottom: 8px;
   text-transform: uppercase;
+  padding-right: 65px; /* Espacio para el botón de favoritos y descuento */
+  box-sizing: border-box;
+}
+
+.discount-badge {
+  background-color: #d92323;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-weight: bold;
 }
 
 .product-name {
   font-size: 2em;
   font-weight: 700;
   margin: 0 0 10px;
-  padding-right: 45px; /* Espacio para que el nombre no quede debajo del botón */
+  padding-right: 45px; /* Espacio para el botón de favorito */
 }
 
-.product-price {
+.price-container {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.original-price {
+  font-size: 1.6em;
+  color: #888;
+  text-decoration: line-through;
+}
+
+.final-price {
   font-size: 2.2em;
   font-weight: bold;
-  color: #d92323; /* Rojo similar al de Flutter */
-  margin-bottom: 20px;
+  color: #d92323;
+}
+
+/* --- ESTILOS BOTÓN FAVORITO --- */
+.favorite-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.favorite-btn i {
+  font-size: 1.2rem;
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.favorite-btn.favorited i {
+  color: #d92323;
 }
 
 /* Selector de Tallas */
@@ -85,11 +139,6 @@
   background-color: #f9f9f9;
 }
 
-.size-dropdown:disabled {
-  background-color: #e9ecef;
-  cursor: not-allowed;
-}
-
 .stock-info {
   font-size: 0.9em;
   color: #007bff;
@@ -100,7 +149,6 @@
   color: #d92323;
   font-weight: 500;
 }
-
 
 /* Botones de acción */
 .action-buttons {
@@ -141,7 +189,7 @@
 
 .btn-size-guide {
   background-color: transparent;
-  color: #28a745; /* Verde similar al de Flutter */
+  color: #28a745;
   border: 2px solid #28a745;
 }
 
@@ -171,7 +219,7 @@
 .accordion-button {
   background: none;
   border: none;
-  font-size: 1.1em;
+  font-size: 1.2em;
   font-weight: 600;
   width: 100%;
   text-align: left;
@@ -182,8 +230,9 @@
 }
 
 .accordion-button::after {
-  content: '\25BC'; /* Flecha hacia abajo */
-  transition: transform 0.2s;
+  content: '▼';
+  font-size: 0.8em;
+  transition: transform 0.2s ease-in-out;
 }
 
 .accordion-button.collapsed::after {
@@ -193,16 +242,16 @@
 .accordion-collapse {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-out;
+  transition: max-height 0.35s ease-out;
+  background-color: white;
 }
 
 .accordion-collapse.show {
-  max-height: 500px; /* Altura suficiente para el contenido */
+  max-height: 500px;
 }
 
 .accordion-body {
   padding: 20px;
-  background-color: white;
 }
 
 .accordion-body ul {
@@ -222,7 +271,55 @@
   border-bottom: none;
 }
 
-/* Estado de carga */
+.accordion-body li strong {
+  margin-right: 10px;
+}
+
+/* Modal Guía de Tallas */
+.size-guide-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10vh;
+  z-index: 1050;
+  box-sizing: border-box;
+}
+
+.modal-content {
+  position: relative;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-modal-btn:hover {
+  color: #d92323;
+}
+
+/* Indicador de Carga */
 .loading-container {
   text-align: center;
   padding: 50px;
@@ -238,60 +335,15 @@
   margin: 0 auto 10px;
 }
 
+/* Animaciones */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Responsividad */
+/* Diseño Responsivo */
 @media (max-width: 768px) {
   .main-content {
     flex-direction: column;
   }
-
-  .product-name { font-size: 1.8em; }
-  .product-price { font-size: 2em; }
-}
-
-/* Estilo del botón de favorito */
-.favorite-btn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background-color: rgba(255, 255, 255, 0.8);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.favorite-btn:hover {
-  transform: scale(1.1);
-}
-
-.favorite-btn i {
-  font-size: 20px;
-  color: #333; /* Color del corazón por defecto (gris oscuro) */
-}
-
-/* Estilo para cuando el producto es favorito */
-.favorite-btn.favorited i {
-  color: #d92323; /* Color del corazón cuando está activo (rojo) */
-}
-
-.favorite-btn.favorited {
-  animation: heart-pop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Animación para el corazón */
-@keyframes heart-pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.4); }
-  100% { transform: scale(1); }
 }

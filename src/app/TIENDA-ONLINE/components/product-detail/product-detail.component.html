@@ -15,35 +15,37 @@
           <i class="bi" [class.bi-heart-fill]="isFavorite" [class.bi-heart]="!isFavorite"></i>
         </button>
 
-        <!-- Marca y Categoría -->
+        <!-- Metadatos del Producto -->
         <div class="product-meta">
           <span>{{ product.subCategoriaDescripcion }}</span>
+          <span class="discount-badge">-28%</span>
         </div>
 
         <!-- Nombre del Producto -->
         <h1 class="product-name">{{ product.nombre }}</h1>
 
-        <!-- Precio -->
-        <p class="product-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</p>
+        <!-- Precios -->
+        <div class="price-container">
+          <p class="original-price">{{ originalPrice | currency:'S/':'symbol':'1.2-2' }}</p>
+          <p class="final-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</p>
+        </div>
 
-        <!-- Selector de Tallas (CORRECCIÓN DEFINITIVA) -->
+        <!-- Selector de Tallas -->
         <div class="size-selector" *ngIf="product.tallas && product.tallas.length > 0">
           <label for="size-dropdown" class="size-label">Tallas disponibles:</label>
           <select id="size-dropdown" [(ngModel)]="selectedSize" (change)="onSizeChange()" class="size-dropdown">
             <option [ngValue]="null" disabled>Seleccione una talla</option>
-            <!-- CORRECCIÓN: Usar talla.usa, talla.eur y talla.cm -->
             <option *ngFor="let talla of product.tallas" [ngValue]="talla" [disabled]="talla.stock <= 0">
               {{ 'USA ' + talla.usa + '  ·  EUR ' + talla.eur + '  ·  CM ' + talla.cm }}
               <span *ngIf="talla.stock <= 0"> (Agotado)</span>
             </option>
           </select>
-          <div *ngIf="selectedSize" class="stock-info">
+          <div *ngIf="selectedSize && selectedSize.stock > 0" class="stock-info">
             <p>Stock disponible: {{ selectedSize.stock }}</p>
           </div>
         </div>
-        <!-- Mensaje si no hay tallas -->
         <div *ngIf="!product.tallas || product.tallas.length === 0" class="no-stock-message">
-          <p>Este producto no tiene tallas disponibles actualmente.</p>
+          <p>Este producto no tiene tallas disponibles.</p>
         </div>
 
         <!-- Botones de Acción -->
@@ -61,37 +63,33 @@
       <div class="features-accordion">
         <div class="accordion-item">
           <h2 class="accordion-header" (click)="toggleAccordion('caracteristicas')">
-            <button class="accordion-button" [class.collapsed]="!accordion['caracteristicas']">
+            <button type="button" class="accordion-button" [class.collapsed]="!accordion['caracteristicas']">
               Características
             </button>
           </h2>
           <div class="accordion-collapse" [class.show]="accordion['caracteristicas']">
             <div class="accordion-body">
               <ul>
-                <li><strong>Marca:</strong> {{ product.subCategoriaDescripcion }}</li>
-                <li><strong>Categoría:</strong> {{ product.categoriaDescripcion }}</li>
-                <li><strong>Material:</strong> {{ product.material || 'No especificado' }}</li>
-                <li><strong>Color:</strong> {{ product.color || 'No especificado' }}</li>
-                <li><strong>MPN:</strong> {{ product.mpn || 'No disponible' }}</li>
-                <li><strong>Envío:</strong> {{ product.shippingInfo || 'Consultar' }}</li>
+                <li><strong>Marca:</strong><span>{{ product.subCategoriaDescripcion || 'No especificado' }}</span></li>
+                <li><strong>Categoría:</strong><span>{{ product.categoriaDescripcion || 'No especificada' }}</span></li>
+                <li><strong>Material:</strong><span>{{ product.material || 'No especificado' }}</span></li>
+                <li><strong>Color:</strong><span>{{ product.color || 'No especificado' }}</span></li>
+                <li><strong>MPN:</strong><span>{{ product.mpn || 'No disponible' }}</span></li>
               </ul>
             </div>
           </div>
         </div>
-        <div class="accordion-item">
-          <h2 class="accordion-header" (click)="toggleAccordion('envio')">
-            <button class="accordion-button" [class.collapsed]="!accordion['envio']">
-              Envíos y Devoluciones
-            </button>
-          </h2>
-          <div class="accordion-collapse" [class.show]="accordion['envio']">
-            <div class="accordion-body">
-              <p>Información sobre envíos y devoluciones aquí.</p>
-            </div>
-          </div>
-        </div>
       </div>
+
     </div>
+  </div>
+</div>
+
+<!-- Modal para la Guía de Tallas -->
+<div class="size-guide-modal" *ngIf="showSizeGuideModal" (click)="closeSizeGuide()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="close-modal-btn" (click)="closeSizeGuide()">×</button>
+    <img [src]="getSizeGuideImage()" alt="Guía de tallas">
   </div>
 </div>
 

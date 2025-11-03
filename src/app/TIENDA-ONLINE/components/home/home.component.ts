@@ -11,7 +11,6 @@ import { FavoritesService } from '../../services/favorites.service';
 import { ProductoTienda } from '../../models/producto-tienda.model';
 import { Subcategory } from '../../models/subcategory';
 import { CategoryService } from '../../services/category.service';
-import { ProductoFavorito } from '../../models/favorito.model';
 
 const CATEGORY_ID_MAP: { [key: string]: number } = {
   'Hombres': 1,
@@ -91,7 +90,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
 
     this.subs.push(
-      this.favoritesService.favoritos$.subscribe((favoritos: ProductoFavorito[]) => {
+      this.favoritesService.favoritos$.subscribe((favoritos: ProductoTienda[]) => {
         this.favoriteProductIds = favoritos.map(fav => fav.idProducto);
       })
     );
@@ -122,19 +121,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.stopCarousel();
   }
   
-  // === INICIO DE LA MODIFICACIÓN ===
-  /**
-   * Calcula un precio original "falso" basado en el precio de venta y un descuento fijo.
-   * @param salePrice El precio de venta real del producto.
-   * @returns El precio original calculado para mostrarlo tachado.
-   */
   calculateOriginalPrice(salePrice: number): number {
-    const discountPercentage = 0.28; // 28% de descuento
-    // Fórmula: PrecioOriginal = PrecioVenta / (1 - PorcentajeDescuento)
+    const discountPercentage = 0.28;
     const originalPrice = salePrice / (1 - discountPercentage);
     return originalPrice;
   }
-  // === FIN DE LA MODIFICACIÓN ===
 
   isFavorite(productId: number): boolean {
     return this.favoriteProductIds.includes(productId);
@@ -145,9 +136,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     event.preventDefault();
     const productId = product.idProducto;
     if (this.isFavorite(productId)) {
-      this.favoritesService.quitarFavorito(productId).subscribe();
+      this.favoritesService.quitarFavorito(productId);
     } else {
-      this.favoritesService.agregarFavorito(productId).subscribe();
+      this.favoritesService.agregarFavorito(product);
     }
   }
 

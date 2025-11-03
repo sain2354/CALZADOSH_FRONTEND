@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
@@ -24,18 +24,17 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   error: string | null = null;
   isFavorite = false;
   private favoritesSub!: Subscription;
-
+  
+  showSizeGuideModal = false;
   accordion: { [key: string]: boolean } = {
-    caracteristicas: true,
-    envio: false
+    caracteristicas: true
   };
 
   constructor(
     private route: ActivatedRoute,
     public productService: ProductService,
     private cartService: CartService,
-    private favoritesService: FavoritesService,
-    private router: Router
+    private favoritesService: FavoritesService
   ) { }
 
   ngOnInit(): void {
@@ -65,7 +64,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     ).subscribe(productData => {
       this.isLoading = false;
       if (productData) {
-        this.product = productData;
+        this.product = this.translateCategory(productData);
         this.setupFavoriteStatusListener();
       } else if (!this.error) {
         this.error = 'No se pudieron cargar los datos del producto.';
@@ -73,54 +72,82 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  private translateCategory(product: ProductoTienda): ProductoTienda {
+    const categoryMap: { [key: number]: string } = {
+      1: 'Hombres',
+      2: 'Mujeres',
+      3: 'Infantil'
+    };
+    product.categoriaDescripcion = categoryMap[product.idCategoria] || 'No especificada';
+    return product;
+  }
+
   private setupFavoriteStatusListener(): void {
-    this.isFavorite = this.favoritesService.esFavorito(this.product!.idProducto);
-    this.favoritesSub = this.favoritesService.favoritos$.subscribe(favoritos => {
-        this.isFavorite = this.favoritesService.esFavorito(this.product!.idProducto);
+    if (!this.product) return;
+    this.isFavorite = this.favoritesService.esFavorito(this.product.idProducto);
+    this.favoritesSub = this.favoritesService.favoritos$.subscribe(() => {
+        if (this.product) {
+            this.isFavorite = this.favoritesService.esFavorito(this.product.idProducto);
+        }
     });
+  }
+  
+  get originalPrice(): number {
+    if (!this.product) return 0;
+    return this.product.precioVenta / (1 - 0.28);
   }
 
   toggleFavorite(): void {
-    if (!this.product) return;
+    if (!this.product) {
+      console.error('Intento de modificar favoritos sin un producto cargado.');
+      return;
+    }
 
-    const productId = this.product.idProducto;
     if (this.isFavorite) {
-      this.favoritesService.quitarFavorito(productId).subscribe(() => {
-        console.log('Producto quitado de favoritos');
-      });
+      this.favoritesService.quitarFavorito(this.product.idProducto);
     } else {
-      this.favoritesService.agregarFavorito(productId).subscribe(() => {
-        console.log('Producto agregado a favoritos');
-      });
+      this.favoritesService.agregarFavorito(this.product);
     }
   }
   
-  onSizeChange(): void {
-    console.log('Talla seleccionada:', this.selectedSize);
-  }
+  onSizeChange(): void {}
 
   isAddToCartEnabled(): boolean {
-    if (!this.product) return false;
-    if (this.product.tallas && this.product.tallas.length > 0) {
-      return !!this.selectedSize && this.selectedSize.stock > 0;
-    }
-    return false;
+    if (!this.product?.tallas?.length) return false;
+    return !!this.selectedSize && this.selectedSize.stock > 0;
   }
 
   addToCart(): void {
     if (this.product && this.selectedSize && this.isAddToCartEnabled()) {
       this.cartService.addToCart(this.product, this.selectedSize);
-      alert(`${this.product.nombre} (Talla USA ${this.selectedSize.usa}) fue agregado al carrito.`);
+      alert(`${this.product.nombre} (Talla ${this.selectedSize.eur}) fue agregado al carrito.`);
     } else {
       alert('Por favor, seleccione una talla con stock disponible.');
     }
   }
 
   showSizeGuide(): void {
-    alert('FUNCIONALIDAD PENDIENTE: Aquí se mostrará la guía de tallas.');
+    this.showSizeGuideModal = true;
   }
 
-  toggleAccordion(section: 'caracteristicas' | 'envio'): void {
+  closeSizeGuide(): void {
+    this.showSizeGuideModal = false;
+  }
+  
+  getSizeGuideImage(): string {
+    const category = this.product?.categoriaDescripcion?.toLowerCase() || '';
+    if (category.includes('hombre')) {
+      return 'assets/images/GUIAS-TALLAS-HOMBRES.png';
+    } else if (category.includes('mujer')) {
+      return 'assets/images/GUIAS-TALLAS-MUJERES.png';
+    } else if (category.includes('infantil')) {
+      return 'assets/images/GUIAS-TALLAS-INFANTIL.png';
+    } else {
+      return 'assets/images/GUIAS-TALLAS-HOMBRES.png'; // Fallback por defecto
+    }
+  }
+
+  toggleAccordion(section: string): void {
     this.accordion[section] = !this.accordion[section];
   }
 
