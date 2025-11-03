@@ -7,7 +7,12 @@ import { ProductoTienda, SizeOption } from '../models/producto-tienda.model';
 
 export interface FilterParams {
   cat?: number;
-  subCate?: number;
+  // --- INICIO DE LA CORRECCIÓN ---
+  // Se permite que subCate sea un solo número O un array de números.
+  // Esto es clave para que el filtro de marcas (que agrupa IDs) funcione.
+  subCate?: number | number[]; 
+  // --- FIN DE LA CORRECCIÓN ---
+  marca?: string;
   genero?: string[];
   articulo?: string[];
   estilo?: string[];
@@ -37,6 +42,7 @@ export class ProductService {
     let params = new HttpParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
+        // La lógica para unir arrays ya existía, por eso este cambio funciona.
         if (Array.isArray(value)) {
           if (value.length > 0) {
             params = params.set(key, value.join(','));
@@ -73,8 +79,6 @@ export class ProductService {
           return null;
         }
 
-        // --- MAPEO FINAL Y CORRECTO ---
-        // Se mapean únicamente las propiedades que existen en el modelo ProductoTienda.
         const product: ProductoTienda = {
           idProducto: response.idProducto,
           nombre: response.nombre,
@@ -90,8 +94,6 @@ export class ProductService {
           shippingInfo: response.shippingInfo,
           material: response.material,
           color: response.color,
-
-          // Mapeo de tallas
           tallas: (response.sizes || response.tallas || response.tallaProducto || []).map((t: any) => ({
             idTalla: t.idTalla,
             idProducto: t.idProducto,
@@ -104,7 +106,6 @@ export class ProductService {
 
         if (!product.idProducto) {
           console.error("CRÍTICO: El 'idProducto' no fue encontrado en la respuesta de la API para el producto con id consultado:", id);
-          console.error("Respuesta de la API recibida:", response);
           return null;
         }
 
@@ -115,12 +116,8 @@ export class ProductService {
   }
 
   getImageUrl(imagePath?: string): string {
-    if (!imagePath) {
-      return 'assets/images/placeholder.png';
-    }
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
+    if (!imagePath) { return 'assets/images/placeholder.png'; }
+    if (imagePath.startsWith('http')) { return imagePath; }
     const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
     return `${this.imageBaseUrl}${path}`;
   }
@@ -140,31 +137,14 @@ export class ProductService {
   }
 
   setCategory(catId?: number | null): void {
-    // Si se selecciona "Todos" (catId es nulo/undefined), limpiar todos los filtros.
-    if (catId === undefined || catId === null) {
-      this.filterSubject.next({});
-      this.loadProducts();
-      return;
-    }
-
     const currentFilters = this.getCurrentFilters();
-    
-    // Al hacer clic en una categoría, creamos un nuevo objeto de filtros para limpiar 
-    // filtros previos (como color, talla, etc.) y evitar inconsistencias.
-    const newFilters: FilterParams = {
-      cat: catId
-    };
-
-    // Si ya había una marca (subcategoría) seleccionada, la conservamos.
-    if (currentFilters.subCate) {
-      newFilters.subCate = currentFilters.subCate;
-    }
-    
-    this.filterSubject.next(newFilters);
+    if (catId === undefined || catId === null) { delete currentFilters.cat; }
+    else { currentFilters.cat = catId; }
+    this.filterSubject.next(currentFilters);
     this.loadProducts();
   }
 
-  setSubCate(subCateId?: number | null): void {
+  setSubCate(subCateId?: number | number[] | null): void {
     const cur = this.getCurrentFilters();
     if (subCateId === undefined || subCateId === null) {
       delete cur.subCate;
@@ -174,20 +154,25 @@ export class ProductService {
     this.filterSubject.next(cur);
     this.loadProducts();
   }
+  
+  setBrand(brandName?: string | null): void {
+    const cur = this.getCurrentFilters();
+    if (brandName) {
+      cur.marca = brandName;
+      delete cur.subCate; 
+    } else {
+      delete cur.marca;
+    }
+    this.filterSubject.next(cur);
+    this.loadProducts();
+  }
 
   toggleArrayItem(key: keyof FilterParams, item: string): void {
     const cur = this.getCurrentFilters();
     const arr: string[] = Array.isArray(cur[key]) ? (cur[key] as string[]).slice() : [];
     const idx = arr.indexOf(item);
-    if (idx >= 0) arr.splice(idx, 1);
-    else arr.push(item);
-
-    if (arr.length === 0) {
-      delete cur[key];
-    } else {
-      (cur as any)[key] = arr;
-    }
-
+    if (idx >= 0) arr.splice(idx, 1); else arr.push(item);
+    if (arr.length === 0) { delete cur[key]; } else { (cur as any)[key] = arr; }
     this.filterSubject.next(cur);
     this.loadProducts();
   }
@@ -202,11 +187,7 @@ export class ProductService {
 
   setArray(key: keyof FilterParams, values?: string[]): void {
     const cur = this.getCurrentFilters();
-    if (!values || values.length === 0) {
-      delete cur[key];
-    } else {
-      (cur as any)[key] = values;
-    }
+    if (!values || values.length === 0) { delete cur[key]; } else { (cur as any)[key] = values; }
     this.filterSubject.next(cur);
     this.loadProducts();
   }

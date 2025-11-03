@@ -22,65 +22,6 @@
           <button class="nav-btn" (click)="selectCategory('Hombres')" [class.active]="selectedCategoryName === 'Hombres'">
             Hombres
           </button>
-
-          <div class="brands-dropdown fullwidth" *ngIf="hoveredCategoryName === 'Hombres'">
-            <div class="filters-fullwidth">
-              <div class="filter-block">
-                <h4>GÉNERO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let g of filterOptions.generos"
-                          (click)="toggleChip('generos', g)"
-                          [class.chip-active]="isChipActive('generos', g)">
-                    {{ g }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>ARTÍCULO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let a of filterOptions.articulos"
-                          (click)="toggleChip('articulos', a)"
-                          [class.chip-active]="isChipActive('articulos', a)">
-                    {{ a }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>ESTILO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let e of filterOptions.estilos"
-                          (click)="toggleChip('estilos', e)"
-                          [class.chip-active]="isChipActive('estilos', e)">
-                    {{ e }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>COLOR</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let c of filterOptions.colores"
-                          (click)="toggleChip('colores', c)"
-                          [class.chip-active]="isChipActive('colores', c)">
-                    {{ c }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>TALLAS</h4>
-                <div class="filter-chips wrap">
-                  <button class="chip" *ngFor="let t of filterOptions.tallas"
-                          (click)="toggleChip('tallas', t)"
-                          [class.chip-active]="isChipActive('tallas', t)">
-                    {{ t }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Mujeres -->
@@ -90,65 +31,6 @@
           <button class="nav-btn" (click)="selectCategory('Mujeres')" [class.active]="selectedCategoryName === 'Mujeres'">
             Mujeres
           </button>
-
-          <div class="brands-dropdown fullwidth" *ngIf="hoveredCategoryName === 'Mujeres'">
-            <div class="filters-fullwidth">
-              <div class="filter-block">
-                <h4>GÉNERO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let g of filterOptions.generos"
-                          (click)="toggleChip('generos', g)"
-                          [class.chip-active]="isChipActive('generos', g)">
-                    {{ g }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>ARTÍCULO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let a of filterOptions.articulos"
-                          (click)="toggleChip('articulos', a)"
-                          [class.chip-active]="isChipActive('articulos', a)">
-                    {{ a }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>ESTILO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let e of filterOptions.estilos"
-                          (click)="toggleChip('estilos', e)"
-                          [class.chip-active]="isChipActive('estilos', e)">
-                    {{ e }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>COLOR</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let c of filterOptions.colores"
-                          (click)="toggleChip('colores', c)"
-                          [class.chip-active]="isChipActive('colores', c)">
-                    {{ c }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>TALLAS</h4>
-                <div class="filter-chips wrap">
-                  <button class="chip" *ngFor="let t of filterOptions.tallas"
-                          (click)="toggleChip('tallas', t)"
-                          [class.chip-active]="isChipActive('tallas', t)">
-                    {{ t }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Infantil -->
@@ -158,81 +40,7 @@
           <button class="nav-btn" (click)="selectCategory('Infantil')" [class.active]="selectedCategoryName === 'Infantil'">
             Infantil
           </button>
-
-          <div class="brands-dropdown fullwidth" *ngIf="hoveredCategoryName === 'Infantil'">
-            <div class="filters-fullwidth">
-              <div class="filter-block">
-                <h4>GÉNERO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let g of filterOptions.generos"
-                          (click)="toggleChip('generos', g)"
-                          [class.chip-active]="isChipActive('generos', g)">
-                    {{ g }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>ARTÍCULO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let a of filterOptions.articulos"
-                          (click)="toggleChip('articulos', a)"
-                          [class.chip-active]="isChipActive('articulos', a)">
-                    {{ a }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>ESTILO</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let e of filterOptions.estilos"
-                          (click)="toggleChip('estilos', e)"
-                          [class.chip-active]="isChipActive('estilos', e)">
-                    {{ e }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>COLOR</h4>
-                <div class="filter-chips">
-                  <button class="chip" *ngFor="let c of filterOptions.colores"
-                          (click)="toggleChip('colores', c)"
-                          [class.chip-active]="isChipActive('colores', c)">
-                    {{ c }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="filter-block">
-                <h4>TALLAS</h4>
-                <div class="filter-chips wrap">
-                  <button class="chip" *ngFor="let t of filterOptions.tallas"
-                          (click)="toggleChip('tallas', t)"
-                          [class.chip-active]="isChipActive('tallas', t)">
-                    {{ t }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-
-        <!-- BOTÓN MARCAS (al lado derecho de los botones de categoría) -->
-        <div class="nav-item-brands">
-          <button class="nav-btn" aria-haspopup="true" aria-expanded="false">Marcas</button>
-
-          <!-- dropdown pequeño con las marcas solicitadas -->
-          <div class="brand-dropdown" role="menu" aria-label="Marcas">
-            <ul>
-              <li *ngFor="let m of marcasList">
-                <button class="brand-short-btn" (click)="selectBrandByName(m)">{{ m }}</button>
-              </li>
-            </ul>
-          </div>
-        </div>
-
       </nav>
     </div>
 

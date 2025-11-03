@@ -1,4 +1,3 @@
-
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -10,7 +9,7 @@ import { User } from 'firebase/auth';
 import { CartService } from '../../services/cart.service';
 import { CategoryService } from '../../services/category.service';
 import { SubcategoryService } from '../../services/subcategory.service';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../services/product.service'; 
 import { AuthTiendaService, UserBackendResponse } from '../../services/auth-tienda.service';
 
 // Modelos y Componentes
@@ -26,7 +25,6 @@ import { CartComponent } from '../cart/cart.component';
 })
 export class LayoutTiendaComponent implements OnInit, OnDestroy {
 
-  // --- Propiedades existentes ---
   cartItemCount$: Observable<number>;
   selectedCategoryName = 'Todos';
   subcategories: Subcategory[] = [];
@@ -34,14 +32,8 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
   hoveredCategoryName: string | null = null;
   loadingBrands = false;
   searchTerm = '';
-  filterOptions = {
-    generos: ['Masculino', 'Femenino', 'Unisex'],
-    articulos: ['Botas', 'Zapatillas', 'Sandalias', 'Zapatos'],
-    estilos: ['Casual', 'Urbano', 'Deportivo', 'Fiesta'],
-    colores: ['Negro', 'Blanco', 'Gris', 'Azul', 'Rojo'],
-    tallas: [] as string[]
-  };
-  marcasList: string[] = ['Nike', 'Adidas', 'Puma', 'I-Run'];
+
+  marcasList: string[] = ['Nike', 'Adidas', 'Puma', 'I-Run', 'Reebok'];
   selectedBrandName: string | null = null;
   activeFilters: any = {};
   isCartVisible = false;
@@ -60,15 +52,11 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
   ) {
     this.cartItemCount$ = this.cartService.getCartItemCount();
     this.currentUser$ = this.authService.currentUser$;
-
-    for (let s = 30; s <= 45; s++) {
-      this.filterOptions.tallas.push(String(s));
-    }
   }
 
   ngOnInit(): void {
     this.subs.push(this.productService.filters$.subscribe(f => { this.activeFilters = f || {}; }));
-    this.subs.push(this.categoryService.selectedCategory$.subscribe(name => { if (name) this.selectedCategoryName = name; }));
+    this.subs.push(this.categoryService.selectedCategory$.subscribe((name: string | null) => { if (name) this.selectedCategoryName = name; }));
     const prec = this.subcategoryService.getSubcategories().subscribe({
       next: list => { this.subcategories = list || []; },
       error: err => { console.error('Error precargando subcategorías:', err); this.subcategories = []; }
@@ -80,15 +68,12 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
     this.subs.forEach(s => s.unsubscribe());
   }
   
-  // --- INICIO DE MODIFICACIÓN PRECISA Y FINAL ---
-  
   toggleUserMenu(): void {
     this.isUserMenuOpen = !this.isUserMenuOpen;
   }
 
   goToLogin(): void {
     this.isUserMenuOpen = false;
-    // CORRECCIÓN FINAL: Se usa la ruta '/auth' según la configuración de tienda-online.routes.ts
     this.router.navigate(['/auth']); 
   }
 
@@ -102,10 +87,8 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
     }
   }
   
-  // --- FIN DE MODIFICACIÓN ---
-
-  // --- MÉTODOS EXISTENTES (NO SE MODIFICAN) ---
   setCartVisible(visible: boolean): void { this.isCartVisible = visible; }
+  
   selectCategory(name: string): void {
     this.categoryService.setCategory(name);
     this.selectedCategoryName = name;
@@ -117,6 +100,7 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
     this.hoveredBrands = [];
     this.loadingBrands = false;
   }
+  
   onHoverCategory(name: string | null): void {
     this.hoveredCategoryName = name;
     if (!name) { this.hoveredBrands = []; this.loadingBrands = false; return; }
@@ -142,34 +126,38 @@ export class LayoutTiendaComponent implements OnInit, OnDestroy {
     });
     this.subs.push(s);
   }
+
+  // --- INICIO DE LA CORRECCIÓN DEFINITIVA CONTRA RACE CONDITION ---
   selectBrandByName(name: string): void {
     this.selectedBrandName = name;
-    const found = this.subcategories.find(s => {
-      const candidates = [s.nombre, (s as any).Nombre, (s as any).marca, (s as any).descripcion, (s as any).name];
-      return candidates.some(c => typeof c === 'string' && c.toLowerCase().includes(name.toLowerCase()));
-    });
-    if (found) {
-      this.productService.setSubCate(found.idSubCategoria);
-      this.categoryService.setBrand(found.idSubCategoria);
+
+    // Función interna que aplica el filtro una vez se asegura de tener las subcategorías.
+    const applyFilter = (subcategories: Subcategory[]) => {
+      const brandSubCategoryIds = subcategories
+        .filter(s => s.nombre && s.nombre.toLowerCase() === name.toLowerCase())
+        .map(s => s.idSubCategoria);
+      
+      // Llama al servicio con la lista de IDs o con null si no se encontró nada.
+      this.productService.setSubCate(brandSubCategoryIds.length > 0 ? brandSubCategoryIds : null);
+    };
+
+    // Si las subcategorías ya están cargadas en memoria, se usan directamente.
+    if (this.subcategories && this.subcategories.length > 0) {
+      applyFilter(this.subcategories);
     } else {
-      this.router.navigate(['/'], { queryParams: { brand: name } });
+      // Si no están cargadas (race condition), se obtienen primero y LUEGO se aplica el filtro.
+      const sub = this.subcategoryService.getSubcategories().subscribe({
+        next: list => {
+          this.subcategories = list || []; // Se guardan para futuras ocasiones.
+          applyFilter(this.subcategories);
+        },
+        error: err => console.error('Error al obtener subcategorías para el filtro de marca:', err)
+      });
+      this.subs.push(sub); // Se añade la suscripción al gestor para limpiarla al destruir el componente.
     }
   }
-  toggleChip(key: 'generos'|'articulos'|'estilos'|'colores'|'tallas', value: string) {
-    const mapKey: { [k: string]: keyof import('../../services/product.service').FilterParams } = {
-      generos: 'genero', articulos: 'articulo', estilos: 'estilo', colores: 'color', tallas: 'tallaU'
-    };
-    const backendKey = mapKey[key];
-    this.productService.toggleArrayItem(backendKey, value);
-  }
-  isChipActive(key: 'generos'|'articulos'|'estilos'|'colores'|'tallas', value: string): boolean {
-    const mapKey: { [k: string]: keyof import('../../services/product.service').FilterParams } = {
-      generos: 'genero', articulos: 'articulo', estilos: 'estilo', colores: 'color', tallas: 'tallaU'
-    };
-    const backendKey = mapKey[key];
-    const arr = this.activeFilters[backendKey] as string[] | undefined;
-    return Array.isArray(arr) && arr.indexOf(value) >= 0;
-  }
+  // --- FIN DE LA CORRECCIÓN DEFINITIVA ---
+
   onSearch(): void {
     const q = (this.searchTerm || '').trim();
     if (q) {

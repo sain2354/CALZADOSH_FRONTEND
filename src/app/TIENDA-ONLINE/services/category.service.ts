@@ -1,31 +1,26 @@
+
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CategoryService {
-  private selectedCategorySubject = new BehaviorSubject<string>('Todos');
-  selectedCategory$ = this.selectedCategorySubject.asObservable();
+export class CategoryService { // <<< CORRECCIÓN: El nombre de la clase era incorrecto
 
-  private selectedBrandSubject = new BehaviorSubject<number | null>(null);
-  selectedBrand$ = this.selectedBrandSubject.asObservable();
+  private selectedCategorySource = new BehaviorSubject<string | null>(null);
+  selectedCategory$: Observable<string | null> = this.selectedCategorySource.asObservable();
 
-  setCategory(name: string) {
-    this.selectedCategorySubject.next(name);
-    // reset brand when category changes
-    this.selectedBrandSubject.next(null);
+  private selectedBrandSource = new BehaviorSubject<number | null>(null);
+  selectedBrand$: Observable<number | null> = this.selectedBrandSource.asObservable();
+
+  constructor() { }
+
+  setCategory(name: string | null) {
+    this.selectedCategorySource.next(name);
   }
 
   setBrand(brandId: number | null) {
-    this.selectedBrandSubject.next(brandId);
-  }
-
-  getSelectedCategory(): string {
-    return this.selectedCategorySubject.getValue();
-  }
-
-  getSelectedBrand(): number | null {
-    return this.selectedBrandSubject.getValue();
+    this.selectedBrandSource.next(brandId);
   }
 }
+""

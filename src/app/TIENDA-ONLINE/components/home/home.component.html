@@ -1,4 +1,4 @@
-<!-- home.component.html (Texto del badge actualizado) -->
+<!-- home.component.html (TU VERSIÓN CON FUNCIONALIDAD AÑADIDA) -->
 <div class="home-container">
 
   <section *ngIf="selectedCategoryName === 'Todos'" class="banner-carousel">
@@ -26,48 +26,118 @@
     </div>
   </section>
 
-  <header class="filters-header">
-    <div class="filters-toolbar">
-      <div class="filters-left"></div>
-      <div class="filters-right"></div>
-    </div>
-  </header>
-
-  <div *ngIf="isLoading" class="loading-indicator">
-    <div class="spinner" aria-hidden="true"></div>
-    <p>Cargando productos...</p>
-  </div>
-
-  <div *ngIf="!isLoading && products.length === 0" class="no-products">
-    <i class="bi bi-search-heart"></i>
-    <p>No se encontraron productos con estos filtros.</p>
-    <span>Intenta ajustar tu búsqueda.</span>
-  </div>
-
-  <section *ngIf="!isLoading && products.length > 0" class="product-grid" aria-live="polite">
-    <a *ngFor="let product of products" class="product-card" [routerLink]="['/producto', product.idProducto]">
+  <div class="main-content">
+    <aside class="filters-sidebar">
+      <h3>Filtros</h3>
       
-      <!-- === TEXTO DEL BADGE MODIFICADO === -->
-      <div class="badge-discount">-28%</div>
-      
-      <button (click)="toggleFavorite(product, $event)" class="favorite-btn" [class.favorited]="isFavorite(product.idProducto)">
-        <i class="bi" [class.bi-heart-fill]="isFavorite(product.idProducto)" [class.bi-heart]="!isFavorite(product.idProducto)"></i>
-      </button>
-
-      <div class="card-image-container">
-        <img [src]="productService.getImageUrl(product.foto)" [alt]="product.nombre">
-      </div>
-      
-      <div class="card-body">
-        <span class="product-brand">{{ product.subCategoriaDescripcion }}</span>
-        <h4 class="product-name">{{ product.nombre }}</h4>
-        
-        <div class="price-container">
-          <span class="original-price">{{ calculateOriginalPrice(product.precioVenta) | currency:'S/':'symbol':'1.2-2' }}</span>
-          <span class="sale-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</span>
+      <div class="filter-block">
+        <h4 (click)="toggleFilterSection('articulos')">
+          ARTÍCULO
+          <i class="bi" [class.bi-chevron-down]="!openFilterSections.has('articulos')" [class.bi-chevron-up]="openFilterSections.has('articulos')"></i>
+        </h4>
+        <div class="filter-options" [class.open]="openFilterSections.has('articulos')">
+          <div *ngFor="let a of filterOptions.articulos" class="filter-option">
+            <input type="checkbox" [id]="'art-' + a" [checked]="isFilterActive('articulos', a)" (change)="selectFilterOption('articulos', a)">
+            <label [for]="'art-' + a">{{ a }}</label>
+          </div>
         </div>
       </div>
-    </a>
-  </section>
 
+      <div class="filter-block">
+        <h4 (click)="toggleFilterSection('estilos')">
+          ESTILO
+          <i class="bi" [class.bi-chevron-down]="!openFilterSections.has('estilos')" [class.bi-chevron-up]="openFilterSections.has('estilos')"></i>
+        </h4>
+        <div class="filter-options" [class.open]="openFilterSections.has('estilos')">
+          <div *ngFor="let e of filterOptions.estilos" class="filter-option">
+            <input type="checkbox" [id]="'est-' + e" [checked]="isFilterActive('estilos', e)" (change)="selectFilterOption('estilos', e)">
+            <label [for]="'est-' + e">{{ e }}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <h4 (click)="toggleFilterSection('colores')">
+          COLOR
+          <i class="bi" [class.bi-chevron-down]="!openFilterSections.has('colores')" [class.bi-chevron-up]="openFilterSections.has('colores')"></i>
+        </h4>
+        <div class="filter-options" [class.open]="openFilterSections.has('colores')">
+          <div *ngFor="let c of filterOptions.colores" class="filter-option">
+            <input type="checkbox" [id]="'col-' + c" [checked]="isFilterActive('colores', c)" (change)="selectFilterOption('colores', c)">
+            <label [for]="'col-' + c">{{ c }}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <h4 (click)="toggleFilterSection('tallas')">
+          TALLAS
+          <i class="bi" [class.bi-chevron-down]="!openFilterSections.has('tallas')" [class.bi-chevron-up]="openFilterSections.has('tallas')"></i>
+        </h4>
+        <div class="filter-options" [class.open]="openFilterSections.has('tallas')">
+          <div *ngFor="let t of filterOptions.tallas" class="filter-option">
+            <input type="checkbox" [id]="'talla-' + t" [checked]="isFilterActive('tallas', t)" (change)="selectFilterOption('tallas', t)">
+            <label [for]="'talla-' + t">{{ t }}</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========= TU CÓDIGO HTML CON LA LÓGICA AÑADIDA ========= -->
+      <div class="filter-block">
+        <h4 (click)="toggleFilterSection('marcas')">
+          MARCA
+          <i class="bi" [class.bi-chevron-down]="!openFilterSections.has('marcas')" [class.bi-chevron-up]="openFilterSections.has('marcas')"></i>
+        </h4>
+        <div class="filter-options" [class.open]="openFilterSections.has('marcas')">
+
+          <!-- Conectando la funcionalidad a tu HTML estático -->
+          <div *ngFor="let marca of ['Nike', 'Adidas', 'I-Run', 'Puma', 'Reebok']" class="filter-option">
+             <input type="checkbox" [id]="'marca-' + marca" [checked]="isFilterActive('marcas', marca)" (change)="selectFilterOption('marcas', marca)">
+             <label [for]="'marca-' + marca">{{ marca }}</label>
+          </div>
+
+        </div>
+      </div>
+      <!-- ========= FIN DE LA CORRECCIÓN ========= -->
+
+    </aside>
+
+    <div class="products-area">
+      <div *ngIf="isLoading" class="loading-indicator">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Cargando productos...</p>
+      </div>
+
+      <div *ngIf="!isLoading && products.length === 0" class="no-products">
+        <i class="bi bi-search-heart"></i>
+        <p>No se encontraron productos con estos filtros.</p>
+        <span>Intenta ajustar tu búsqueda.</span>
+      </div>
+
+      <section *ngIf="!isLoading && products.length > 0" class="product-grid" aria-live="polite">
+        <a *ngFor="let product of products" class="product-card" [routerLink]="['/producto', product.idProducto]">
+          
+          <div class="badge-discount">-28%</div>
+          
+          <button (click)="toggleFavorite(product, $event)" class="favorite-btn" [class.favorited]="isFavorite(product.idProducto)">
+            <i class="bi" [class.bi-heart-fill]="isFavorite(product.idProducto)" [class.bi-heart]="!isFavorite(product.idProducto)"></i>
+          </button>
+
+          <div class="card-image-container">
+            <img [src]="productService.getImageUrl(product.foto)" [alt]="product.nombre">
+          </div>
+          
+          <div class="card-body">
+            <span class="product-brand">{{ product.subCategoriaDescripcion }}</span>
+            <h4 class="product-name">{{ product.nombre }}</h4>
+            
+            <div class="price-container">
+              <span class="original-price">{{ calculateOriginalPrice(product.precioVenta) | currency:'S/':'symbol':'1.2-2' }}</span>
+              <span class="sale-price">{{ product.precioVenta | currency:'S/':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+        </a>
+      </section>
+    </div>
+  </div>
 </div>
