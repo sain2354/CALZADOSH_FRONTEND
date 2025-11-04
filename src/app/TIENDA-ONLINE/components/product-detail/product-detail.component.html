@@ -1,3 +1,14 @@
+<!-- BOTÓN PARA VOLVER ATRÁS -->
+<button (click)="goBack()" class="back-button">
+  <i class="bi bi-arrow-left"></i>
+</button>
+
+<!-- NOTIFICACIÓN DE ÉXITO -->
+<div class="success-notification" [class.show]="showSuccessMessage">
+  <i class="bi bi-check-circle-fill"></i>
+  ¡Agregado al carrito!
+</div>
+
 <div class="detail-container" *ngIf="product; else loading">
   <div class="main-content">
     <!-- Columna de la Imagen -->

@@ -4,7 +4,7 @@ import { Observable, of, BehaviorSubject } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { ProductoTienda } from '../models/producto-tienda.model';
 
-// Interfaz de filtros actualizada para usar 'q' en la búsqueda
+// Interfaz de filtros actualizada para usar 'nombre' en la búsqueda
 export interface FilterParams {
   cat?: number;
   subCate?: number | number[];
@@ -16,7 +16,7 @@ export interface FilterParams {
   tallaU?: string[];
   precioMin?: number;
   precioMax?: number;
-  q?: string; // PARÁMETRO DE BÚSQUEDA CORREGIDO A 'q' (ESTÁNDAR)
+  nombre?: string; // PARÁMETRO DE BÚSQUEDA CORREGIDO A 'nombre'
 }
 
 @Injectable({
@@ -129,11 +129,11 @@ export class ProductService {
     const currentFilters = this.getCurrentFilters();
     const searchTerm = (term || '').trim();
 
-    // Usamos 'q' para el filtro, que es el parámetro más estándar
+    // Usamos 'nombre' para el filtro, que es el parámetro que espera el backend
     if (searchTerm) {
-      currentFilters.q = searchTerm;
+      currentFilters.nombre = searchTerm;
     } else {
-      delete currentFilters.q;
+      delete currentFilters.nombre;
     }
     
     this.filterSubject.next(currentFilters);

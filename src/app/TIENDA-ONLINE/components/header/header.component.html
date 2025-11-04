@@ -43,12 +43,12 @@
     </div>
 
     <div class="header-right" role="navigation" aria-label="Acciones">
-      <form (submit)="onSearch()" class="search-form" role="search" aria-label="Buscar productos">
-        <input type="search" name="q" placeholder="BUSCAR" [(ngModel)]="searchTerm" (keydown.enter)="onSearch()" />
-        <button type="button" class="search-btn" (click)="onSearch()" aria-label="Buscar">
+      <div class="search-form" role="search" aria-label="Buscar productos">
+        <input type="search" name="q" placeholder="BUSCAR" [(ngModel)]="searchTerm" />
+        <button type="button" class="search-btn" aria-label="Buscar">
           <i class="fas fa-search"></i>
         </button>
-      </form>
+      </div>
 
       <div class="user-menu-container">
         <button class="header-icon user-icon-btn" (click)="toggleUserMenu()" aria-label="Menú de usuario">

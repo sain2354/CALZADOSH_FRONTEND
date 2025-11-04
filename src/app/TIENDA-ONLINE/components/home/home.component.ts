@@ -133,16 +133,15 @@ export class HomeComponent implements OnInit, OnDestroy {
         articulos: 'articulo', estilos: 'estilo', colores: 'color', tallas: 'tallaU'
     };
     const backendKey = mapKey[key];
+    const currentActiveValue = (this.activeFilters[backendKey] as string[])?.[0];
 
-    const currentValues = (this.activeFilters[backendKey] as string[]) || [];
-    const valueIndex = currentValues.indexOf(value);
-
-    if (valueIndex >= 0) {
-        currentValues.splice(valueIndex, 1);
+    // Si el filtro clicado ya está activo, se desactiva.
+    if (currentActiveValue === value) {
+        this.productService.setArray(backendKey as any, undefined);
     } else {
-        currentValues.push(value);
+        // Si no, se activa el nuevo filtro, reemplazando cualquier otro.
+        this.productService.setArray(backendKey as any, [value]);
     }
-    this.productService.setArray(backendKey as any, currentValues.length > 0 ? currentValues : undefined);
   }
 
   isFilterActive(key: 'articulos' | 'estilos' | 'colores' | 'tallas', value: string): boolean {
@@ -208,13 +207,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   performSearch(term: string): void {
-    const q = (term || '').trim();
-    if (!q) {
+    const nombre = (term || '').trim();
+    if (!nombre) {
       this.productService.loadProducts();
       return;
     }
     const cur = this.productService.getCurrentFilters();
-    this.productService.loadProducts({ ...cur, q });
+    this.productService.loadProducts({ ...cur, nombre });
   }
 
   toggleFilterSection(section: string): void {

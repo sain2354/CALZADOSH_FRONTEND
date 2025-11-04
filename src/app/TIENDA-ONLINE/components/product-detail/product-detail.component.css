@@ -1,8 +1,65 @@
+/* --- BOTÓN VOLVER --- */
+.back-button {
+  position: fixed;
+  top: 85px; /* Subido un poco */
+  left: 25px;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.back-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.back-button i {
+  font-size: 1.5rem;
+}
+
+/* --- NOTIFICACIÓN DE ÉXITO --- */
+.success-notification {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(200%);
+  background-color: #28a745;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1em;
+  z-index: 1100;
+  opacity: 0;
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+}
+
+.success-notification.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.success-notification i {
+  font-size: 1.4em;
+}
+
 /* Contenedor principal y diseño de columnas */
 .detail-container {
   padding: 20px;
   max-width: 1200px;
-  margin: 100px auto 0;
+  margin: 20px auto 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -47,8 +104,7 @@
   color: #666;
   margin-bottom: 8px;
   text-transform: uppercase;
-  padding-right: 65px; /* Espacio para el botón de favoritos y descuento */
-  box-sizing: border-box;
+  padding-right: 50px; /* Espacio para el botón de favoritos */
 }
 
 .discount-badge {
@@ -63,7 +119,7 @@
   font-size: 2em;
   font-weight: 700;
   margin: 0 0 10px;
-  padding-right: 45px; /* Espacio para el botón de favorito */
+  padding-right: 50px; /* Espacio para el botón de favorito */
 }
 
 .price-container {
@@ -275,7 +331,7 @@
   margin-right: 10px;
 }
 
-/* Modal Guía de Tallas */
+/* --- Modal Guía de Tallas (MEJORADO) --- */
 .size-guide-modal {
   position: fixed;
   top: 0;
@@ -285,8 +341,8 @@
   background-color: rgba(0, 0, 0, 0.75);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-top: 10vh;
+  align-items: center; /* Centrado verticalmente */
+  padding: 20px;
   z-index: 1050;
   box-sizing: border-box;
 }
@@ -297,9 +353,16 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-  max-width: 90vw;
-  max-height: 85vh;
-  overflow: auto;
+  width: auto;
+  max-width: 900px; /* Ancho máximo para el modal */
+  max-height: 90vh; /* Altura máxima */
+  overflow-y: auto; /* Scroll vertical si es necesario */
+}
+
+.modal-content img {
+  width: 100%; /* La imagen se ajusta al contenedor */
+  height: auto;
+  display: block;
 }
 
 .close-modal-btn {
@@ -313,6 +376,7 @@
   color: #333;
   cursor: pointer;
   line-height: 1;
+  z-index: 10;
 }
 
 .close-modal-btn:hover {
@@ -341,9 +405,18 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Diseño Responsivo */
+/* --- Diseño Responsivo --- */
 @media (max-width: 768px) {
   .main-content {
     flex-direction: column;
+  }
+
+  .back-button {
+    top: 15px; /* Más arriba en móviles */
+    left: 15px;
+  }
+
+  .detail-container {
+    margin-top: 60px; /* Espacio para el botón de volver */
   }
 }

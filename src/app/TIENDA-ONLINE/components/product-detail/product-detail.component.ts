@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { of, Subscription } from 'rxjs';
@@ -24,7 +24,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   error: string | null = null;
   isFavorite = false;
   private favoritesSub!: Subscription;
-  
+  showSuccessMessage = false;
+
   showSizeGuideModal = false;
   accordion: { [key: string]: boolean } = {
     caracteristicas: true
@@ -34,7 +35,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public productService: ProductService,
     private cartService: CartService,
-    private favoritesService: FavoritesService
+    private favoritesService: FavoritesService,
+    private location: Location
   ) { }
 
   ngOnInit(): void {
@@ -45,6 +47,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     if (this.favoritesSub) {
       this.favoritesSub.unsubscribe();
     }
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   private loadProductData(): void {
@@ -120,7 +126,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   addToCart(): void {
     if (this.product && this.selectedSize && this.isAddToCartEnabled()) {
       this.cartService.addToCart(this.product, this.selectedSize);
-      alert(`${this.product.nombre} (Talla ${this.selectedSize.eur}) fue agregado al carrito.`);
+      this.showSuccessMessage = true;
+      setTimeout(() => {
+        this.showSuccessMessage = false;
+      }, 3000);
     } else {
       alert('Por favor, seleccione una talla con stock disponible.');
     }
