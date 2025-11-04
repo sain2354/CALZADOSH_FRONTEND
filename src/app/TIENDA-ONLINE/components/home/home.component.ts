@@ -1,4 +1,4 @@
-// home.component.ts (VERSIÓN FINAL CON LÓGICA DE FILTRADO FUNCIONAL)
+// home.component.ts (SIN LÓGICA DE MARCAS)
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -27,9 +27,14 @@ const CATEGORY_ID_MAP: { [key: string]: number } = {
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
+  // --- Lógica de Paginación: Propiedades ---
   products: ProductoTienda[] = [];
-  allSubcategories: Subcategory[] = [];
-  filteredSubcategories: Subcategory[] = [];
+  paginatedProducts: ProductoTienda[] = [];
+  currentPage: number = 1;
+  itemsPerPage: number = 27;
+  totalPages: number = 0;
+  // --- Fin Paginación ---
+
   isLoading = true;
   favoriteProductIds: number[] = [];
 
@@ -43,8 +48,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   activeFilters: FilterParams = {};
   selectedCategoryName = 'Todos';
-  selectedBrandId: number | undefined;
-  searchTerm = '';
 
   openFilterSections = new Set<string>();
   priceRange: { min: number, max: number } = { min: 0, max: 500 };
@@ -53,8 +56,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     articulos: ['Botas', 'Zapatillas', 'Sandalias', 'Zapatos'],
     estilos: ['Casual', 'Urbano', 'Deportivo', 'Fiesta'],
     colores: ['Negro', 'Blanco', 'Gris', 'Marrón', 'Multicolor'],
-    tallas: [] as string[],
-    marcas: [] as string[]
+    tallas: [] as string[]
   };
 
   private subs: Subscription[] = [];
@@ -69,17 +71,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     for (let s = 30; s <= 45; s++) {
       this.filterOptions.tallas.push(String(s));
     }
-   }
+  }
 
   ngOnInit(): void {
     this.isLoading = true;
-
-    this.subs.push(
-      this.productService.products$.subscribe(prods => {
-        this.products = prods || [];
-        this.isLoading = false;
-      })
-    );
 
     this.subs.push(
       this.productService.filters$.subscribe((f) => {
@@ -87,10 +82,19 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (f && f.cat) {
           const id = f.cat as number;
           const name = Object.keys(CATEGORY_ID_MAP).find(k => CATEGORY_ID_MAP[k] === id);
-          if (name) this.selectedCategoryName = name;
+          this.selectedCategoryName = name || 'Todos';
         } else {
           this.selectedCategoryName = 'Todos';
         }
+      })
+    );
+
+    this.subs.push(
+      this.productService.products$.subscribe(prods => {
+        this.products = prods || [];
+        this.isLoading = false;
+        this.currentPage = 1;
+        this.updatePaginatedProducts();
       })
     );
 
@@ -105,36 +109,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.subs.push(
       this.categoryService.selectedCategory$.subscribe((name: string | null) => {
         if (name) {
-          const map: { [k: string]: number } = { 'Hombres': 1, 'Mujeres': 2, 'Infantil': 3 };
-          const id = map[name];
-          this.productService.setCategory(id || undefined);
-        }
-      })
-    );
-
-    this.subs.push(
-      this.categoryService.selectedBrand$.subscribe((brandId: number | null) => {
-        if (!brandId) {
-          this.productService.setSubCate(undefined);
-          return;
-        }
-
-        if (this.allSubcategories.length > 0) {
-          const selectedSubcategory = this.allSubcategories.find(sub => sub.idSubCategoria === brandId);
-          
-          if (selectedSubcategory) {
-            const brandName = selectedSubcategory.nombre;
-            
-            const brandIds = this.allSubcategories
-              .filter(sub => sub.nombre === brandName)
-              .map(sub => sub.idSubCategoria);
-
-            this.productService.setSubCate(brandIds.length > 0 ? brandIds : undefined);
-          } else {
-            this.productService.setSubCate(brandId);
-          }
-        } else {
-          this.productService.setSubCate(brandId);
+          const id = name === 'Todos' ? undefined : CATEGORY_ID_MAP[name];
+          this.productService.setCategory(id);
         }
       })
     );
@@ -146,11 +122,74 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.subs.forEach(s => s.unsubscribe());
     this.stopCarousel();
   }
+
+  loadInitialData(): void {
+    this.isLoading = true;
+    this.productService.loadProducts();
+  }
+
+  selectFilterOption(key: 'articulos' | 'estilos' | 'colores' | 'tallas', value: string): void {
+    const mapKey: { [k: string]: keyof FilterParams } = {
+        articulos: 'articulo', estilos: 'estilo', colores: 'color', tallas: 'tallaU'
+    };
+    const backendKey = mapKey[key];
+
+    const currentValues = (this.activeFilters[backendKey] as string[]) || [];
+    const valueIndex = currentValues.indexOf(value);
+
+    if (valueIndex >= 0) {
+        currentValues.splice(valueIndex, 1);
+    } else {
+        currentValues.push(value);
+    }
+    this.productService.setArray(backendKey as any, currentValues.length > 0 ? currentValues : undefined);
+  }
+
+  isFilterActive(key: 'articulos' | 'estilos' | 'colores' | 'tallas', value: string): boolean {
+    const mapKey: { [k: string]: keyof FilterParams } = {
+        articulos: 'articulo', estilos: 'estilo', colores: 'color', tallas: 'tallaU'
+    };
+    const backendKey = mapKey[key];
+    const activeFilterValue = this.activeFilters[backendKey];
+
+    if (!Array.isArray(activeFilterValue) || activeFilterValue.length === 0) {
+        return false;
+    }
+
+    return (activeFilterValue as string[]).includes(value);
+  }
   
+  updatePaginatedProducts(): void {
+    if (!this.products) {
+      this.paginatedProducts = [];
+      this.totalPages = 0;
+      return;
+    }
+    
+    this.totalPages = Math.ceil(this.products.length / this.itemsPerPage);
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedProducts = this.products.slice(startIndex, endIndex);
+    
+    this.cdr.detectChanges();
+  }
+
+  goToPage(pageNumber: number): void {
+    if (pageNumber < 1 || pageNumber > this.totalPages) {
+      return;
+    }
+    this.currentPage = pageNumber;
+    this.updatePaginatedProducts();
+    document.querySelector('.main-content')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  getPageNumbers(): number[] {
+    return Array(this.totalPages).fill(0).map((x, i) => i + 1);
+  }
+
   calculateOriginalPrice(salePrice: number): number {
     const discountPercentage = 0.28;
-    const originalPrice = salePrice / (1 - discountPercentage);
-    return originalPrice;
+    return salePrice / (1 - discountPercentage);
   }
 
   isFavorite(productId: number): boolean {
@@ -165,79 +204,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.favoritesService.quitarFavorito(productId);
     } else {
       this.favoritesService.agregarFavorito(product);
-    }
-  }
-
-  loadInitialData(): void {
-    this.isLoading = true;
-    this.subs.push(
-      this.subcategoryService.getSubcategories().subscribe({
-        next: (subcategories) => {
-          this.allSubcategories = subcategories;
-          
-          const uniqueMarcas = [...new Set(this.allSubcategories.map(s => s.nombre))].filter(Boolean);
-          this.filterOptions.marcas = uniqueMarcas;
-
-          this.cdr.detectChanges();
-          this.filterBrandsForCategory();
-          this.productService.loadProducts();
-        },
-        error: err => {
-          console.error('[HomeComponent] Error al precargar subcategorías:', err);
-          this.productService.loadProducts();
-        }
-      })
-    );
-  }
-
-  applyFiltersAndReload(): void {
-    this.isLoading = true;
-    this.productService.loadProducts();
-  }
-
-  private applyCategoryFromService(categoryName: string): void {
-    this.selectedCategoryName = categoryName;
-    this.selectedBrandId = undefined;
-    this.productService.setCategory(categoryName === 'Todos' ? undefined : CATEGORY_ID_MAP[categoryName]);
-    this.productService.setSubCate(undefined);
-    this.filterBrandsForCategory();
-  }
-
-  selectCategory(categoryName: string): void {
-    this.categoryService.setCategory(categoryName);
-  }
-
-  selectBrand(brandId: number): void {
-    this.selectedBrandId = brandId;
-
-    if (!brandId) {
-      this.productService.setSubCate(undefined);
-      return;
-    }
-
-    if (this.allSubcategories.length > 0) {
-      const selectedSub = this.allSubcategories.find(s => s.idSubCategoria === brandId);
-      if (selectedSub) {
-        const brandName = selectedSub.nombre;
-        const allIdsForBrand = this.allSubcategories
-          .filter(s => s.nombre === brandName)
-          .map(s => s.idSubCategoria);
-        
-        this.productService.setSubCate(allIdsForBrand);
-      } else {
-        this.productService.setSubCate(brandId);
-      }
-    } else {
-      this.productService.setSubCate(brandId);
-    }
-  }
-
-  private filterBrandsForCategory(): void {
-    if (this.selectedCategoryName === 'Todos') {
-      this.filteredSubcategories = [];
-    } else {
-      const categoryId = CATEGORY_ID_MAP[this.selectedCategoryName];
-      this.filteredSubcategories = this.allSubcategories.filter(sub => sub.idCategoria === categoryId);
     }
   }
 
@@ -295,56 +261,5 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.carouselIndex = i;
       this.startCarousel();
     }
-  }
-
-  selectFilterOption(key: 'articulos' | 'estilos' | 'colores' | 'tallas' | 'marcas', value: string) {
-    const mapKey: { [k: string]: keyof FilterParams } = {
-      articulos: 'articulo', estilos: 'estilo', colores: 'color', tallas: 'tallaU', marcas: 'subCate'
-    };
-    const backendKey = mapKey[key];
-    const isActive = this.isFilterActive(key, value);
-
-    if (isActive) {
-      // Si la marca ya está activa, la deseleccionamos.
-      this.productService.setSubCate(undefined);
-    } else {
-      // Si se selecciona una nueva marca, la establecemos como el filtro.
-      if (key === 'marcas') {
-        const brandIds = this.allSubcategories
-          .filter(s => s.nombre === value)
-          .map(s => s.idSubCategoria);
-        this.productService.setSubCate(brandIds.length > 0 ? brandIds : undefined);
-      } else {
-        // (Lógica para otros filtros que podrían ser multiselect)
-        this.productService.setArray(backendKey as 'articulo' | 'estilo' | 'color' | 'tallaU', [value]);
-      }
-    }
-  }
-
-  isFilterActive(key: 'articulos' | 'estilos' | 'colores' | 'tallas' | 'marcas', value: string): boolean {
-    const mapKey: { [k: string]: keyof FilterParams } = {
-      articulos: 'articulo', estilos: 'estilo', colores: 'color', tallas: 'tallaU', marcas: 'subCate'
-    };
-    const backendKey = mapKey[key];
-    const activeValue = this.activeFilters[backendKey];
-
-    if (key === 'marcas') {
-      if (!Array.isArray(activeValue) || activeValue.length === 0) {
-        return false;
-      }
-      const brandIds = this.allSubcategories
-        .filter(s => s.nombre === value)
-        .map(s => s.idSubCategoria);
-      
-      const activeSet = new Set(activeValue as number[]);
-      // Comprueba si los IDs de la marca seleccionada coinciden exactamente con los IDs activos.
-      return brandIds.length > 0 && brandIds.every(id => activeSet.has(id)) && brandIds.length === activeSet.size;
-    }
-
-    if (!Array.isArray(activeValue)) {
-      return false;
-    }
-
-    return (activeValue as string[]).includes(value);
   }
 }

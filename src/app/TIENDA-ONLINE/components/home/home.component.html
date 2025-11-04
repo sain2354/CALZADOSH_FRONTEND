@@ -1,4 +1,4 @@
-<!-- home.component.html (TU VERSIÓN CON FUNCIONALIDAD AÑADIDA) -->
+<!-- home.component.html (VERSIÓN CON LA CORRECCIÓN FINAL) -->
 <div class="home-container">
 
   <section *ngIf="selectedCategoryName === 'Todos'" class="banner-carousel">
@@ -81,25 +81,6 @@
           </div>
         </div>
       </div>
-
-      <!-- ========= TU CÓDIGO HTML CON LA LÓGICA AÑADIDA ========= -->
-      <div class="filter-block">
-        <h4 (click)="toggleFilterSection('marcas')">
-          MARCA
-          <i class="bi" [class.bi-chevron-down]="!openFilterSections.has('marcas')" [class.bi-chevron-up]="openFilterSections.has('marcas')"></i>
-        </h4>
-        <div class="filter-options" [class.open]="openFilterSections.has('marcas')">
-
-          <!-- Conectando la funcionalidad a tu HTML estático -->
-          <div *ngFor="let marca of ['Nike', 'Adidas', 'I-Run', 'Puma', 'Reebok']" class="filter-option">
-             <input type="checkbox" [id]="'marca-' + marca" [checked]="isFilterActive('marcas', marca)" (change)="selectFilterOption('marcas', marca)">
-             <label [for]="'marca-' + marca">{{ marca }}</label>
-          </div>
-
-        </div>
-      </div>
-      <!-- ========= FIN DE LA CORRECCIÓN ========= -->
-
     </aside>
 
     <div class="products-area">
@@ -115,7 +96,8 @@
       </div>
 
       <section *ngIf="!isLoading && products.length > 0" class="product-grid" aria-live="polite">
-        <a *ngFor="let product of products" class="product-card" [routerLink]="['/producto', product.idProducto]">
+        <!-- CAMBIO 1: Iterar sobre 'paginatedProducts' -->
+        <a *ngFor="let product of paginatedProducts" class="product-card" [routerLink]="['/producto', product.idProducto]">
           
           <div class="badge-discount">-28%</div>
           
@@ -138,6 +120,25 @@
           </div>
         </a>
       </section>
+
+      <!-- CAMBIO 2: Añadir la sección de paginación -->
+      <div class="pagination-container" *ngIf="!isLoading && totalPages > 1">
+        <button class="pagination-arrow" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <ng-container *ngFor="let pageNum of getPageNumbers()">
+          <button 
+            (click)="goToPage(pageNum)" 
+            class="pagination-number"
+            [class.active-page]="pageNum === currentPage">
+            {{ pageNum }}
+          </button>
+        </ng-container>
+        <button class="pagination-arrow" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+
     </div>
   </div>
 </div>

@@ -1,17 +1,13 @@
-// src/app/TIENDA-ONLINE/services/product.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
-import { ProductoTienda, SizeOption } from '../models/producto-tienda.model';
+import { ProductoTienda } from '../models/producto-tienda.model';
 
+// Interfaz de filtros actualizada para usar 'q' en la búsqueda
 export interface FilterParams {
   cat?: number;
-  // --- INICIO DE LA CORRECCIÓN ---
-  // Se permite que subCate sea un solo número O un array de números.
-  // Esto es clave para que el filtro de marcas (que agrupa IDs) funcione.
-  subCate?: number | number[]; 
-  // --- FIN DE LA CORRECCIÓN ---
+  subCate?: number | number[];
   marca?: string;
   genero?: string[];
   articulo?: string[];
@@ -20,7 +16,7 @@ export interface FilterParams {
   tallaU?: string[];
   precioMin?: number;
   precioMax?: number;
-  q?: string;
+  q?: string; // PARÁMETRO DE BÚSQUEDA CORREGIDO A 'q' (ESTÁNDAR)
 }
 
 @Injectable({
@@ -40,18 +36,17 @@ export class ProductService {
 
   fetchProducts(filters: FilterParams = {}): Observable<ProductoTienda[]> {
     let params = new HttpParams();
+
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        // La lógica para unir arrays ya existía, por eso este cambio funciona.
-        if (Array.isArray(value)) {
-          if (value.length > 0) {
-            params = params.set(key, value.join(','));
-          }
-        } else if (String(value).trim() !== '') {
-          params = params.set(key, String(value));
-        }
+      if (value === undefined || value === null) return;
+
+      if (Array.isArray(value)) {
+        value.forEach(item => { params = params.append(key, item); });
+      } else if (String(value).trim() !== '') {
+        params = params.set(key, String(value));
       }
     });
+
     return this.http.get<ProductoTienda[]>(this.baseUrl, { params }).pipe(
       tap(products => console.log(`Productos obtenidos (${products?.length ?? 0}) con filtros:`, filters)),
       catchError(this.handleError<ProductoTienda[]>('fetchProducts', []))
@@ -59,11 +54,11 @@ export class ProductService {
   }
 
   loadProducts(useFilters?: FilterParams): void {
-    const filtersToUse = useFilters ? { ...useFilters } : { ...this.filterSubject.getValue() };
+    const filtersToUse = useFilters || this.filterSubject.getValue();
     this.fetchProducts(filtersToUse).subscribe({
       next: (prods) => this.productsSubject.next(prods || []),
       error: err => {
-        console.error('Error loading products:', err);
+        console.error('Error al cargar productos:', err);
         this.productsSubject.next([]);
       }
     });
@@ -71,63 +66,44 @@ export class ProductService {
 
   fetchProductById(id: number): Observable<ProductoTienda | null> {
     const url = `${this.baseUrl}/${id}`;
-
     return this.http.get<any>(url).pipe(
-      map(response => {
-        if (!response) {
-          console.error(`fetchProductById: No se recibió respuesta para el id=${id}`);
-          return null;
-        }
-
-        const product: ProductoTienda = {
-          idProducto: response.idProducto,
-          nombre: response.nombre,
-          precioVenta: response.precioVenta,
-          stock: response.stock,
-          foto: response.foto,
-          idCategoria: response.idCategoria,
-          categoriaDescripcion: response.categoriaDescripcion,
-          idSubCategoria: response.idSubCategoria,
-          subCategoriaDescripcion: response.subCategoriaDescripcion,
-          marca: response.marca,
-          mpn: response.mpn,
-          shippingInfo: response.shippingInfo,
-          material: response.material,
-          color: response.color,
-          tallas: (response.sizes || response.tallas || response.tallaProducto || []).map((t: any) => ({
-            idTalla: t.idTalla,
-            idProducto: t.idProducto,
-            usa: t.usa,
-            eur: t.eur,
-            cm: t.cm,
-            stock: t.stock
-          }))
-        };
-
-        if (!product.idProducto) {
-          console.error("CRÍTICO: El 'idProducto' no fue encontrado en la respuesta de la API para el producto con id consultado:", id);
-          return null;
-        }
-
-        return product;
-      }),
+      map(response => response ? this.mapToProductoTienda(response) : null),
       catchError(this.handleError<ProductoTienda | null>(`fetchProductById id=${id}`))
     );
   }
 
+  private mapToProductoTienda(response: any): ProductoTienda {
+    return {
+      idProducto: response.idProducto,
+      nombre: response.nombre,
+      precioVenta: response.precioVenta,
+      stock: response.stock,
+      foto: response.foto,
+      idCategoria: response.idCategoria,
+      categoriaDescripcion: response.categoriaDescripcion,
+      idSubCategoria: response.idSubCategoria,
+      subCategoriaDescripcion: response.subCategoriaDescripcion,
+      marca: response.marca,
+      mpn: response.mpn,
+      shippingInfo: response.shippingInfo,
+      material: response.material,
+      color: response.color,
+      tallas: response.sizes || response.tallas || response.tallaProducto || []
+    };
+  }
+
   getImageUrl(imagePath?: string): string {
-    if (!imagePath) { return 'assets/images/placeholder.png'; }
-    if (imagePath.startsWith('http')) { return imagePath; }
-    const path = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
-    return `${this.imageBaseUrl}${path}`;
+    if (!imagePath) return 'assets/images/placeholder.png';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${this.imageBaseUrl}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
   }
 
   getCurrentFilters(): FilterParams {
-    return { ...this.filterSubject.getValue() };
+    return this.filterSubject.getValue();
   }
 
   setFilters(f: FilterParams): void {
-    this.filterSubject.next({ ...f });
+    this.filterSubject.next(f);
     this.loadProducts();
   }
 
@@ -138,56 +114,62 @@ export class ProductService {
 
   setCategory(catId?: number | null): void {
     const currentFilters = this.getCurrentFilters();
-    if (catId === undefined || catId === null) { delete currentFilters.cat; }
-    else { currentFilters.cat = catId; }
+    delete currentFilters.subCate;
+    if (catId) {
+      currentFilters.cat = catId;
+    } else {
+      delete currentFilters.cat;
+    }
     this.filterSubject.next(currentFilters);
     this.loadProducts();
   }
 
-  setSubCate(subCateId?: number | number[] | null): void {
-    const cur = this.getCurrentFilters();
-    if (subCateId === undefined || subCateId === null) {
-      delete cur.subCate;
+  // --- FUNCIÓN DE BÚSQUEDA CORREGIDA Y AISLADA ---
+  setSearchTerm(term: string): void {
+    const currentFilters = this.getCurrentFilters();
+    const searchTerm = (term || '').trim();
+
+    // Usamos 'q' para el filtro, que es el parámetro más estándar
+    if (searchTerm) {
+      currentFilters.q = searchTerm;
     } else {
-      cur.subCate = subCateId;
+      delete currentFilters.q;
     }
-    this.filterSubject.next(cur);
-    this.loadProducts();
-  }
-  
-  setBrand(brandName?: string | null): void {
-    const cur = this.getCurrentFilters();
-    if (brandName) {
-      cur.marca = brandName;
-      delete cur.subCate; 
-    } else {
-      delete cur.marca;
-    }
-    this.filterSubject.next(cur);
-    this.loadProducts();
+    
+    this.filterSubject.next(currentFilters);
+    this.loadProducts(); // Recargamos los productos con el filtro correcto
   }
 
   toggleArrayItem(key: keyof FilterParams, item: string): void {
     const cur = this.getCurrentFilters();
-    const arr: string[] = Array.isArray(cur[key]) ? (cur[key] as string[]).slice() : [];
+    const arr = (cur[key] as string[] || []).slice();
     const idx = arr.indexOf(item);
     if (idx >= 0) arr.splice(idx, 1); else arr.push(item);
-    if (arr.length === 0) { delete cur[key]; } else { (cur as any)[key] = arr; }
+    
+    if (arr.length > 0) {
+      (cur as any)[key] = arr;
+    } else {
+      delete cur[key];
+    }
     this.filterSubject.next(cur);
     this.loadProducts();
   }
 
   setPriceRange(min?: number | null, max?: number | null): void {
     const cur = this.getCurrentFilters();
-    if (min === undefined || min === null) delete cur.precioMin; else cur.precioMin = min;
-    if (max === undefined || max === null) delete cur.precioMax; else cur.precioMax = max;
+    if (min) cur.precioMin = min; else delete cur.precioMin;
+    if (max) cur.precioMax = max; else delete cur.precioMax;
     this.filterSubject.next(cur);
     this.loadProducts();
   }
-
+  
   setArray(key: keyof FilterParams, values?: string[]): void {
     const cur = this.getCurrentFilters();
-    if (!values || values.length === 0) { delete cur[key]; } else { (cur as any)[key] = values; }
+    if (values && values.length > 0) {
+      (cur as any)[key] = values;
+    } else {
+      delete cur[key];
+    }
     this.filterSubject.next(cur);
     this.loadProducts();
   }

@@ -1,0 +1,218 @@
+/* header.component.css (CORREGIDO PARA RESALTADO) */
+
+:host {
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  color: #0b1220;
+}
+
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--header-height);
+  z-index: 1400;
+}
+
+.header-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.header-left .logo img {
+  height: 45px;
+  width: auto;
+}
+
+.header-center {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+}
+
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #374151;
+  letter-spacing: 0.02em;
+  transition: color .2s, border-bottom-color .2s;
+  position: relative;
+  font-size: 1rem;
+  text-transform: uppercase;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: 4px solid transparent; /* BASE INVISIBLE PARA LA TRANSICIÓN */
+}
+
+.nav-btn:hover {
+  color: #c00000;
+}
+
+/* --- ESTILO CORREGIDO Y MÁS VISIBLE PARA LA CATEGORÍA ACTIVA --- */
+.nav-btn.active {
+  color: #c00000; /* Color de texto rojo */
+  border-bottom-color: #c00000; /* Barra inferior roja */
+}
+
+.nav-item-with-dropdown {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-form input {
+  padding: 0.6rem 1rem;
+  padding-right: 2.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  width: 200px;
+  transition: all .3s;
+}
+
+.search-form input:focus {
+  width: 240px;
+  outline: none;
+  border-color: #c00000;
+}
+
+.search-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.header-icon {
+  color: #4b5563;
+  font-size: 1.5rem;
+  transition: color .2s;
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.header-icon:hover {
+  color: #c00000;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: #c00000;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.user-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 15px);
+  right: 0;
+  background-color: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--drop-shadow);
+  min-width: 240px;
+  z-index: var(--dropdown-z);
+  padding: 0.5rem 0;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.user-info {
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+}
+
+.user-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.user-info strong {
+  font-size: 0.9rem;
+  color: #111;
+  word-break: break-all;
+}
+
+.user-dropdown hr {
+  margin: 0.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.user-dropdown-btn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+}
+
+.user-dropdown-btn:hover {
+  background-color: #f3f4f6;
+  color: #c00000;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

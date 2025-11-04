@@ -2,6 +2,6 @@
 
 export interface Subcategory {
   idSubCategoria: number;
-  nombre: string;
+  nombre: string; // RESTAURADO: La aplicación usará 'nombre' internamente.
   idCategoria: number;
 }

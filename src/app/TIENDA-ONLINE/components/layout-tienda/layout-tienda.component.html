@@ -1,102 +1,25 @@
-<!-- layout-tienda.component.html -->
-<header class="site-header" role="banner">
-  <div class="header-container">
-    <div class="header-left">
-      <a routerLink="/" class="logo" aria-label="Ir a inicio">
-        <img src="assets/images/LOGO.png" alt="Logo de la Tienda">
-      </a>
-    </div>
+<!-- layout-tienda.component.html (Versión final con Header Refactorizado) -->
 
-    <div class="header-center" (mouseleave)="onHoverCategory(null)">
-      <nav class="main-nav" aria-label="Navegación principal">
-        <button class="nav-btn"
-                (click)="selectCategory('Todos')"
-                (mouseenter)="onHoverCategory(null)"
-                [class.active]="selectedCategoryName === 'Todos'">
-          Todos
-        </button>
+<!-- 
+  El Header ahora es un componente independiente.
+  Se muestra condicionalmente usando el observable `showHeader$`. 
+  No aparecerá en la ruta '/checkout'.
+-->
+<app-header *ngIf="showHeader$ | async"></app-header>
 
-        <div class="nav-item-with-dropdown"
-             (mouseenter)="onHoverCategory('Hombres')"
-             (mouseleave)="onHoverCategory(null)">
-          <button class="nav-btn" (click)="selectCategory('Hombres')" [class.active]="selectedCategoryName === 'Hombres'">
-            Hombres
-          </button>
-        </div>
-
-        <!-- Mujeres -->
-        <div class="nav-item-with-dropdown"
-             (mouseenter)="onHoverCategory('Mujeres')"
-             (mouseleave)="onHoverCategory(null)">
-          <button class="nav-btn" (click)="selectCategory('Mujeres')" [class.active]="selectedCategoryName === 'Mujeres'">
-            Mujeres
-          </button>
-        </div>
-
-        <!-- Infantil -->
-        <div class="nav-item-with-dropdown"
-             (mouseenter)="onHoverCategory('Infantil')"
-             (mouseleave)="onHoverCategory(null)">
-          <button class="nav-btn" (click)="selectCategory('Infantil')" [class.active]="selectedCategoryName === 'Infantil'">
-            Infantil
-          </button>
-        </div>
-      </nav>
-    </div>
-
-    <div class="header-right" role="navigation" aria-label="Acciones">
-      <form (submit)="onSearch()" class="search-form" role="search" aria-label="Buscar productos">
-        <input type="search" name="q" placeholder="BUSCAR" [(ngModel)]="searchTerm" (keydown.enter)="onSearch()" />
-        <button type="button" class="search-btn" (click)="onSearch()" aria-label="Buscar">
-          <i class="fas fa-search"></i>
-        </button>
-      </form>
-
-      <!-- ====== INICIO DE LA MODIFICACIÓN PRECISA (VERSIÓN CLICK) ====== -->
-      <div class="user-menu-container">
-        <button class="header-icon user-icon-btn" (click)="toggleUserMenu()" aria-label="Menú de usuario">
-          <i class="fas" [class.fa-user]="!(currentUser$ | async)" [class.fa-user-check]="!!(currentUser$ | async)"></i>
-        </button>
-        
-        <div class="user-dropdown" *ngIf="isUserMenuOpen">
-          <ng-container *ngIf="currentUser$ | async as user; else showLoginButton">
-            <!-- Contenido para usuario LOGUEADO -->
-            <div class="user-info">
-              <p>Conectado como:</p>
-              <strong>{{ user.email }}</strong>
-            </div>
-            <hr>
-            <a routerLink="/mis-pedidos" class="user-dropdown-btn" (click)="toggleUserMenu()">Mis Pedidos</a>
-            <a routerLink="/favoritos" class="user-dropdown-btn" (click)="toggleUserMenu()">Mis Favoritos</a>
-            <button class="user-dropdown-btn" (click)="onSignOut()">Cerrar Sesión</button>
-          </ng-container>
-
-          <ng-template #showLoginButton>
-            <!-- Contenido para usuario NO logueado -->
-            <button class="user-dropdown-btn" (click)="goToLogin()">Iniciar Sesión</button>
-          </ng-template>
-        </div>
-      </div>
-      <!-- ====== FIN DE LA MODIFICACIÓN PRECISA ====== -->
-      
-      <button (click)="setCartVisible(!isCartVisible)" class="header-icon cart-icon-link" aria-label="Abrir o cerrar carrito">
-        <i class="fas fa-shopping-bag"></i>
-        <ng-container *ngIf="cartItemCount$ | async as count">
-          <span *ngIf="count > 0" class="cart-badge">{{ count }}</span>
-        </ng-container>
-      </button>
-    </div>
-  </div>
-</header>
-
-<!-- === MODIFICACIÓN: Se elimina la clase 'content-shell' para arreglar el scroll === -->
+<!-- 
+  El contenido principal de la página (el componente de la ruta activa).
+  La clase `main-content` añade el margen superior para que el contenido no quede
+  oculto detrás del header de posición fija.
+-->
 <main class="main-content" role="main">
   <router-outlet></router-outlet>
 </main>
 
-<!-- ====================================================================== -->
-<!-- =================== INICIO DEL NUEVO FOOTER MEJORADO =================== -->
-<!-- ====================================================================== -->
+<!-- 
+  El footer sigue siendo parte de la plantilla del layout, ya que 
+  aparece en todas las páginas (incluido checkout, si se quisiera).
+-->
 <footer class="site-footer" role="contentinfo">
   <div class="footer-container">
     <div class="footer-main">
@@ -154,8 +77,3 @@
     </div>
   </div>
 </footer>
-<!-- ====================================================================== -->
-<!-- ==================== FIN DEL NUEVO FOOTER MEJORADO ===================== -->
-<!-- ====================================================================== -->
-
-<app-cart *ngIf="isCartVisible" (close)="setCartVisible(false)"></app-cart>

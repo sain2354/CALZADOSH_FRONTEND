@@ -1,5 +1,9 @@
-/* layout-tienda.component.css - ESTILOS ORIGINALES CON MEJORAS */
+/* layout-tienda.component.css - ARCHIVO LIMPIO TRAS REFACTORIZACIÓN */
 
+/* 
+  Imports globales y variables de CSS. 
+  Se mantienen aquí para que estén disponibles en toda la aplicación.
+*/
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
@@ -9,85 +13,126 @@
   --max-width:1200px; --dropdown-z:1500; --header-height:72px;
 }
 
-:host { display:block; font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, Arial; color:#0b1220; background:var(--bg); }
-
-.site-header { background:#fff; border-bottom:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,0.05); position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); z-index: 1400; }
-.main-content { margin-top: var(--header-height); }
-.header-container { max-width:var(--max-width); margin:0 auto; padding:0 1rem; display:flex; align-items:center; justify-content:space-between; height: 100%; }
-.header-left .logo img { height:45px; width:auto; }
-.header-center { flex-grow: 1; display: flex; justify-content: center; height: 100%; }
-.main-nav { display:flex; gap:0.5rem; align-items:center; height: 100%; }
-.nav-btn { appearance:none; border:none; background:transparent; padding:0.6rem 1rem; font-weight:600; cursor:pointer; color:#374151; letter-spacing:0.02em; transition:color .2s; position:relative; font-size:1rem; text-transform:uppercase; height: 100%; display: flex; align-items: center; }
-.nav-btn:hover { color:var(--primary); }
-.nav-btn.active { color:var(--primary); box-shadow: inset 0 -3px 0 0 var(--primary); }
-.nav-item-with-dropdown { position:relative; height: 100%; display: flex; align-items: center; }
-
-/* --- INICIO DE ESTILOS MEJORADOS PARA DROPDOWN DE MARCAS -- */
-.nav-item-brands { position: relative; height: 100%; display: flex; align-items: center;}
-.nav-item-brands .brand-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% - 5px);
-  right: 0;
-  background: #ffffff; /* Fondo blanco sólido */
-  border: 1px solid #f0f0f0; /* Borde muy suave */
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Sombra profesional */
-  border-radius: 12px; /* Esquinas redondeadas */
-  padding: 10px;
-  min-width: 200px;
-  z-index: calc(var(--dropdown-z) + 20);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+:host {
+  display: block;
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  color: #0b1220;
+  background: var(--bg);
 }
 
-.nav-item-brands:hover .brand-dropdown { 
-  display: block; 
-  opacity: 1;
-  transform: translateY(0);
+/* 
+  Este estilo es crucial. Asegura que el contenido principal de la página 
+  no quede oculto debajo del header (que tiene una posición fija).
+*/
+.main-content {
+  margin-top: var(--header-height);
 }
-
-.brand-dropdown ul { list-style: none; padding: 0; margin: 0; }
-
-.brand-short-btn {
-  appearance:none; border:none; background:transparent; padding:10px 16px; width:100%; text-align:left; font-weight: 500; cursor:pointer; border-radius:8px; transition:background .15s, color .15s; color:#333; font-size: 0.95rem; 
-}
-
-.brand-short-btn:hover { background:#f7f7f7; color:var(--primary); }
-/* --- FIN DE ESTILOS MEJORADOS --- */
-
-.header-right { display:flex; align-items:center; gap:1.2rem; }
-.search-form { position:relative; display:flex; align-items:center; }
-.search-form input { padding:0.6rem 1rem; padding-right:2.5rem; border:1px solid #e5e7eb; border-radius:25px; font-size:0.9rem; width:200px; transition:all .3s; }
-.search-form input:focus { width:240px; outline:none; border-color:var(--primary); }
-.search-btn { position:absolute; right:10px; background:none; border:none; color:#6b7280; cursor:pointer; font-size:1rem; }
-.header-icon { color:#4b5563; font-size:1.5rem; transition:color .2s; position:relative; background: transparent; border: none; cursor: pointer;}
-.header-icon:hover { color:var(--primary); }
-.cart-badge { position:absolute; top:-6px; right:-10px; background:var(--primary); color:white; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:600; }
-
-.user-menu-container { position: relative; display: inline-block; }
-.user-dropdown { position: absolute; top: calc(100% + 15px); right: 0; background-color: white; border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--drop-shadow); min-width: 240px; z-index: var(--dropdown-z); padding: 0.5rem 0; animation: fadeIn 0.2s ease-out; }
-.user-info { padding: 0.75rem 1.25rem; text-align: left; }
-.user-info p { margin: 0; font-size: 0.8rem; color: var(--muted); }
-.user-info strong { font-size: 0.9rem; color: #111; word-break: break-all; }
-.user-dropdown hr { margin: 0.5rem 0; border: 0; border-top: 1px solid var(--border); }
-.user-dropdown-btn { display: block; width: 100%; background: none; border: none; text-align: left; padding: 0.75rem 1.25rem; font-size: 0.95rem; font-weight: 500; color: #374151; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; text-decoration: none; }
-.user-dropdown-btn:hover { background-color: #f3f4f6; color: var(--primary); }
 
 /* --- ESTILOS DEL FOOTER --- */
-.site-footer { background-color: #111827; color: #d1d5db; margin-top: 4rem; padding: 3rem 1rem; font-family: 'Inter', sans-serif; }
-.footer-container { max-width: var(--max-width); margin: 0 auto; }
-.footer-main { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid #374151; }
-.footer-column h4 { font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
-.footer-links { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.7rem; }
-.footer-links li a, .company-details { color: #9ca3af; text-decoration: none; font-size: 0.9rem; transition: color 0.2s ease; }
-.footer-links li a:hover { color: #ffffff; }
-.company-details { line-height: 1.6; }
-.social-icons { display: flex; gap: 1.2rem; margin-top: 1rem; }
-.social-icons a { color: #9ca3af; font-size: 1.3rem; transition: color 0.2s ease, transform 0.2s ease; }
-.social-icons a:hover { color: #ffffff; transform: scale(1.1); }
-.payment-heading { margin-top: 1.5rem; }
-.payment-icons { display: flex; flex-wrap: wrap; gap: 0.8rem; font-size: 2rem; color: #9ca3af; }
-.footer-bottom { padding-top: 1.5rem; text-align: center; font-size: 0.85rem; color: #6b7280; }
-@media (max-width: 992px) { .footer-main { grid-template-columns: repeat(2, 1fr); gap: 2rem; } }
-@media (max-width: 600px) { .footer-main { grid-template-columns: 1fr; gap: 1.5rem; } .site-footer { padding: 2rem 1rem; } }
+.site-footer {
+  background-color: #111827;
+  color: #d1d5db;
+  margin-top: 4rem;
+  padding: 3rem 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.footer-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.footer-main {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid #374151;
+}
+
+.footer-column h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.footer-links li a,
+.company-details {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.footer-links li a:hover {
+  color: #ffffff;
+}
+
+.company-details {
+  line-height: 1.6;
+}
+
+.social-icons {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.social-icons a {
+  color: #9ca3af;
+  font-size: 1.3rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.social-icons a:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.payment-heading {
+  margin-top: 1.5rem;
+}
+
+.payment-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  font-size: 2rem;
+  color: #9ca3af;
+}
+
+.footer-bottom {
+  padding-top: 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+@media (max-width: 992px) {
+  .footer-main {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .footer-main {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .site-footer {
+    padding: 2rem 1rem;
+  }
+}
