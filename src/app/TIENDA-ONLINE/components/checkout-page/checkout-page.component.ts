@@ -39,6 +39,7 @@ export class CheckoutPageComponent implements OnInit {
   isLoading = false;
   userId: number | null = null;
   cartItems: CartItem[] = [];
+  costoEnvio = 0;
 
   // --- INTEGRACIÓN UBIGEO ---
   departamentos$!: Observable<string[]>;
@@ -55,6 +56,7 @@ export class CheckoutPageComponent implements OnInit {
 
     this.cartService.getCartItems().subscribe(items => {
       this.cartItems = items;
+      this.costoEnvio = this.calcularCostoEnvio();
       if (items.length === 0) {
         console.warn('El carrito está vacío, redirigiendo a la tienda.');
       }
@@ -78,6 +80,23 @@ export class CheckoutPageComponent implements OnInit {
     // --- INTEGRACIÓN UBIGEO ---
     this.departamentos$ = this.ubigeoService.getDepartamentos();
     this.updateFormValidation();
+  }
+
+  private calcularCostoEnvio(): number {
+    const cantidadTotal = this.cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+    if (cantidadTotal >= 1 && cantidadTotal <= 2) {
+      return 15.00;
+    } else if (cantidadTotal >= 3 && cantidadTotal <= 4) {
+      return 25.00;
+    } else if (cantidadTotal >= 5 && cantidadTotal <= 6) {
+      return 30.00;
+    } else if (cantidadTotal >= 7 && cantidadTotal <= 10) {
+      return 40.00;
+    } else if (cantidadTotal > 10) {
+      return 40.00;
+    }
+    return 0;
   }
 
   // --- NUEVO MÉTODO UBIGEO ---
@@ -184,6 +203,7 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   private createVenta(userId: number, savedAddress: UsuarioDireccionResponse | null): Observable<VentaResponse> {
+    const costoEnvio = this.calcularCostoEnvio();
     let direccionEntrega: DireccionEntregaRequest | null = null;
     if (this.selectedShippingOption === 'domicilio') {
         if (!savedAddress) throw new Error('La dirección del usuario no se guardó correctamente.');
@@ -198,7 +218,7 @@ export class CheckoutPageComponent implements OnInit {
             distrito: savedAddress.distrito,
             direccion: savedAddress.direccion,
             referencia: savedAddress.referencia,
-            costoEnvio: 15.00
+            costoEnvio: costoEnvio
         };
     }
 
@@ -211,7 +231,7 @@ export class CheckoutPageComponent implements OnInit {
 
     const subtotal = this.cartItems.reduce((sum, item) => sum + (item.product.precioVenta * item.quantity), 0);
     const igv = subtotal * 0.18;
-    const total = subtotal + igv;
+    const total = subtotal + igv + (this.selectedShippingOption === 'domicilio' ? costoEnvio : 0);
 
     const ventaRequest: VentaRequest = {
       idUsuario: userId,

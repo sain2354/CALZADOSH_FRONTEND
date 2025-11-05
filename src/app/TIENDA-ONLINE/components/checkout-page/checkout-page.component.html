@@ -8,7 +8,7 @@
   <h2>Elige una opción de entrega</h2>
 
   <div class="shipping-options">
-    <div class="option">
+    <div class="option" style="display: none;">
       <input type="radio" id="recojo" name="shipping" value="tienda" (change)="selectShippingOption('tienda')">
       <label for="recojo">
         <strong>Recojo en Tienda</strong>
@@ -22,6 +22,11 @@
         <p>Envíos vía Shalom (Costo adicional por definir).</p>
       </label>
     </div>
+  </div>
+
+  <div *ngIf="selectedShippingOption === 'domicilio'" class="shipping-cost">
+    <h3>Costo de Envío</h3>
+    <p>{{ costoEnvio | currency:'S/' }}</p>
   </div>
 
   <div *ngIf="selectedShippingOption === 'tienda'" class="store-pickup-info">
