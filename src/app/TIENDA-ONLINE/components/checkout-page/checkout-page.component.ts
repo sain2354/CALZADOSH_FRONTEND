@@ -156,20 +156,13 @@ export class CheckoutPageComponent implements OnInit {
 
     this.isLoading = true;
 
-    // --- INICIO DE LA MODIFICACIÓN ---
-    // El flujo observable ahora comienza con un valor nulo (para recojo en tienda)
-    // o guardando la dirección (para envío a domicilio).
     let initialFlow$: Observable<any> = of(null);
 
     if (this.selectedShippingOption === 'domicilio') {
-      // Si es envío a domicilio, el flujo comienza guardando la dirección del usuario.
-      // Se elimina la llamada a updateUserProfile que causaba el error 400.
       initialFlow$ = this.saveUserAddress(this.userId!);
     }
 
-    // Se encadena el resto del proceso al flujo inicial.
     initialFlow$.pipe(
-      // El resultado (la dirección guardada o null) pasa a createVenta.
       switchMap((savedAddress: UsuarioDireccionResponse | null) => {
         console.log('PASO 1: Creando la venta.');
         return this.createVenta(this.userId!, savedAddress);
@@ -188,7 +181,6 @@ export class CheckoutPageComponent implements OnInit {
         this.router.navigate(['/pago', { ventaId: ventaResponse.idVenta }]);
       }
     });
-    // --- FIN DE LA MODIFICACIÓN ---
   }
 
   private saveUserAddress(userId: number): Observable<UsuarioDireccionResponse> {
@@ -232,19 +224,22 @@ export class CheckoutPageComponent implements OnInit {
       Precio: item.product.precioVenta
     } as any));
 
-    const subtotal = this.cartItems.reduce((sum, item) => sum + (item.product.precioVenta * item.quantity), 0);
-    const igv = subtotal * 0.18;
-    const total = subtotal + igv + (this.selectedShippingOption === 'domicilio' ? costoEnvio : 0);
+    // --- INICIO DE LA CORRECCIÓN DEFINITIVA ---
+    const totalProductosConIgv = this.cartItems.reduce((sum, item) => sum + (item.product.precioVenta * item.quantity), 0);
+    const subtotalSinIgv = totalProductosConIgv / 1.18;
+    const igv = totalProductosConIgv - subtotalSinIgv;
+    const total = totalProductosConIgv + (this.selectedShippingOption === 'domicilio' ? costoEnvio : 0);
 
     const ventaRequest: VentaRequest = {
       idUsuario: userId,
       tipoComprobante: 'Boleta',
       direccionEntrega: direccionEntrega,
       detallesVenta: detallesVenta,
-      subtotal: parseFloat(subtotal.toFixed(2)),
+      subtotal: parseFloat(subtotalSinIgv.toFixed(2)),
       igv: parseFloat(igv.toFixed(2)),
       total: parseFloat(total.toFixed(2))
     };
+    // --- FIN DE LA CORRECCIÓN DEFINITIVA ---
     
     return this.checkoutService.crearVenta(ventaRequest);
   }

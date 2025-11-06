@@ -49,11 +49,15 @@ export class CartService {
   getShippingCost(): Observable<number> {
     return this.getCartItemCount().pipe(
       map(itemCount => {
-        if (itemCount === 0) return 0;
-        if (itemCount <= 2) return 15.00;
-        if (itemCount <= 4) return 25.00;
-        if (itemCount <= 6) return 30.00;
-        return 40.00; // 7 or more
+        if (itemCount === 0) {
+          return 0;
+        }
+        // De 1 a 2 productos: 15 soles
+        // De 3 a 4 productos: 25 soles
+        // Y así sucesivamente, 10 soles más por cada 2 productos adicionales.
+        const groupsOfTwo = Math.ceil(itemCount / 2);
+        const shippingCost = 15 + (groupsOfTwo - 1) * 10;
+        return shippingCost;
       })
     );
   }
