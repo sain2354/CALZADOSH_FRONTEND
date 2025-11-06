@@ -1,3 +1,4 @@
+
 import { Injectable, inject, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -18,7 +19,7 @@ import { environment } from '../../../environments/environment';
 export interface UserBackendResponse {
   idUsuario: number;
   username: string;
-  nombres: string; // Changed from nombreCompleto to match backend response
+  nombres: string; 
   apellidos: string;
   email: string;
   telefono: string;
@@ -34,11 +35,12 @@ export class AuthTiendaService {
   private platformId = inject(PLATFORM_ID);
 
   private readonly backendLoginUrl = `${environment.apiUrl}/usuarios/login`;
+  private readonly backendRegisterUrl = `${environment.apiUrl}/usuarios/register`;
   private readonly googleLoginUrl = `${environment.apiUrl}/usuarios/googleLogin`;
 
   public readonly firebaseUser$: Observable<User | null> = authState(this.auth);
 
-  // BehaviorSubject to hold the backend user profile
+  
   private currentUserSubject: BehaviorSubject<UserBackendResponse | null>;
   public readonly currentUser$: Observable<UserBackendResponse | null>;
 
@@ -60,19 +62,19 @@ export class AuthTiendaService {
 
   async signUpWithEmail(email: string, password: string, displayName: string): Promise<UserBackendResponse> {
     const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+
     const [firstName, ...lastNameParts] = displayName.split(' ');
     const lastName = lastNameParts.join(' ');
 
     const requestBody = {
       email: userCredential.user.email || email,
       password: password,
-      nombres: firstName,
-      apellidos: lastName || firstName,
-      username: email, // Assuming username is the email for new sign-ups
+      username: email,
+      Nombres: firstName,
+      Apellidos: lastName || firstName, 
     };
 
-    // This should ideally call a /register endpoint, but we use login and assume it syncs
-    return this.http.post<UserBackendResponse>(this.backendLoginUrl, { usernameOrEmail: email, password })
+    return this.http.post<UserBackendResponse>(this.backendRegisterUrl, requestBody)
       .pipe(
         tap(backendUser => {
           this.storeUser(backendUser);
@@ -83,9 +85,11 @@ export class AuthTiendaService {
 
   async signInWithEmail(email: string, password: string): Promise<UserBackendResponse> {
     await signInWithEmailAndPassword(this.auth, email, password);
-    // After Firebase login, call our backend's login to get profile data
+    // --- INICIO DE LA CORRECCIÓN DE TIPADO ---
+    // Se elimina el `as any` que causaba la pérdida de tipos.
     const backendUser = await this.http.post<{usuario: UserBackendResponse}>(this.backendLoginUrl, { usernameOrEmail: email, password })
         .pipe(map(response => response.usuario), take(1)).toPromise();
+    // --- FIN DE LA CORRECCIÓN DE TIPADO ---
         
     if (!backendUser) {
         throw new Error('Failed to get user profile from backend.');
@@ -105,8 +109,11 @@ export class AuthTiendaService {
         phone: firebaseUser.phoneNumber
     };
     
+    // --- INICIO DE LA CORRECCIÓN DE TIPADO ---
+    // Se elimina el `as any` que causaba la pérdida de tipos.
     const backendUser = await this.http.post<{usuario: UserBackendResponse}>(this.googleLoginUrl, requestBody)
         .pipe(map(response => response.usuario), take(1)).toPromise();
+    // --- FIN DE LA CORRECCIÓN DE TIPADO ---
 
     if (!backendUser) {
         throw new Error('Failed to get user profile from backend via Google.');
@@ -122,6 +129,16 @@ export class AuthTiendaService {
       localStorage.removeItem('currentUser');
     }
     this.currentUserSubject.next(null);
+  }
+
+  updateUserProfile(userId: number, profileData: { nombres: string, apellidos: string, numero_documento: string, telefono:string }): Observable<any> {
+    const requestBody = {
+        nombres: profileData.nombres,
+        apellidos: profileData.apellidos,
+        numero_documento: profileData.numero_documento,
+        telefono: profileData.telefono
+    };
+    return this.http.put(`${environment.apiUrl}/usuarios/${userId}`, requestBody);
   }
 
   private storeUser(user: UserBackendResponse) {

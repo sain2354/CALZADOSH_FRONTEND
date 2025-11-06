@@ -40,9 +40,9 @@ export class DetallePedidoComponent {
     doc.text('Calzados Huancayo', 20, 20);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Dirección: Av. Ejemplo 123, Huancayo', 20, 26);
+    doc.text('Dirección: Av. FERROCARIL 123, Huancayo', 20, 26);
     doc.text('RUC: 20123456789', 20, 30);
-    doc.text('Teléfono: (064) 123-456', 20, 34);
+    doc.text('Teléfono: (+51) 960926073', 20, 34);
 
     // --- 2. Título de la Boleta ---
     doc.setFontSize(16);

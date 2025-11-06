@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, map, combineLatest } from 'rxjs';
 import { ProductoTienda, SizeOption } from '../models/producto-tienda.model';
 
 export interface CartItem {
@@ -38,12 +38,33 @@ export class CartService {
     );
   }
 
-  /** Observable del precio total del carrito. */
-  getTotalPrice(): Observable<number> {
+  /** Observable del subtotal del carrito (solo productos). */
+  getSubtotal(): Observable<number> {
     return this.cartItems.pipe(
       map(items => items.reduce((total, item) => total + (item.product.precioVenta * item.quantity), 0))
     );
   }
+
+  /** Observable del costo de envío. */
+  getShippingCost(): Observable<number> {
+    return this.getCartItemCount().pipe(
+      map(itemCount => {
+        if (itemCount === 0) return 0;
+        if (itemCount <= 2) return 15.00;
+        if (itemCount <= 4) return 25.00;
+        if (itemCount <= 6) return 30.00;
+        return 40.00; // 7 or more
+      })
+    );
+  }
+
+  /** Observable del precio total del carrito (subtotal + envío). */
+  getTotalPrice(): Observable<number> {
+    return combineLatest([this.getSubtotal(), this.getShippingCost()]).pipe(
+      map(([subtotal, shippingCost]) => subtotal + shippingCost)
+    );
+  }
+
 
   // ========= ACCIONES DEL CARRITO =========
 

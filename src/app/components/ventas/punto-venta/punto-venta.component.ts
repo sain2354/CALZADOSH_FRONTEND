@@ -307,6 +307,18 @@ export class PuntoVentaComponent implements OnInit {
 
 
   async realizarVenta(form: NgForm) {
+    // ... (validaciones previas)
+    const idUsuario = this.authService.getUserId();
+    if (!idUsuario) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error de Autenticación',
+        text: 'No se pudo obtener el ID del vendedor. Por favor, inicia sesión de nuevo.'
+      });
+      console.error("ERROR (Frontend): idUsuario is null. User might not be logged in correctly.");
+      return;
+    }
+
     if (this.ventaItems.length === 0) {
       await Swal.fire({
         icon: 'warning',
@@ -364,13 +376,18 @@ export class PuntoVentaComponent implements OnInit {
       return;
     }
 
-    const clienteObj = (this.clienteSeleccionado && typeof this.clienteSeleccionado === 'object') ? this.clienteSeleccionado as Persona : null;
-    const clienteNombre = clienteObj ? clienteObj.nombre : (this.clienteSeleccionado === 'VARIOS' ? 'Clientes Varios' : '');
-    const clienteDocumento = clienteObj ? clienteObj.numeroDocumento : (this.clienteSeleccionado === 'VARIOS' ? '00000000' : '');
+    // --- MODIFICACIÓN TEMPORAL PARA PRESENTACIÓN ---
+    // Forzamos los datos del cliente para la demostración.
+    // El ID, nombre y documento siempre serán los de la Sra. Fidelina.
+    const idPersonaFijo = 21;
+    const clienteNombreFijo = 'CANCHUMANYA MACHA FIDELINA';
+    const clienteDocumentoFijo = '41456648';
+    const direccionFija = ''; // Dirección vacía como en la BD
+    // --- FIN DE LA MODIFICACIÓN ---
 
     const confirmHtml = `
       <p>Vas a registrar una venta con <strong>${this.ventaItems.length}</strong> item(s).<br>
-      Cliente: <strong>${clienteNombre}</strong> (${clienteDocumento})<br>
+      Cliente: <strong>${clienteNombreFijo}</strong> (${clienteDocumentoFijo})<br>
       Documento: <strong>${this.documentoSeleccionado} - ${this.correlativo}</strong><br>
       Forma de pago: <strong>${this.tipoPagoSeleccionado}</strong><br>
       Total: <strong>S/ ${this.total.toFixed(2)}</strong></p>
@@ -401,46 +418,42 @@ export class PuntoVentaComponent implements OnInit {
     }
 
     const detalles = this.ventaItems.map(it => {
-  const base = +(it.cantidad * it.precio).toFixed(2);
-  return {
-    idProducto: it.idProducto,
-    IdTallaUsa: it.idUnidadMedida,
-    descripcion: it.nombre,
-    nombre: it.nombre,
-    cantidad: it.cantidad,
-    precio: it.precio,
-    talla: it.talla ?? '',
-    descuento: 0,
-    total: base,
-    igv: 0 // IGV deshabilitado: siempre 0.00
-  };
-});
-
-
-    const direccion = clienteObj ? clienteObj.direccion : '';
+      const base = +(it.cantidad * it.precio).toFixed(2);
+      return {
+        idProducto: it.idProducto,
+        IdTallaUsa: it.idUnidadMedida,
+        descripcion: it.nombre,
+        nombre: it.nombre,
+        cantidad: it.cantidad,
+        precio: it.precio,
+        talla: it.talla ?? '',
+        descuento: 0,
+        total: base,
+        igv: 0 // IGV deshabilitado: siempre 0.00
+      };
+    });
 
     const vendedorNombre = this.usuarioActual || this.authService.getUsername?.() || 'PuntoVenta';
-
     const fechaPeruLocal = new Date().toLocaleString('sv', { timeZone: 'America/Lima' }); // "YYYY-MM-DD HH:MM:SS"
-const fechaPeruIsoWithOffset = fechaPeruLocal.replace(' ', 'T') + '-05:00';
+    const fechaPeruIsoWithOffset = fechaPeruLocal.replace(' ', 'T') + '-05:00';
 
-const payload: any = {
-  idUsuario: 22,
-  idPersona: clienteObj ? clienteObj.idPersona : null,
-  tipoComprobante: this.documentoSeleccionado,
-  fecha: fechaPeruIsoWithOffset, // ISO aceptable por .NET
-  total: this.total,
-  estado: 'Emitido',
-  serie: this.serie,
-  numeroComprobante: this.correlativo,
-  totalIgv: this.iva, // 0
-  detalles: detalles,
-  clienteNombre: clienteNombre,
-  clienteDocumento: clienteDocumento,
-  direccion: direccion,
-  formaPago: this.tipoPagoSeleccionado,
-  vendedor: vendedorNombre
-};
+    const payload: any = {
+      idUsuario: idUsuario,
+      idPersona: idPersonaFijo, // <-- ID FIJO para la presentación
+      tipoComprobante: this.documentoSeleccionado,
+      fecha: fechaPeruIsoWithOffset, // ISO aceptable por .NET
+      total: this.total,
+      estado: 'Emitido',
+      serie: this.serie,
+      numeroComprobante: this.correlativo,
+      totalIgv: this.iva, // 0
+      detalles: detalles,
+      clienteNombre: clienteNombreFijo, // <-- Nombre fijo
+      clienteDocumento: clienteDocumentoFijo, // <-- Documento fijo
+      direccion: direccionFija, // <-- Dirección fija
+      formaPago: this.tipoPagoSeleccionado,
+      vendedor: vendedorNombre
+    };
 
     this.ventaService.createVenta(payload).subscribe({
       next: resp => {
@@ -457,46 +470,46 @@ const payload: any = {
         }
 
         const detallesResp = this.ventaItems.map(it => {
-  const base = +(it.cantidad * it.precio).toFixed(2);
-  return {
-    idProducto: it.idProducto,
-    IdTallaUsa: it.idUnidadMedida,
-    descripcion: it.nombre,
-    nombre: it.nombre,
-    cantidad: it.cantidad,
-    precio: it.precio,
-    talla: it.talla ?? '',
-    descuento: 0,
-    total: base,
-    igv: 0 // IGV 0 también en la respuesta local
-  };
-});
+          const base = +(it.cantidad * it.precio).toFixed(2);
+          return {
+            idProducto: it.idProducto,
+            IdTallaUsa: it.idUnidadMedida,
+            descripcion: it.nombre,
+            nombre: it.nombre,
+            cantidad: it.cantidad,
+            precio: it.precio,
+            talla: it.talla ?? '',
+            descuento: 0,
+            total: base,
+            igv: 0 // IGV 0 también en la respuesta local
+          };
+        });
 
-this.ventaCreadaResponse = Object.assign({}, resp, {
-  clienteNombre,
-  clienteDocumento,
-  direccion,
-  formaPago: this.tipoPagoSeleccionado,
-  vendedor: vendedorNombre,
-  serie: this.serie,
-  numeroComprobante: this.correlativo,
-  fecha: fechaPeruIsoWithOffset, // <-- usar la variable correcta
-  moneda: 'S/',
-  detalles: (detallesResp || []).map(d => ({
-    cantidad: d.cantidad,
-    precio: d.precio,
-    total: d.total,
-    descripcion: d.descripcion,
-    nombre: d.nombre,
-    talla: d.talla,
-    desc: d.descuento ?? 0
-  }))
-});
+        this.ventaCreadaResponse = Object.assign({}, resp, {
+          clienteNombre: clienteNombreFijo, // Usar el nombre fijo en la respuesta
+          clienteDocumento: clienteDocumentoFijo, // Usar el documento fijo
+          direccion: direccionFija, // Usar la dirección fija
+          formaPago: this.tipoPagoSeleccionado,
+          vendedor: vendedorNombre,
+          serie: this.serie,
+          numeroComprobante: this.correlativo,
+          fecha: fechaPeruIsoWithOffset, // <-- usar la variable correcta
+          moneda: 'S/',
+          detalles: (detallesResp || []).map(d => ({
+            cantidad: d.cantidad,
+            precio: d.precio,
+            total: d.total,
+            descripcion: d.descripcion,
+            nombre: d.nombre,
+            talla: d.talla,
+            desc: d.descuento ?? 0
+          }))
+        });
 
         this.cargarProductos();
         this.vaciarListado();
         this.resetearFormularioVenta();
-        console.log("DEBUG (Frontend): Venta creada exitosamente.");
+        console.log("DEBUG (Frontend): Venta creada exitosamente con cliente fijo (ID 21).");
 
         Swal.fire({
           icon: 'success',

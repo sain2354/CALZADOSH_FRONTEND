@@ -504,10 +504,17 @@ export class ListadoProductosComponent implements OnInit {
     }
   }
 
+    private generarCodigoDeBarrasAleatorio(): string {
+    // Genera un código numérico aleatorio de 13 dígitos
+    const codigo = Math.floor(Math.random() * 10000000000000).toString();
+    // Asegurarse de que siempre tenga 13 dígitos, rellenando con ceros si es necesario
+    return codigo.padStart(13, '0');
+  }
+
   private nuevoProducto(): Producto {
     return {
       idProducto: 0,
-      codigoBarra: '',
+      codigoBarra: this.generarCodigoDeBarrasAleatorio(), // <--- ¡AQUÍ ESTÁ LA MAGIA!
       categoria: '',
       nombre: '',
       precioCompra: 0,

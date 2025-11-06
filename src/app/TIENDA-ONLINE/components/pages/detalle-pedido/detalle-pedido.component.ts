@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PedidoUsuarioService } from './../../../services/pedido-usuario.service';
 import { Pedido } from '../../../../models/pedido.model';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../../../environments/environment'; // Importar environment
 
 @Component({
   selector: 'app-detalle-pedido-usuario',
@@ -16,6 +17,7 @@ export class DetallePedidoUsuarioComponent implements OnInit {
   pedido: Pedido | null = null;
   cargando = true;
   error: string | null = null;
+  apiBaseUrl = environment.apiUrl; // Variable para la URL base de la API
 
   constructor(
     private route: ActivatedRoute,
@@ -36,5 +38,11 @@ export class DetallePedidoUsuarioComponent implements OnInit {
         }
       });
     }
+  }
+
+  // Nueva función para construir la URL de la imagen
+  getImagenUrl(idProducto: number): string {
+    // Asume que el endpoint para obtener la imagen es /api/productos/{id}/imagen
+    return `${this.apiBaseUrl}/productos/${idProducto}/imagen`;
   }
 }

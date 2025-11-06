@@ -1,4 +1,5 @@
 // src/app/services/auth.service.ts
+// FORZANDO RECOMPILACIÓN CON ESTE COMENTARIO
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs'; // BehaviorSubject for login status
@@ -9,13 +10,12 @@ import { BehaviorSubject, Observable } from 'rxjs'; // BehaviorSubject for login
 export class AuthService {
   private readonly USER_ROLE_STORAGE_KEY = 'userRole'; // Key for localStorage
   private readonly IS_LOGGED_IN_STORAGE_KEY = 'isLoggedIn'; // Key for localStorage
-   private readonly USERNAME_STORAGE_KEY = 'username'; // Key for localStorage (optional)
-
+  private readonly USERNAME_STORAGE_KEY = 'username'; // Key for localStorage (optional)
+  private readonly USER_ID_STORAGE_KEY = 'userId'; // Key for localStorage
 
   // Use BehaviorSubject to track login status reactively
   private isLoggedInSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this.checkLoginStatus());
   isLoggedIn$: Observable<boolean> = this.isLoggedInSubject.asObservable(); // Public observable
-
 
   constructor(private router: Router) {
       // Check login status when the service is initialized
@@ -23,15 +23,14 @@ export class AuthService {
   }
 
   // Call this method after a successful login from the backend
-  loginSuccess(username: string, role: string): void { // Added username
+  loginSuccess(username: string, role: string, userId: number): void { // Added username and userId
     localStorage.setItem(this.USER_ROLE_STORAGE_KEY, role);
     localStorage.setItem(this.IS_LOGGED_IN_STORAGE_KEY, 'true'); // Store a flag
     localStorage.setItem(this.USERNAME_STORAGE_KEY, username); // Store username (optional)
+    localStorage.setItem(this.USER_ID_STORAGE_KEY, String(userId)); // Store user ID
 
     this.isLoggedInSubject.next(true); // Update the subject
-    console.log('Login successful. Role:', role); // For debugging
-    // Optionally redirect to the dashboard here or in the login component
-    // this.router.navigate(['/dashboard']);
+    console.log('Login successful. Role:', role, 'UserID:', userId); // For debugging
   }
 
   // Call this method to log out the user
@@ -39,6 +38,7 @@ export class AuthService {
     localStorage.removeItem(this.USER_ROLE_STORAGE_KEY);
     localStorage.removeItem(this.IS_LOGGED_IN_STORAGE_KEY);
     localStorage.removeItem(this.USERNAME_STORAGE_KEY); // Remove username
+    localStorage.removeItem(this.USER_ID_STORAGE_KEY); // Remove user ID
 
     this.userRole = null; // Clear the internal role cache
     this.isLoggedInSubject.next(false); // Update the subject
@@ -69,6 +69,11 @@ export class AuthService {
        return localStorage.getItem(this.USERNAME_STORAGE_KEY);
    }
 
+   // Get the user ID of the logged-in user from localStorage
+   getUserId(): number | null {
+    const userIdStr = localStorage.getItem(this.USER_ID_STORAGE_KEY);
+    return userIdStr ? parseInt(userIdStr, 10) : null;
+   }
 
   // Check if the logged-in user has a specific role
   hasRole(roleName: string): boolean {

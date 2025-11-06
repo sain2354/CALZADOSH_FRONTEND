@@ -57,7 +57,7 @@
           <div class="summary-details">
             <div class="summary-row">
               <span>Subtotal</span>
-              <span>{{ totalPrice$ | async | currency:'S/' }}</span>
+              <span>{{ subtotal$ | async | currency:'S/' }}</span>
             </div>
             <div class="summary-row">
               <span>Descuento</span>
@@ -65,7 +65,7 @@
             </div>
             <div class="summary-row">
               <span>Costo de Envío</span>
-              <span class="shipping-cost">Por definir</span>
+              <span class="shipping-cost">{{ shippingCost$ | async | currency:'S/' }}</span>
             </div>
           </div>
           <div class="summary-total">

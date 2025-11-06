@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError, shareReplay } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 export interface UbigeoItem {
   departamento: string;
@@ -16,7 +17,8 @@ export interface UbigeoItem {
   providedIn: 'root'
 })
 export class UbigeoService {
-  private apiUrl = '/api/v1/ubigeo';
+  // SOLUCIÓN FINAL: Apuntamos a nuestro propio backend, que actúa como proxy.
+  private apiUrl = `${environment.apiUrl}/ubigeo`;
   private ubigeoData$: Observable<UbigeoItem[]>;
 
   constructor(private http: HttpClient) {
@@ -32,24 +34,21 @@ export class UbigeoService {
         const departamentosAPI = Object.values(apiResponse as any);
 
         for (const dep of (departamentosAPI as any[])) {
-          if (!dep?.nombre || !dep.provincias) continue; // Guarda de seguridad
+          if (!dep?.nombre || !dep.provincias) continue; 
           const depNombre = dep.nombre;
 
           const provinciasAPI = Object.values(dep.provincias as any);
 
           for (const prov of (provinciasAPI as any[])) {
-            if (!prov?.nombre || !prov.distritos) continue; // Guarda de seguridad
+            if (!prov?.nombre || !prov.distritos) continue; 
             const provNombre = prov.nombre;
 
             const distritosAPI = Object.values(prov.distritos as any);
 
             for (const dist of (distritosAPI as any[])) {
-              // SOLUCIÓN REAL: El distrito es un string, no un objeto.
               const distNombre = dist;
 
-              // Verificación final antes de añadir a la lista
               if (typeof depNombre === 'string' && typeof provNombre === 'string' && typeof distNombre === 'string') {
-                // SOLUCIÓN FINAL: Limpiamos los espacios en blanco de TODOS los nombres
                 flatData.push({
                   departamento: depNombre.trim(),
                   provincia: provNombre.trim(),

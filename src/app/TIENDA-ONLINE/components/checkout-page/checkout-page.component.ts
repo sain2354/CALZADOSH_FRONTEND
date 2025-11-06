@@ -5,7 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { of, Observable } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
+import { switchMap, catchError, tap } from 'rxjs/operators';
 
 import { CheckoutService, VentaRequest, DireccionEntregaRequest, VentaResponse } from '../../services/checkout.service';
 import { UsuarioDireccionService, UsuarioDireccionRequest, UsuarioDireccionResponse } from '../../services/usuario-direccion.service';
@@ -31,7 +31,6 @@ export class CheckoutPageComponent implements OnInit {
   private usuarioDireccionService = inject(UsuarioDireccionService);
   private authService = inject(AuthTiendaService);
   private cartService = inject(CartService);
-  // --- INTEGRACIÓN UBIGEO ---
   private ubigeoService = inject(UbigeoService);
 
   selectedShippingOption: 'tienda' | 'domicilio' = 'domicilio';
@@ -41,7 +40,6 @@ export class CheckoutPageComponent implements OnInit {
   cartItems: CartItem[] = [];
   costoEnvio = 0;
 
-  // --- INTEGRACIÓN UBIGEO ---
   departamentos$!: Observable<string[]>;
   provincias$!: Observable<string[]>;
   distritos$!: Observable<string[]>;
@@ -68,16 +66,13 @@ export class CheckoutPageComponent implements OnInit {
       apellido: ['', Validators.required],
       dni: ['', [Validators.required, Validators.pattern(/^[0-9]{8,9}$/)]],
       telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
-      // --- MODIFICACIÓN UBIGEO ---
       departamento: [null, Validators.required],
       provincia: [{ value: null, disabled: true }, Validators.required],
       distrito: [{ value: null, disabled: true }, Validators.required],
-      // --- FIN MODIFICACIÓN UBIGEO ---
       direccion: ['', Validators.required],
       referencia: [''],
     });
     
-    // --- INTEGRACIÓN UBIGEO ---
     this.departamentos$ = this.ubigeoService.getDepartamentos();
     this.updateFormValidation();
   }
@@ -99,15 +94,13 @@ export class CheckoutPageComponent implements OnInit {
     return 0;
   }
 
-  // --- NUEVO MÉTODO UBIGEO ---
   onDepartamentoChange(): void {
     const departamento = this.shippingForm.get('departamento')?.value;
     
-    // Resetea y deshabilita los selects dependientes
     this.shippingForm.get('provincia')?.reset({ value: null, disabled: true });
     this.shippingForm.get('distrito')?.reset({ value: null, disabled: true });
-    this.provincias$ = of([]); // Limpia la lista anterior
-    this.distritos$ = of([]);  // Limpia la lista anterior
+    this.provincias$ = of([]);
+    this.distritos$ = of([]);
 
     if (departamento) {
       this.provincias$ = this.ubigeoService.getProvincias(departamento);
@@ -115,14 +108,12 @@ export class CheckoutPageComponent implements OnInit {
     }
   }
 
-  // --- NUEVO MÉTODO UBIGEO ---
   onProvinciaChange(): void {
     const departamento = this.shippingForm.get('departamento')?.value;
     const provincia = this.shippingForm.get('provincia')?.value;
     
-    // Resetea y deshabilita el select de distrito
     this.shippingForm.get('distrito')?.reset({ value: null, disabled: true });
-    this.distritos$ = of([]); // Limpia la lista anterior
+    this.distritos$ = of([]);
 
     if (departamento && provincia) {
       this.distritos$ = this.ubigeoService.getDistritos(departamento, provincia);
@@ -165,12 +156,24 @@ export class CheckoutPageComponent implements OnInit {
 
     this.isLoading = true;
 
-    const saveAddress$: Observable<UsuarioDireccionResponse | null> = this.selectedShippingOption === 'domicilio'
-      ? this.saveUserAddress(this.userId)
-      : of(null);
+    // --- INICIO DE LA MODIFICACIÓN ---
+    // El flujo observable ahora comienza con un valor nulo (para recojo en tienda)
+    // o guardando la dirección (para envío a domicilio).
+    let initialFlow$: Observable<any> = of(null);
 
-    saveAddress$.pipe(
-      switchMap((savedAddress: UsuarioDireccionResponse | null) => this.createVenta(this.userId!, savedAddress)),
+    if (this.selectedShippingOption === 'domicilio') {
+      // Si es envío a domicilio, el flujo comienza guardando la dirección del usuario.
+      // Se elimina la llamada a updateUserProfile que causaba el error 400.
+      initialFlow$ = this.saveUserAddress(this.userId!);
+    }
+
+    // Se encadena el resto del proceso al flujo inicial.
+    initialFlow$.pipe(
+      // El resultado (la dirección guardada o null) pasa a createVenta.
+      switchMap((savedAddress: UsuarioDireccionResponse | null) => {
+        console.log('PASO 1: Creando la venta.');
+        return this.createVenta(this.userId!, savedAddress);
+      }),
       catchError(err => {
         console.error('Ocurrió un error en el proceso de pago:', err);
         alert('No se pudo completar el pedido. Por favor, inténtalo de nuevo.');
@@ -178,14 +181,14 @@ export class CheckoutPageComponent implements OnInit {
         return of(null);
       })
     ).subscribe((ventaResponse: VentaResponse | null) => {
+      this.isLoading = false;
       if (ventaResponse) {
-        console.log('¡Venta creada con éxito!', ventaResponse);
-        alert(`Pedido registrado con éxito. ID: ${ventaResponse.idVenta}`);
-        this.isLoading = false;
+        console.log('PASO 2: ¡Venta creada con éxito!', ventaResponse);
         this.cartService.clearCart();
         this.router.navigate(['/pago', { ventaId: ventaResponse.idVenta }]);
       }
     });
+    // --- FIN DE LA MODIFICACIÓN ---
   }
 
   private saveUserAddress(userId: number): Observable<UsuarioDireccionResponse> {
@@ -243,8 +246,6 @@ export class CheckoutPageComponent implements OnInit {
       total: parseFloat(total.toFixed(2))
     };
     
-    console.log('Enviando datos a la ruta corregida:', ventaRequest);
-
     return this.checkoutService.crearVenta(ventaRequest);
   }
 }

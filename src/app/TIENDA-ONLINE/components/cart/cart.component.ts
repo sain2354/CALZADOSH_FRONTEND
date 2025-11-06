@@ -6,11 +6,7 @@ import { take } from 'rxjs/operators';
 
 import { CartService, CartItem } from '../../services/cart.service';
 import { ProductService } from '../../services/product.service';
-
-// --- INICIO DE LA MODIFICACIÓN ---
-// Se importa también el tipo de respuesta del usuario del backend
 import { AuthTiendaService, UserBackendResponse } from '../../services/auth-tienda.service';
-// --- FIN DE LA MODIFICACIÓN ---
 
 @Component({
   selector: 'app-cart',
@@ -24,6 +20,8 @@ export class CartComponent {
   @Output() close = new EventEmitter<void>();
 
   cartItems$: Observable<CartItem[]>;
+  subtotal$: Observable<number>;
+  shippingCost$: Observable<number>;
   totalPrice$: Observable<number>;
 
   private router = inject(Router);
@@ -34,16 +32,12 @@ export class CartComponent {
     public productService: ProductService
   ) { 
     this.cartItems$ = this.cartService.getCartItems();
+    this.subtotal$ = this.cartService.getSubtotal();
+    this.shippingCost$ = this.cartService.getShippingCost();
     this.totalPrice$ = this.cartService.getTotalPrice();
   }
 
-  /**
-   * Controla el flujo de "Finalizar Compra".
-   * Verifica si el usuario está autenticado antes de navegar.
-   */
   proceedToCheckout(): void {
-    // --- INICIO DE LA MODIFICACIÓN ---
-    // Se usa `currentUser$` en lugar de `user$` y se añade el tipo explícito al callback.
     this.authService.currentUser$.pipe(
       take(1)
     ).subscribe((user: UserBackendResponse | null) => {
@@ -57,7 +51,6 @@ export class CartComponent {
         this.router.navigate(['/auth']);
       }
     });
-    // --- FIN DE LA MODIFICACIÓN ---
   }
 
   onClose(): void {

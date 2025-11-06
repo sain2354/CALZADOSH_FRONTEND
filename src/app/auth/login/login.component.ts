@@ -44,29 +44,30 @@ export class LoginComponent {
         if (response && response.usuario) {
           const userLoginInfo = response.usuario;
           const userRole = userLoginInfo.nombreRol || ''; // Ensure userRole is a string
+          const userId = userLoginInfo.idUsuario; // Get the user ID
 
-          // Store session information
-          this.authService.loginSuccess(userLoginInfo.username, userRole);
+          // Store session information, now including the user ID
+          this.authService.loginSuccess(userLoginInfo.username, userRole, userId);
 
-          // --- REDIRECCIÓN INTELIGENTE (CORREGIDA) ---
-          // Comprueba el rol del usuario para decidir a dónde redirigir.
-          if (userRole.toLowerCase() === 'administrador') { // CORREGIDO: de 'admin' a 'administrador'
-            // Si es administrador, va al panel de administración.
+          // --- SMART REDIRECTION (FIXED) ---
+          // Check the user's role to decide where to redirect.
+          if (userRole.toLowerCase() === 'administrador') { // FIXED: from 'admin' to 'administrador'
+            // If administrator, go to the admin dashboard.
             this.router.navigate(['/admin/dashboard']);
           } else {
-            // Si es cualquier otro rol (cliente, etc.), va a la página principal de la tienda.
-            this.router.navigate(['/']); // Redirige a la raíz
+            // If any other role (client, etc.), go to the main store page.
+            this.router.navigate(['/']); // Redirect to the root
           }
-          // --- FIN DE LA REDIRECCIÓN ---
+          // --- END OF REDIRECTION ---
 
         } else {
-          this.errorMessage = 'Inicio de sesión exitoso, pero la información del usuario no está disponible.';
+          this.errorMessage = 'Login successful, but user information is not available.';
           console.error('Login successful, but user information is missing in the backend response.');
         }
       },
       error: (error) => {
         console.error('Login failed:', error);
-        this.errorMessage = error.message || 'Error en el inicio de sesión. Inténtalo de nuevo.';
+        this.errorMessage = error.message || 'Login error. Please try again.';
       }
     });
   }
