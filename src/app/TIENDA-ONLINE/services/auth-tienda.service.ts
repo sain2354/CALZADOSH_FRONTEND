@@ -1,4 +1,3 @@
-
 import { Injectable, inject, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -6,14 +5,16 @@ import {
   Auth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendEmailVerification, // <--- 1. IMPORTADO
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
   User,
   authState,
+  deleteUser,
 } from '@angular/fire/auth';
-import { Observable, from, of, BehaviorSubject } from 'rxjs';
-import { map, switchMap, take, tap } from 'rxjs/operators';
+import { Observable, from, of, BehaviorSubject, throwError } from 'rxjs';
+import { map, switchMap, take, tap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface UserBackendResponse {
@@ -24,6 +25,7 @@ export interface UserBackendResponse {
   email: string;
   telefono: string;
   nombreRol?: string;
+  numero_documento?: string;
 }
 
 @Injectable({
@@ -60,36 +62,48 @@ export class AuthTiendaService {
       return this.currentUserSubject.value?.idUsuario ?? null;
   }
 
-  async signUpWithEmail(email: string, password: string, displayName: string): Promise<UserBackendResponse> {
+  async signUpWithEmail(email: string, password: string, displayName: string, dni: string, telefono: string): Promise<UserBackendResponse> {
     const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+    const firebaseUser = userCredential.user;
+
+    await sendEmailVerification(firebaseUser); // <--- 2. SE ENVÍA EL CORREO DE VERIFICACIÓN
 
     const [firstName, ...lastNameParts] = displayName.split(' ');
     const lastName = lastNameParts.join(' ');
 
     const requestBody = {
-      email: userCredential.user.email || email,
+      email: firebaseUser.email || email,
       password: password,
       username: email,
       Nombres: firstName,
-      Apellidos: lastName || firstName, 
+      Apellidos: lastName || firstName,
+      NumeroDocumento: dni,
+      Telefono: telefono
     };
 
-    return this.http.post<UserBackendResponse>(this.backendRegisterUrl, requestBody)
-      .pipe(
-        tap(backendUser => {
-          this.storeUser(backendUser);
-        }),
-        take(1)
-      ).toPromise() as Promise<UserBackendResponse>;
+    return from(this.http.post<UserBackendResponse>(this.backendRegisterUrl, requestBody)).pipe(
+      tap(backendUser => {
+        this.storeUser(backendUser);
+      }),
+      catchError(async (error) => {
+        if (firebaseUser) {
+          try {
+            await deleteUser(firebaseUser);
+            console.warn('Usuario de Firebase eliminado debido a un fallo en el registro del backend.');
+          } catch (deleteError) {
+            console.error('Error al intentar eliminar el usuario de Firebase después de un registro fallido:', deleteError);
+          }
+        }
+        return throwError(() => new Error('El registro en el backend falló después de la creación en Firebase.'));
+      }),
+      take(1)
+    ).toPromise() as Promise<UserBackendResponse>;
   }
 
   async signInWithEmail(email: string, password: string): Promise<UserBackendResponse> {
     await signInWithEmailAndPassword(this.auth, email, password);
-    // --- INICIO DE LA CORRECCIÓN DE TIPADO ---
-    // Se elimina el `as any` que causaba la pérdida de tipos.
     const backendUser = await this.http.post<{usuario: UserBackendResponse}>(this.backendLoginUrl, { usernameOrEmail: email, password })
         .pipe(map(response => response.usuario), take(1)).toPromise();
-    // --- FIN DE LA CORRECCIÓN DE TIPADO ---
         
     if (!backendUser) {
         throw new Error('Failed to get user profile from backend.');
@@ -109,11 +123,8 @@ export class AuthTiendaService {
         phone: firebaseUser.phoneNumber
     };
     
-    // --- INICIO DE LA CORRECCIÓN DE TIPADO ---
-    // Se elimina el `as any` que causaba la pérdida de tipos.
     const backendUser = await this.http.post<{usuario: UserBackendResponse}>(this.googleLoginUrl, requestBody)
         .pipe(map(response => response.usuario), take(1)).toPromise();
-    // --- FIN DE LA CORRECCIÓN DE TIPADO ---
 
     if (!backendUser) {
         throw new Error('Failed to get user profile from backend via Google.');

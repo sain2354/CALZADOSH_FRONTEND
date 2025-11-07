@@ -3,11 +3,8 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// --- INICIO DE LA CORRECCIÓN ---
-// La ruta correcta para acceder a los servicios desde 'components/pages/register-page'
 import { AuthTiendaService } from '../../../services/auth-tienda.service';
 import { CartService } from '../../../services/cart.service';
-// --- FIN DE LA CORRECCIÓN ---
 
 @Component({
   selector: 'app-register-page',
@@ -24,9 +21,10 @@ export class RegisterPageComponent {
 
   isLoading = false;
   errorMessage: string | null = null;
+  registrationSuccess = false; // <-- 1. NUEVA PROPIEDAD
 
-  async handleRegister(displayName: string, email: string, pass: string): Promise<void> {
-    if (!displayName || !email || !pass) {
+  async handleRegister(displayName: string, dni: string, telefono: string, email: string, pass: string): Promise<void> {
+    if (!displayName || !dni || !telefono || !email || !pass) {
       this.errorMessage = 'Por favor, completa todos los campos.';
       return;
     }
@@ -34,11 +32,15 @@ export class RegisterPageComponent {
         this.errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
         return;
     }
+    if (dni.length !== 8) {
+        this.errorMessage = 'El número de DNI debe tener 8 dígitos.';
+        return;
+    }
 
     this.startLoading();
 
     try {
-      const backendResponse = await this.authService.signUpWithEmail(email, pass, displayName);
+      const backendResponse = await this.authService.signUpWithEmail(email, pass, displayName, dni, telefono);
       this.handleSuccess(backendResponse.idUsuario);
 
     } catch (error: any) {
@@ -51,7 +53,7 @@ export class RegisterPageComponent {
     
     this.cartService.asociarUsuarioAlCarrito(idUsuario);
 
-    this.router.navigate(['/']);
+    this.registrationSuccess = true; // <-- 2. MOSTRAMOS EL MENSAJE DE ÉXITO
     this.stopLoading();
   }
 

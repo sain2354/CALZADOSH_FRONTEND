@@ -226,15 +226,19 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   private calcularTotal() {
-  const sum = this.ventaItems.reduce((acc, it) => acc + it.cantidad * it.precio, 0);
-  this.subTotal = +sum.toFixed(2);
+    // El precio del producto (it.precio) ya incluye el IGV.
+    const totalVenta = this.ventaItems.reduce((acc, it) => acc + it.cantidad * it.precio, 0);
 
-  // IGV deshabilitado para Perú: lo mostramos pero con valor 0.00
-  this.iva = 0;
+    // Para obtener el subtotal (base imponible), dividimos el total por 1.18 (asumiendo IGV del 18%).
+    const subTotalCalculado = totalVenta / 1.18;
+    const igvCalculado = totalVenta - subTotalCalculado;
 
-  // Total = subtotal - descuento (sin sumar IGV)
-  this.total = +(this.subTotal - this.descuento).toFixed(2);
-}
+    this.subTotal = +subTotalCalculado.toFixed(2);
+    this.iva = +igvCalculado.toFixed(2);
+
+    // El total es la suma de los precios de venta, menos cualquier descuento.
+    this.total = +(totalVenta - this.descuento).toFixed(2);
+  }
 
 
   onDocumentoChange() {

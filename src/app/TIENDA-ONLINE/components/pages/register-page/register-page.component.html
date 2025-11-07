@@ -1,11 +1,28 @@
 <div class="auth-container">
-  <div class="auth-card">
+  <!-- Si el registro es exitoso, muestra este mensaje -->
+  <div *ngIf="registrationSuccess" class="auth-card success-card">
+    <h2>¡Registro Exitoso!</h2>
+    <p>Hemos enviado un correo de verificación a tu dirección de email. Por favor, revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace para activar tu cuenta.</p>
+    <p>Una vez verificada, podrás <a routerLink="/auth">iniciar sesión</a>.</p>
+  </div>
+
+  <!-- Si el registro NO es exitoso, muestra el formulario -->
+  <div *ngIf="!registrationSuccess" class="auth-card">
     <h2>Crear una cuenta</h2>
 
-    <!-- CAMPO NUEVO PARA EL NOMBRE -->
     <div class="form-group">
       <label for="displayName">Nombre completo</label>
       <input type="text" id="displayName" placeholder="Tu nombre y apellido" #nameInput />
+    </div>
+
+    <div class="form-group">
+      <label for="dni">Número de DNI</label>
+      <input type="text" id="dni" placeholder="Tu número de documento" #dniInput />
+    </div>
+
+    <div class="form-group">
+      <label for="telefono">Número de Celular</label>
+      <input type="text" id="telefono" placeholder="Tu número de celular" #telefonoInput />
     </div>
 
     <div class="form-group">
@@ -22,8 +39,7 @@
       {{ errorMessage }}
     </div>
 
-    <!-- El botón ahora llama a la función de registro -->
-    <button class="btn btn-primary" (click)="handleRegister(nameInput.value, emailInput.value, passwordInput.value)" [disabled]="isLoading">
+    <button class="btn btn-primary" (click)="handleRegister(nameInput.value, dniInput.value, telefonoInput.value, emailInput.value, passwordInput.value)" [disabled]="isLoading">
       <span *ngIf="!isLoading">CREAR CUENTA</span>
       <span *ngIf="isLoading">Creando...</span>
     </button>
