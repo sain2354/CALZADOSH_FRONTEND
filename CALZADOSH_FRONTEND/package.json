@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@zxing/ngx-scanner": "^21.0.0",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^4.1.0"
+  }
+}
